@@ -33,7 +33,7 @@ export default function QuestionsPage() {
           <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Reflexio
+                OmniReflect
               </h1>
               <p className="text-sm text-gray-600">
                 Beantworte die Fragen zur Vorbereitung deines Mitarbeiterjahresgesprächs

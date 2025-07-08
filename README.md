@@ -1,4 +1,4 @@
-# Reflexio - Mitarbeiter:innen-Reflexion & Mitarbeiterjahresgespräch
+# OmniReflect - Mitarbeiter:innen-Reflexion & Mitarbeiterjahresgespräch
 
 Eine datenschutzkonforme, KI-gestützte Plattform für Mitarbeiter:innen zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
@@ -44,8 +44,8 @@ Die Plattform ermöglicht es Mitarbeiter:innen, sich gezielt auf ihr Mitarbeiter
 
 1. **Repository klonen**
    ```bash
-   git clone <repository-url>
-   cd mitarbeiterjahresgespraech
+       git clone <repository-url>
+    cd omnireflect
    ```
 
 2. **Dependencies installieren**

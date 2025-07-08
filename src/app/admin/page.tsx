@@ -46,7 +46,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Reflexio Admin
+                OmniReflect Admin
               </h1>
               <p className="text-gray-600">
                 Melde dich mit deinen Admin-Zugangsdaten an
@@ -129,7 +129,7 @@ export default function AdminPage() {
           <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Reflexio Dashboard
+                OmniReflect Dashboard
               </h1>
               <p className="text-sm text-gray-600">
                 Übersicht aller Mitarbeiter:innen-Reflexionen

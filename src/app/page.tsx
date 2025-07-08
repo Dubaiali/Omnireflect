@@ -6,7 +6,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto text-center p-8">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            Reflexio
+            OmniReflect
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             KI-gestützte Vorbereitung für dein Mitarbeiterjahresgespräch
