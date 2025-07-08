@@ -35,66 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!roleContext) {
-      // Fallback zu Standard-Fragen wenn kein Rollenkontext vorhanden
-      return NextResponse.json({ 
-        questions: [
-          {
-            id: 'role',
-            question: 'Wie verstehst du deine aktuelle Rolle im Unternehmen und welche Verantwortlichkeiten sind dir besonders wichtig?',
-            category: 'Rollenverständnis'
-          },
-          {
-            id: 'achievements',
-            question: 'Welche Erfolge und Leistungen machst du im vergangenen Jahr besonders stolz?',
-            category: 'Stolz & persönliche Leistung'
-          },
-          {
-            id: 'challenges',
-            question: 'Mit welchen Herausforderungen hast du dich konfrontiert gesehen und wie hast du diese bewältigt?',
-            category: 'Herausforderungen & Umgang mit Druck'
-          },
-          {
-            id: 'responsibility',
-            question: 'Wie organisierst du deine Verantwortungsbereiche und welche Entscheidungen triffst du selbstständig?',
-            category: 'Verantwortung & Selbstorganisation'
-          },
-          {
-            id: 'collaboration',
-            question: 'Wie erlebst du die Zusammenarbeit im Team und welche Verbesserungen würdest du dir wünschen?',
-            category: 'Zusammenarbeit & Feedback'
-          },
-          {
-            id: 'development',
-            question: 'In welchen Bereichen würdest du gerne wachsen und dich weiterentwickeln?',
-            category: 'Entwicklung & Lernen'
-          },
-          {
-            id: 'energy',
-            question: 'Wie erlebst du deine Energie und Belastung im Arbeitsalltag?',
-            category: 'Energie & Belastung'
-          },
-          {
-            id: 'culture',
-            question: 'Welche Aspekte der Unternehmenskultur sind dir besonders wichtig?',
-            category: 'Kultur & Werte'
-          },
-          {
-            id: 'freedom',
-            question: 'Wie erlebst du deine Entscheidungsspielräume und Handlungsfreiheit?',
-            category: 'Entscheidungsspielräume & Freiheit'
-          },
-          {
-            id: 'appreciation',
-            question: 'Wie erlebst du Wertschätzung und Anerkennung in deiner Arbeit?',
-            category: 'Wertschätzung & Gesehenwerden'
-          },
-          {
-            id: 'future',
-            question: 'Wo siehst du dich in 3-5 Jahren und welche Schritte sind dafür notwendig?',
-            category: 'Perspektive & Zukunft'
-          }
-        ]
-      })
+      return NextResponse.json(
+        { error: 'Rollenkontext ist erforderlich für die Generierung personalisierter Fragen.' },
+        { status: 400 }
+      )
     }
 
     const roleContextInfo = `
@@ -163,7 +107,7 @@ Kontextdaten für diese Person:
 ${roleContextInfo}`
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 1500,
       temperature: 0.7,
     })
 

@@ -75,10 +75,24 @@ export default function QuestionForm() {
       const personalizedQuestions = await generatePersonalizedQuestions(roleContext || undefined)
       setQuestions(personalizedQuestions)
       setHasError(false)
+      
+      // Reset alle Formularfelder bei Neugenerierung
+      setCurrentQuestionIndex(0)
+      setCurrentAnswer('')
+      setFollowUpQuestions([])
+      setFollowUpAnswers({})
+      setShowFollowUp(false)
     } catch (error) {
       console.error('Fehler beim Laden der personalisierten Fragen:', error)
       setHasError(true)
       setQuestions([])
+      
+      // Prüfe ob es ein Validierungsfehler ist
+      if (error instanceof Error && error.message.includes('Rollenkontext ist erforderlich')) {
+        // Weiterleitung zum Rollenkontext-Formular
+        router.push('/role-context')
+        return
+      }
     } finally {
       setIsLoadingQuestions(false)
     }
@@ -225,7 +239,7 @@ export default function QuestionForm() {
           
           <p className="text-gray-600 mb-4">
             {isOnline 
-              ? "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuche es erneut."
+              ? "Es gab ein Problem bei der Generierung der Fragen. Bitte überprüfe deine Rollendaten oder versuche es erneut."
               : "Bitte stelle sicher, dass du mit dem Internet verbunden bist."
             }
           </p>
