@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
-import { validateHash } from '@/lib/hashList'
 
 export default function LoginForm() {
   const [hashId, setHashId] = useState('')
@@ -28,9 +27,17 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const user = validateHash(hashId, password)
-      
-      if (user) {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hashId, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
         // Alle vorherigen Daten zurücksetzen
         resetProgress()
         // Login durchführen
@@ -38,7 +45,7 @@ export default function LoginForm() {
         // Immer zur Role-Context-Seite navigieren
         router.push('/role-context')
       } else {
-        setError('Ungültige Hash-ID oder Passwort')
+        setError(data.error || 'Ungültige Hash-ID oder Passwort')
       }
     } catch (err) {
       setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
