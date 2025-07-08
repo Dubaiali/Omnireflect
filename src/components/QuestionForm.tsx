@@ -84,6 +84,13 @@ export default function QuestionForm() {
       setShowFollowUp(false)
     } catch (error) {
       console.error('Fehler beim Laden der personalisierten Fragen:', error)
+      
+      // Wenn der Fehler mit dem Rollenkontext zusammenhängt, zur Role-Context-Seite weiterleiten
+      if (error instanceof Error && error.message.includes('Rollenkontext')) {
+        router.push('/role-context')
+        return
+      }
+      
       setHasError(true)
       setQuestions([])
     } finally {
@@ -276,10 +283,10 @@ export default function QuestionForm() {
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-4">
       {/* Fortschrittsanzeige */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1">
           <span className="text-sm text-gray-600">
             Frage {currentQuestionIndex + 1} von {questions.length}
           </span>
@@ -296,21 +303,21 @@ export default function QuestionForm() {
       </div>
 
       {/* Aktuelle Frage */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="mb-4">
+      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div className="mb-2">
           <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
             {currentQuestion.category}
           </span>
         </div>
         
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">
           {currentQuestion.question}
         </h2>
 
         <textarea
           value={currentAnswer}
           onChange={(e) => setCurrentAnswer(e.target.value)}
-          className="w-full h-32 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full h-16 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Schreibe deine Antwort hier..."
         />
 
@@ -324,9 +331,9 @@ export default function QuestionForm() {
 
         {/* Ladebalken für Follow-up-Generierung */}
         {isGeneratingFollowUp && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
             <div className="flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
               <div className="flex-1">
                 <div className="text-sm text-blue-800 font-medium mb-1">
                   Generiere personalisierte Nachfragen...
@@ -336,7 +343,7 @@ export default function QuestionForm() {
                 </div>
               </div>
             </div>
-            <p className="text-xs text-blue-600 mt-2">
+            <p className="text-xs text-blue-600 mt-1">
               Basierend auf deiner Antwort und deinem Rollenkontext werden vertiefende Fragen erstellt.
             </p>
           </div>
@@ -345,15 +352,15 @@ export default function QuestionForm() {
 
       {/* Follow-up-Fragen */}
       {showFollowUp && followUpQuestions.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-green-800 mb-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <h3 className="text-md font-semibold text-green-800 mb-3">
             Vertiefende Nachfragen:
           </h3>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             {followUpQuestions.map((question, index) => (
               <div key={index}>
-                <label className="block text-sm font-medium text-green-700 mb-2">
+                <label className="block text-sm font-medium text-green-700 mb-1">
                   {question}
                 </label>
                 <textarea
@@ -362,7 +369,7 @@ export default function QuestionForm() {
                     ...followUpAnswers,
                     [index]: e.target.value
                   })}
-                  className="w-full h-20 p-3 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full h-16 p-3 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   placeholder="Deine Antwort..."
                 />
               </div>

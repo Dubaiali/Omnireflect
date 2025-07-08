@@ -129,14 +129,6 @@ export default function PDFDownload() {
               >
                 PDF herunterladen
               </button>
-              
-              <button
-                onClick={handleGenerateSummary}
-                disabled={isGenerating}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-md transition duration-200"
-              >
-                Zusammenfassung neu generieren
-              </button>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

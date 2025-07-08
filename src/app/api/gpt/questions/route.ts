@@ -30,13 +30,27 @@ export async function POST(request: NextRequest) {
     
     // Input validieren
     let roleContext: RoleContext | undefined
-    if (body.roleContext) {
-      roleContext = validateAndSanitize(roleContextSchema, body.roleContext)
+    if (body.roleContext && 
+        body.roleContext.workAreas && 
+        body.roleContext.workAreas.length > 0 &&
+        body.roleContext.functions && 
+        body.roleContext.functions.length > 0 &&
+        body.roleContext.experienceYears &&
+        body.roleContext.customerContact) {
+      try {
+        roleContext = validateAndSanitize(roleContextSchema, body.roleContext)
+      } catch (error) {
+        console.error('Validierungsfehler:', error)
+        return NextResponse.json(
+          { error: 'Ungültige Rollenkontext-Daten. Bitte fülle alle Pflichtfelder aus.' },
+          { status: 400 }
+        )
+      }
     }
 
     if (!roleContext) {
       return NextResponse.json(
-        { error: 'Rollenkontext ist erforderlich für die Generierung personalisierter Fragen.' },
+        { error: 'Rollenkontext ist erforderlich für die Generierung personalisierter Fragen. Bitte fülle zuerst dein Profil aus.' },
         { status: 400 }
       )
     }
@@ -68,6 +82,7 @@ implizites Alter (z. B. 1. Lehrjahr ≈ jung; 20+ Jahre im Betrieb = erfahren, e
 
 Bitte formuliere 11 offene, individuell abgestimmte Reflexionsfragen, die:
 - in Du-Form verfasst sind (klar, menschlich, ohne Floskeln oder Suggestion)
+- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
 - sprachlich dem Erfahrungs- und Alterskontext angepasst sind
 - sich an der Tiefe und der Rolle der Person orientieren
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen

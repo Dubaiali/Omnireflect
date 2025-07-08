@@ -60,14 +60,15 @@ export async function POST(request: NextRequest) {
       11. Perspektive & Zukunft
       
       Die Zusammenfassung sollte:
-      - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-      - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
-      - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
-      - empathisch und unterstützend wirken
-      - den beruflichen Kontext der Person berücksichtigen
-      - nur die Kategorien einbeziehen, zu denen es relevante Antworten gibt
-      - für jede relevante Kategorie die wichtigsten Erkenntnisse hervorheben
-      - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
+- in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
+- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
+- sprachlich dem Erfahrungs- und Alterskontext angepasst sein
+- kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+- empathisch und unterstützend wirken
+- den beruflichen Kontext der Person berücksichtigen
+- nur die Kategorien einbeziehen, zu denen es relevante Antworten gibt
+- für jede relevante Kategorie die wichtigsten Erkenntnisse hervorheben
+- konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
       - Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend

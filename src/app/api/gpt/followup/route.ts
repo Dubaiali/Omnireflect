@@ -56,14 +56,15 @@ export async function POST(request: NextRequest) {
       - Keine weiteren Reflexionsmöglichkeiten erkennbar sind
 
       Falls Nachfragen angebracht sind, sollten sie:
-      - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-      - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
-      - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
-      - maximal 1-2 Sätze lang sein
-      - offen und neugierig wirken
-      - zur Selbstreflexion anregen
-      - konkret und relevant sein
-      - empathisch und unterstützend wirken
+- in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
+- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
+- sprachlich dem Erfahrungs- und Alterskontext angepasst sein
+- kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+- maximal 1-2 Sätze lang sein
+- offen und neugierig wirken
+- zur Selbstreflexion anregen
+- konkret und relevant sein
+- empathisch und unterstützend wirken
 
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
       - Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
