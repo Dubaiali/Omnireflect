@@ -37,66 +37,15 @@ export async function generatePersonalizedQuestions(
     })
 
     if (!response.ok) {
-      throw new Error('API-Anfrage fehlgeschlagen')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'API-Anfrage fehlgeschlagen')
     }
 
     const data = await response.json()
     return data.questions || []
   } catch (error) {
     console.error('Fehler bei der Fragen-Generierung:', error)
-    // Fallback zu Standard-Fragen
-    return [
-      {
-        id: 'role',
-        question: 'Wie verstehst du deine aktuelle Rolle im Unternehmen und welche Verantwortlichkeiten sind dir besonders wichtig?',
-        category: 'Rollenverständnis'
-      },
-      {
-        id: 'achievements',
-        question: 'Welche Erfolge und Leistungen machst du im vergangenen Jahr besonders stolz?',
-        category: 'Leistungen'
-      },
-      {
-        id: 'challenges',
-        question: 'Mit welchen Herausforderungen hast du dich konfrontiert gesehen und wie hast du diese bewältigt?',
-        category: 'Herausforderungen'
-      },
-      {
-        id: 'development',
-        question: 'In welchen Bereichen würdest du gerne wachsen und dich weiterentwickeln?',
-        category: 'Entwicklung'
-      },
-      {
-        id: 'feedback',
-        question: 'Wie bewertest du die Qualität des Feedbacks, das du von Kolleg:innen und Vorgesetzten erhältst?',
-        category: 'Feedback'
-      },
-      {
-        id: 'collaboration',
-        question: 'Wie erlebst du die Zusammenarbeit im Team und welche Verbesserungen würdest du dir wünschen?',
-        category: 'Zusammenarbeit'
-      },
-      {
-        id: 'goals',
-        question: 'Welche konkreten Ziele hast du dir für das kommende Jahr gesetzt?',
-        category: 'Ziele'
-      },
-      {
-        id: 'support',
-        question: 'Welche Art von Unterstützung oder Ressourcen würden dir helfen, deine Ziele zu erreichen?',
-        category: 'Unterstützung'
-      },
-      {
-        id: 'work_life',
-        question: 'Wie zufrieden bist du mit deiner Work-Life-Balance und was könnte verbessert werden?',
-        category: 'Work-Life-Balance'
-      },
-      {
-        id: 'future',
-        question: 'Wo siehst du dich in 3-5 Jahren und welche Schritte sind dafür notwendig?',
-        category: 'Zukunftsperspektive'
-      }
-    ]
+    throw error // Fehler weiterwerfen, damit das Frontend ihn behandeln kann
   }
 }
 

@@ -26,7 +26,13 @@ export default function RoleContextPage() {
     router.push('/')
   }
 
-  if (!isAuthenticated || (roleContext && !isEditing)) {
+  // Zeige die Komponente wenn authentifiziert UND (kein Rollenkontext ODER im Bearbeitungsmodus)
+  if (!isAuthenticated) {
+    return null
+  }
+
+  // Wenn Rollenkontext vorhanden und NICHT im Bearbeitungsmodus, zeige nichts (wird weitergeleitet)
+  if (roleContext && !isEditing) {
     return null
   }
 

@@ -59,6 +59,11 @@ export default function QuestionForm() {
 
   // Lade personalisierte Fragen beim ersten Laden
   const loadPersonalizedQuestions = async (isRetry = false) => {
+    // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind
+    if (questions.length > 0 && !isRetry) {
+      return
+    }
+    
     setIsLoadingQuestions(true)
     setHasError(false)
     if (!isRetry) {
@@ -80,8 +85,11 @@ export default function QuestionForm() {
   }
 
   useEffect(() => {
-    loadPersonalizedQuestions()
-  }, [roleContext])
+    // Nur beim ersten Laden oder wenn keine Fragen vorhanden sind
+    if (questions.length === 0) {
+      loadPersonalizedQuestions()
+    }
+  }, []) // Entferne roleContext aus den Dependencies
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)

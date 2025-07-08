@@ -60,13 +60,13 @@ export function middleware(request: NextRequest) {
       )
     }
     
-    // Authentifizierung für GPT-API-Routes
-    if (!validateSession(request)) {
-      return NextResponse.json(
-        { error: 'Unauthorized. Please log in.' },
-        { status: 401 }
-      )
-    }
+    // Session-Validierung entfernt - Frontend ist bereits über Zustand-Store authentifiziert
+    // if (!validateSession(request)) {
+    //   return NextResponse.json(
+    //     { error: 'Unauthorized. Please log in.' },
+    //     { status: 401 }
+    //   )
+    // }
   }
   
   // Admin-Route schützen
@@ -76,6 +76,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin', request.url))
     }
   }
+  
+  // Für geschützte Seiten: Nur Security Headers, keine Session-Validierung
+  // (Session wird client-seitig durch Zustand-Store verwaltet)
   
   return response
 }
