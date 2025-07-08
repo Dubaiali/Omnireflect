@@ -5,9 +5,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+interface RoleContext {
+  workAreas: string[]
+  functions: string[]
+  experienceYears: string
+  customerContact: string
+  dailyTasks: string
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { answers, followUpQuestions } = await request.json()
+    const { answers, followUpQuestions, roleContext } = await request.json()
 
     if (!answers || Object.keys(answers).length === 0) {
       return NextResponse.json(
@@ -20,10 +28,23 @@ export async function POST(request: NextRequest) {
       .map(([question, answer]) => `Frage: ${question}\nAntwort: ${answer}`)
       .join('\n\n')
 
+    let roleContextInfo = ''
+    if (roleContext) {
+      roleContextInfo = `
+      
+      Rollenkontext der Person:
+      - Arbeitsbereich: ${roleContext.workAreas.join(', ')}
+      - Funktion: ${roleContext.functions.join(', ')}
+      - Erfahrung: ${roleContext.experienceYears}
+      - Kundenkontakt: ${roleContext.customerContact}
+      ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
+      `
+    }
+
     const prompt = `
       Erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiter:innen-Reflexion:
       
-      ${answersText}
+      ${answersText}${roleContextInfo}
       
       Die Zusammenfassung sollte:
       - Die wichtigsten Erkenntnisse hervorheben
@@ -31,6 +52,7 @@ export async function POST(request: NextRequest) {
       - Stärken würdigen
       - Konkrete Handlungsimpulse geben
       - Empathisch und unterstützend geschrieben sein
+      - Den beruflichen Kontext der Person berücksichtigen
       
       Strukturiere die Zusammenfassung in:
       1. Zusammenfassung der Selbstreflexion
@@ -38,7 +60,7 @@ export async function POST(request: NextRequest) {
       3. Entwicklungsbereiche
       4. Empfohlene nächste Schritte
       
-      Verwende eine warme, unterstützende Sprache.
+      Verwende eine warme, unterstützende Sprache und berücksichtige dabei die spezifische Rolle und Erfahrung der Person.
     `
 
     const completion = await openai.chat.completions.create({
@@ -46,7 +68,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: 'Du bist ein erfahrener Coach, der empathische und hilfreiche Zusammenfassungen erstellt.'
+          content: 'Du bist ein erfahrener Coach, der empathische und hilfreiche Zusammenfassungen erstellt. Berücksichtige dabei immer den beruflichen Kontext und die Erfahrung der Person.'
         },
         {
           role: 'user',
