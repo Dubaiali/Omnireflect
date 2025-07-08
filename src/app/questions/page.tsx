@@ -49,18 +49,6 @@ export default function QuestionsPage() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/role-context?edit=true"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Rollenkontext bearbeiten
-              </Link>
-              <Link
-                href="/summary"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Meine Zusammenfassung
-              </Link>
               <button
                 onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-800 text-sm font-medium"
