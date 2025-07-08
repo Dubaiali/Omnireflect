@@ -86,13 +86,6 @@ export default function QuestionForm() {
       console.error('Fehler beim Laden der personalisierten Fragen:', error)
       setHasError(true)
       setQuestions([])
-      
-      // Prüfe ob es ein Validierungsfehler ist
-      if (error instanceof Error && error.message.includes('Rollenkontext ist erforderlich')) {
-        // Weiterleitung zum Rollenkontext-Formular
-        router.push('/role-context')
-        return
-      }
     } finally {
       setIsLoadingQuestions(false)
     }
@@ -239,7 +232,7 @@ export default function QuestionForm() {
           
           <p className="text-gray-600 mb-4">
             {isOnline 
-              ? "Es gab ein Problem bei der Generierung der Fragen. Bitte überprüfe deine Rollendaten oder versuche es erneut."
+              ? "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuche es erneut."
               : "Bitte stelle sicher, dass du mit dem Internet verbunden bist."
             }
           </p>
