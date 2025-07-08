@@ -12,6 +12,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   
   const login = useSessionStore(state => state.login)
+  const roleContext = useSessionStore(state => state.roleContext)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +25,12 @@ export default function LoginForm() {
       
       if (user) {
         login(hashId)
-        router.push('/questions')
+        // Navigiere zum Rollenkontext-Formular, falls noch nicht ausgefüllt
+        if (!roleContext) {
+          router.push('/role-context')
+        } else {
+          router.push('/questions')
+        }
       } else {
         setError('Ungültige Hash-ID oder Passwort')
       }

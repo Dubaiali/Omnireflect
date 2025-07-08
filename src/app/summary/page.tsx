@@ -7,21 +7,24 @@ import PDFDownload from '@/components/PDFDownload'
 import Link from 'next/link'
 
 export default function SummaryPage() {
-  const { isAuthenticated, logout } = useSessionStore()
+  const { isAuthenticated, logout, roleContext } = useSessionStore()
   const router = useRouter()
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login')
+    } else if (!roleContext) {
+      // Wenn Rollenkontext nicht ausgefüllt ist, zum Rollenkontext-Formular weiterleiten
+      router.push('/role-context')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, roleContext, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !roleContext) {
     return null
   }
 
@@ -40,6 +43,12 @@ export default function SummaryPage() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <Link
+                href="/role-context"
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Rollenkontext bearbeiten
+              </Link>
               <Link
                 href="/questions"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
