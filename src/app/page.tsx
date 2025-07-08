@@ -1,6 +1,26 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSessionStore } from '@/state/sessionStore'
 import Link from 'next/link'
 
 export default function Home() {
+  const { isAuthenticated, roleContext } = useSessionStore()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (roleContext) {
+        // Wenn Role-Context ausgefüllt ist, zur Questions-Seite
+        router.push('/questions')
+      } else {
+        // Wenn Role-Context nicht ausgefüllt ist, zur Role-Context-Seite
+        router.push('/role-context')
+      }
+    }
+  }, [isAuthenticated, roleContext, router])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="max-w-2xl mx-auto text-center p-8">

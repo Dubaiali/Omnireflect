@@ -14,6 +14,10 @@ export default function QuestionForm() {
   const [showFollowUp, setShowFollowUp] = useState(false)
   const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({})
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
+  const [countdown, setCountdown] = useState(30) // 30 Sekunden Countdown
+  const [hasError, setHasError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
+  const [isOnline, setIsOnline] = useState(true)
   
   const router = useRouter()
   const { 
@@ -24,75 +28,65 @@ export default function QuestionForm() {
     nextStep 
   } = useSessionStore()
 
-  // Lade personalisierte Fragen beim ersten Laden
+  // Internetverbindungsprüfung
   useEffect(() => {
-    const loadPersonalizedQuestions = async () => {
-      setIsLoadingQuestions(true)
-      try {
-        const personalizedQuestions = await generatePersonalizedQuestions(roleContext || undefined)
-        setQuestions(personalizedQuestions)
-      } catch (error) {
-        console.error('Fehler beim Laden der personalisierten Fragen:', error)
-        // Fallback zu Standard-Fragen
-        setQuestions([
-          {
-            id: 'role',
-            question: 'Wie verstehst du deine aktuelle Rolle im Unternehmen und welche Verantwortlichkeiten sind dir besonders wichtig?',
-            category: 'Rollenverständnis'
-          },
-          {
-            id: 'achievements',
-            question: 'Welche Erfolge und Leistungen machst du im vergangenen Jahr besonders stolz?',
-            category: 'Leistungen'
-          },
-          {
-            id: 'challenges',
-            question: 'Mit welchen Herausforderungen hast du dich konfrontiert gesehen und wie hast du diese bewältigt?',
-            category: 'Herausforderungen'
-          },
-          {
-            id: 'development',
-            question: 'In welchen Bereichen würdest du gerne wachsen und dich weiterentwickeln?',
-            category: 'Entwicklung'
-          },
-          {
-            id: 'feedback',
-            question: 'Wie bewertest du die Qualität des Feedbacks, das du von Kolleg:innen und Vorgesetzten erhältst?',
-            category: 'Feedback'
-          },
-          {
-            id: 'collaboration',
-            question: 'Wie erlebst du die Zusammenarbeit im Team und welche Verbesserungen würdest du dir wünschen?',
-            category: 'Zusammenarbeit'
-          },
-          {
-            id: 'goals',
-            question: 'Welche konkreten Ziele hast du dir für das kommende Jahr gesetzt?',
-            category: 'Ziele'
-          },
-          {
-            id: 'support',
-            question: 'Welche Art von Unterstützung oder Ressourcen würden dir helfen, deine Ziele zu erreichen?',
-            category: 'Unterstützung'
-          },
-          {
-            id: 'work_life',
-            question: 'Wie zufrieden bist du mit deiner Work-Life-Balance und was könnte verbessert werden?',
-            category: 'Work-Life-Balance'
-          },
-          {
-            id: 'future',
-            question: 'Wo siehst du dich in 3-5 Jahren und welche Schritte sind dafür notwendig?',
-            category: 'Zukunftsperspektive'
-          }
-        ])
-      } finally {
-        setIsLoadingQuestions(false)
-      }
+    const checkOnlineStatus = () => {
+      setIsOnline(navigator.onLine)
     }
 
+    checkOnlineStatus()
+    window.addEventListener('online', checkOnlineStatus)
+    window.addEventListener('offline', checkOnlineStatus)
+
+    return () => {
+      window.removeEventListener('online', checkOnlineStatus)
+      window.removeEventListener('offline', checkOnlineStatus)
+    }
+  }, [])
+
+  // Countdown Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isLoadingQuestions && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => prev - 1)
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isLoadingQuestions, countdown])
+
+  // Lade personalisierte Fragen beim ersten Laden
+  const loadPersonalizedQuestions = async (isRetry = false) => {
+    setIsLoadingQuestions(true)
+    setHasError(false)
+    if (!isRetry) {
+      setCountdown(30) // Reset countdown nur beim ersten Versuch
+      setRetryCount(0)
+    }
+    
+    try {
+      const personalizedQuestions = await generatePersonalizedQuestions(roleContext || undefined)
+      setQuestions(personalizedQuestions)
+      setHasError(false)
+    } catch (error) {
+      console.error('Fehler beim Laden der personalisierten Fragen:', error)
+      setHasError(true)
+      setQuestions([])
+    } finally {
+      setIsLoadingQuestions(false)
+    }
+  }
+
+  useEffect(() => {
     loadPersonalizedQuestions()
   }, [roleContext])
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1)
+    loadPersonalizedQuestions(true)
+  }
 
   const currentQuestion = questions[currentQuestionIndex]
 
@@ -131,11 +125,17 @@ export default function QuestionForm() {
       setShowFollowUp(true)
     } catch (error) {
       console.error('Fehler bei Follow-up-Generierung:', error)
-      setFollowUpQuestions([
-        'Können Sie das noch etwas genauer erklären?',
-        'Was bedeutet das für Ihre zukünftige Entwicklung?'
-      ])
-      setShowFollowUp(true)
+      // Keine Fallback-Fragen mehr - direkt zur nächsten Frage
+      setShowFollowUp(false)
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1)
+        setCurrentAnswer('')
+        setFollowUpQuestions([])
+        setFollowUpAnswers({})
+        nextStep()
+      } else {
+        router.push('/summary')
+      }
     } finally {
       setIsGeneratingFollowUp(false)
     }
@@ -169,46 +169,79 @@ export default function QuestionForm() {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="text-center mb-6">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Personalisiere deine Reflexionsfragen
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-6"></div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              <span className="text-3xl">🤖</span> Ich erstelle jetzt deine persönlichen Vorbereitungsfragen <span className="text-3xl">🤖</span>
             </h3>
-            <p className="text-gray-600 mb-4">
-              Basierend auf deinem Rollenkontext werden maßgeschneiderte Fragen erstellt...
+            <p className="text-gray-600 text-lg">
+              Noch {countdown} Sekunden...
             </p>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasError && !isLoadingQuestions) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
           
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="animate-pulse bg-blue-100 rounded-full h-3 w-3"></div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-700 mb-1">Analysiere Rollenkontext...</div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-1000" style={{ width: '30%' }}></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="animate-pulse bg-blue-100 rounded-full h-3 w-3"></div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-700 mb-1">Generiere personalisierte Fragen...</div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-1000" style={{ width: '70%' }}></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="animate-pulse bg-gray-300 rounded-full h-3 w-3"></div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-500 mb-1">Bereite Fragenkatalog vor...</div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gray-400 h-2 rounded-full transition-all duration-1000" style={{ width: '0%' }}></div>
-                </div>
-              </div>
-            </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Fehler beim Laden der Fragen
+          </h3>
+          
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            {isOnline ? (
+              <>
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                </svg>
+                <span className="text-sm text-green-600">Internetverbindung verfügbar</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
+                </svg>
+                <span className="text-sm text-red-600">Keine Internetverbindung</span>
+              </>
+            )}
+          </div>
+          
+          <p className="text-gray-600 mb-4">
+            {isOnline 
+              ? "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuche es erneut."
+              : "Bitte stelle sicher, dass du mit dem Internet verbunden bist."
+            }
+          </p>
+          
+          {retryCount > 0 && (
+            <p className="text-sm text-gray-500 mb-4">
+              Versuch {retryCount} fehlgeschlagen
+            </p>
+          )}
+          
+          <div className="space-x-4">
+            <button
+              onClick={handleRetry}
+              disabled={!isOnline}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+            >
+              Erneut versuchen
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+            >
+              Seite neu laden
+            </button>
           </div>
         </div>
       </div>
