@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { getSessionFromRequest } from '@/lib/session'
+import { validateAndSanitize, roleContextSchema } from '@/lib/validation'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,7 +12,7 @@ interface RoleContext {
   functions: string[]
   experienceYears: string
   customerContact: string
-  dailyTasks: string
+  dailyTasks?: string
 }
 
 const baseQuestions = [
@@ -68,7 +70,22 @@ const baseQuestions = [
 
 export async function POST(request: NextRequest) {
   try {
-    const { roleContext } = await request.json()
+    // Session validieren
+    const session = getSessionFromRequest(request)
+    if (!session || !session.hashId) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please log in.' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    
+    // Input validieren
+    let roleContext: RoleContext | undefined
+    if (body.roleContext) {
+      roleContext = validateAndSanitize(roleContextSchema, body.roleContext)
+    }
 
     if (!roleContext) {
       // Fallback zu Standard-Fragen wenn kein Rollenkontext vorhanden
