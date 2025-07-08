@@ -71,10 +71,7 @@ export async function generateFollowUpQuestions(
     return data.questions || []
   } catch (error) {
     console.error('Fehler bei der GPT-Anfrage:', error)
-    return [
-      'Können Sie das noch etwas genauer erklären?',
-      'Was bedeutet das für Ihre zukünftige Entwicklung?'
-    ]
+    throw error // Fehler weiterwerfen, damit das Frontend ihn behandeln kann
   }
 }
 

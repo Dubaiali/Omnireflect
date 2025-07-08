@@ -14,8 +14,8 @@ export default function QuestionsPage() {
     if (!isAuthenticated) {
       router.push('/login')
     } else if (!roleContext) {
-      // Wenn Rollenkontext nicht ausgefüllt ist, zum Rollenkontext-Formular weiterleiten
-      router.push('/role-context')
+      // Wenn Rollenkontext nicht ausgefüllt ist, zur Welcome-Seite weiterleiten
+      router.push('/welcome')
     }
   }, [isAuthenticated, roleContext, router])
 

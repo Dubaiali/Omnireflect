@@ -109,13 +109,8 @@ Berücksichtige dabei:
   } catch (error) {
     console.error('Fehler bei der GPT-Anfrage:', error)
     return NextResponse.json(
-      { 
-        questions: [
-          'Können Sie das noch etwas genauer erklären?',
-          'Was bedeutet das für Ihre zukünftige Entwicklung?'
-        ]
-      },
-      { status: 200 }
+      { error: 'Fehler bei der Generierung der Nachfragen. Bitte versuche es später erneut.' },
+      { status: 500 }
     )
   }
 } 

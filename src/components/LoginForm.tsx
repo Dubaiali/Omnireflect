@@ -42,8 +42,8 @@ export default function LoginForm() {
         resetProgress()
         // Login durchführen
         login(hashId)
-        // Immer zur Role-Context-Seite navigieren
-        router.push('/role-context')
+        // Zur Welcome-Seite navigieren
+        router.push('/welcome')
       } else {
         setError(data.error || 'Ungültige Hash-ID oder Passwort')
       }
