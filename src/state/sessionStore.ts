@@ -47,7 +47,14 @@ export const useSessionStore = create<SessionState>()(
       
       login: (hashId: string) => set({ 
         hashId, 
-        isAuthenticated: true 
+        isAuthenticated: true,
+        progress: {
+          currentStep: 0,
+          answers: {},
+          followUpQuestions: {},
+          summary: null,
+        },
+        roleContext: null
       }),
       
       logout: () => set({ 

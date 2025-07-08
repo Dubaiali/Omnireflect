@@ -90,55 +90,61 @@ export async function POST(request: NextRequest) {
     ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
     `
 
-    const prompt = `
-    Du bist ein erfahrener Coach für Mitarbeiterjahresgespräche. Personalisiere die folgenden Reflexionsfragen basierend auf dem beruflichen Kontext der Person.
-
-    ${roleContextInfo}
-
-    Personalisiere jede Frage, indem du:
-    1. Den spezifischen Arbeitsbereich einbeziehst
-    2. Die Erfahrung und Funktion berücksichtigst
-    3. Den Kundenkontakt-Level einbeziehst
-    4. Relevante Aspekte der täglichen Aufgaben aufgreifst
-    5. Die Frage empathisch und unterstützend formulierst
-
-    Antworte NUR mit den personalisierten Fragen in diesem exakten JSON-Format:
-    [
-      {
-        "id": "role",
-        "question": "Deine personalisierte Frage hier",
-        "category": "Rollenverständnis"
-      },
-      {
-        "id": "achievements", 
-        "question": "Deine personalisierte Frage hier",
-        "category": "Leistungen"
-      }
-    ]
-
-    Basis-Fragen zur Personalisierung:
-    - role: ${baseQuestions[0].baseQuestion}
-    - achievements: ${baseQuestions[1].baseQuestion}
-    - challenges: ${baseQuestions[2].baseQuestion}
-    - development: ${baseQuestions[3].baseQuestion}
-    - feedback: ${baseQuestions[4].baseQuestion}
-    - collaboration: ${baseQuestions[5].baseQuestion}
-    - goals: ${baseQuestions[6].baseQuestion}
-    - support: ${baseQuestions[7].baseQuestion}
-    - work_life: ${baseQuestions[8].baseQuestion}
-    - future: ${baseQuestions[9].baseQuestion}
-    `
-
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: 'Du bist ein erfahrener Reflexionscoach mit Feingefühl für Sprache, Berufsrollen und persönliche Entwicklung. Deine Aufgabe ist es, für ein Mitarbeiterentwicklungsgespräch in einem augenoptischen Unternehmen einen personalisierten Fragenkatalog zu erstellen.\n\nBerücksichtige bitte folgende Kontextdaten:\n\nArbeitsbereich (z. B. Verkauf, Werkstatt, Büro, Refraktion, Hörakustik)\n\nFunktion/Rolle (z. B. Mitarbeiter:in, Azubi, Abteilungsleitung)\n\nErfahrung (z. B. 6 Monate, 3 Jahre, 10+ Jahre)\n\nKundenkontakt (z. B. täglich, situativ, kaum)\n\nTätigkeitsbeschreibung (optional)\n\nFormuliere 15 offene, menschlich formulierte Reflexionsfragen, die:\n\nemotional zugänglich und reflektiv sind\n\nzu Selbstbeobachtung und persönlicher Entwicklung einladen\n\nkulturelle Themen wie „Freiheit & Verantwortung" sowie „Wertschätzung" einbeziehen\n\nsich an der Tiefe und Rolle der Person orientieren\n\nmaximal 1 Satz lang sind\n\nin Du-Form verfasst sind (respektvoll, klar, ohne Fachfloskeln oder Suggestion)\n\nDie Fragen sollen gleichmäßig verteilt sein auf folgende Kategorien:\n\nRollenverständnis\n\nStolz & Leistung\n\nHerausforderungen & Selbstbild\n\nVerantwortung & Selbstorganisation\n\nZusammenarbeit & Feedback\n\nEntwicklung & Lernen\n\nEnergie & Belastung\n\nKultur & Werte\n\nFreiheit & Entscheidungsspielräume\n\nWertschätzung & Menschlichkeit\n\nPerspektive & Zukunft\n\nGib die Ausgabe als JSON zurück im Format:\n\n[\n{\n"id": "role",\n"question": "...",\n"category": "Rollenverständnis"\n},\n...\n]\n\nNutze die Kontextdaten intelligent – Azubis sollen andere Fragen bekommen als Teamleitungen. Die Sprache soll klar, würdevoll und bewusst sein.'
-        },
-        {
-          role: 'user',
-          content: prompt
+          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache, berufliche Rollen und persönliche Entwicklung. Deine Aufgabe ist es, für ein Mitarbeiterentwicklungsgespräch in einem augenoptischen Unternehmen einen individuellen Fragenkatalog zu erstellen.
+
+Berücksichtige folgende Kontextdaten:
+
+Arbeitsbereich (z. B. Verkauf, Werkstatt, Büro, Refraktion, Hörakustik)
+Rolle/Funktion (z. B. Mitarbeiter:in, Azubi, Führungskraft)
+Erfahrung / Unternehmenszugehörigkeit (z. B. 6 Monate, 3 Jahre, über 10 Jahre)
+Kundenkontakt (z. B. täglich, situativ, kaum)
+Aufgabenbeschreibung (optional)
+implizites Alter (z. B. 1. Lehrjahr ≈ jung; 20+ Jahre im Betrieb = erfahren, eher älter)
+
+Bitte formuliere 15 offene, individuell abgestimmte Reflexionsfragen, die:
+- in Du-Form verfasst sind (klar, menschlich, ohne Floskeln oder Suggestion)
+- sprachlich dem Erfahrungs- und Alterskontext angepasst sind
+- sich an der Tiefe und der Rolle der Person orientieren
+- kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+- maximal 1–2 Sätze lang sind
+- keine Wiederholungen enthalten
+
+gleichmäßig auf diese Kategorien verteilt sind:
+1. Rollenverständnis
+2. Stolz & persönliche Leistung
+3. Herausforderungen & Umgang mit Druck
+4. Verantwortung & Selbstorganisation
+5. Zusammenarbeit & Feedback
+6. Entwicklung & Lernen
+7. Energie & Belastung
+8. Kultur & Werte
+9. Entscheidungsspielräume & Freiheit
+10. Wertschätzung & Gesehenwerden
+11. Perspektive & Zukunft
+
+Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
+- Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
+- Für erfahrene oder langjährige Mitarbeitende: eher würdevoll, respektvoll, anerkennend
+
+Gib die Fragen ausschließlich im folgenden JSON-Format zurück:
+[
+{
+"id": "role",
+"question": "...",
+"category": "Rollenverständnis"
+},
+...
+]
+
+Keine Kommentare. Keine Erklärungen. Keine Anrede vorab. Nur JSON.
+
+Kontextdaten für diese Person:
+${roleContextInfo}`
         }
       ],
       max_tokens: 2000,

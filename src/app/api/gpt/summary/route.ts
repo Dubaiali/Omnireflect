@@ -42,25 +42,42 @@ export async function POST(request: NextRequest) {
     }
 
     const prompt = `
-      Erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiter:innen-Reflexion:
+      Als reflektierter Coach mit Feingefühl für Sprache, erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiter:innen-Reflexion basierend auf den gegebenen Antworten.
       
       ${answersText}${roleContextInfo}
       
+      Erstelle eine Zusammenfassung, die die Antworten nach diesen 11 Kategorien analysiert und strukturiert:
+      1. Rollenverständnis
+      2. Stolz & persönliche Leistung
+      3. Herausforderungen & Umgang mit Druck
+      4. Verantwortung & Selbstorganisation
+      5. Zusammenarbeit & Feedback
+      6. Entwicklung & Lernen
+      7. Energie & Belastung
+      8. Kultur & Werte
+      9. Entscheidungsspielräume & Freiheit
+      10. Wertschätzung & Gesehenwerden
+      11. Perspektive & Zukunft
+      
       Die Zusammenfassung sollte:
-      - Die wichtigsten Erkenntnisse hervorheben
-      - Entwicklungsbereiche identifizieren
-      - Stärken würdigen
-      - Konkrete Handlungsimpulse geben
-      - Empathisch und unterstützend geschrieben sein
-      - Den beruflichen Kontext der Person berücksichtigen
+      - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
+      - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
+      - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+      - empathisch und unterstützend wirken
+      - den beruflichen Kontext der Person berücksichtigen
+      - nur die Kategorien einbeziehen, zu denen es relevante Antworten gibt
+      - für jede relevante Kategorie die wichtigsten Erkenntnisse hervorheben
+      - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
+      
+      Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
+      - Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
+      - Für erfahrene oder langjährige Mitarbeitende: eher würdevoll, respektvoll, anerkennend
       
       Strukturiere die Zusammenfassung in:
-      1. Zusammenfassung der Selbstreflexion
-      2. Identifizierte Stärken
-      3. Entwicklungsbereiche
-      4. Empfohlene nächste Schritte
-      
-      Verwende eine warme, unterstützende Sprache und berücksichtige dabei die spezifische Rolle und Erfahrung der Person.
+      1. Einleitung: Überblick über die Reflexion
+      2. Kategorienbasierte Analyse (nur relevante Kategorien)
+      3. Zusammenfassung der wichtigsten Erkenntnisse
+      4. Konkrete Handlungsimpulse und nächste Schritte
     `
 
     const completion = await openai.chat.completions.create({
@@ -68,14 +85,21 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: 'Du bist ein erfahrener Coach, der empathische und hilfreiche Zusammenfassungen erstellt. Berücksichtige dabei immer den beruflichen Kontext und die Erfahrung der Person.'
+          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache, berufliche Rollen und persönliche Entwicklung. Deine Aufgabe ist es, bei Mitarbeiterentwicklungsgesprächen in einem augenoptischen Unternehmen empathische und hilfreiche Zusammenfassungen zu erstellen.
+
+Berücksichtige dabei:
+- Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
+- Sprachliche Anpassung an den Erfahrungs- und Alterskontext
+- Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
+- Empathie und Unterstützung ohne Suggestion oder Floskeln
+- Strukturierung nach den 11 definierten Reflexionskategorien`
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 800,
+      max_tokens: 1200,
       temperature: 0.7,
     })
 
