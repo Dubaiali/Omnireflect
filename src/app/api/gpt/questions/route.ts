@@ -30,13 +30,7 @@ export async function POST(request: NextRequest) {
     
     // Input validieren
     let roleContext: RoleContext | undefined
-    if (body.roleContext && 
-        body.roleContext.workAreas && 
-        body.roleContext.workAreas.length > 0 &&
-        body.roleContext.functions && 
-        body.roleContext.functions.length > 0 &&
-        body.roleContext.experienceYears &&
-        body.roleContext.customerContact) {
+    if (body.roleContext) {
       try {
         roleContext = validateAndSanitize(roleContextSchema, body.roleContext)
       } catch (error) {
