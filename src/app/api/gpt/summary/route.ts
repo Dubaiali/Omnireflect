@@ -21,24 +21,24 @@ export async function POST(request: NextRequest) {
       .join('\n\n')
 
     const prompt = `
-      Erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiter:innen-Reflexion:
+      Erstelle eine persönliche und einfache Zusammenfassung für den Mitarbeiter:
       
       ${answersText}
       
       Die Zusammenfassung sollte:
-      - Die wichtigsten Erkenntnisse hervorheben
-      - Entwicklungsbereiche identifizieren
-      - Stärken würdigen
-      - Konkrete Handlungsimpulse geben
-      - Empathisch und unterstützend geschrieben sein
+      - In Du-Form geschrieben sein
+      - Persönlich und direkt ansprechen
+      - Einfache, verständliche Sprache verwenden
+      - Die wichtigsten Punkte zusammenfassen
+      - Positiv und unterstützend sein
       
       Strukturiere die Zusammenfassung in:
-      1. Zusammenfassung der Selbstreflexion
-      2. Identifizierte Stärken
-      3. Entwicklungsbereiche
-      4. Empfohlene nächste Schritte
+      1. Deine Reflexion (was du gesagt hast)
+      2. Deine Stärken (was du gut kannst)
+      3. Deine Wünsche (was du möchtest)
+      4. Nächste Schritte (was du tun kannst)
       
-      Verwende eine warme, unterstützende Sprache.
+      Schreibe wie ein freundlicher Coach, der direkt mit dir spricht.
     `
 
     const completion = await openai.chat.completions.create({

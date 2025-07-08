@@ -17,16 +17,16 @@ export async function POST(request: NextRequest) {
     }
 
     const prompt = `
-      Als empathischer Coach, generiere 2-3 vertiefende Nachfragen zu folgender Antwort:
+      Als empathischer Coach, generiere 1-2 einfache Nachfragen zu folgender Antwort:
       
       Frage: ${question}
       Antwort: ${answer}
       
       Die Nachfragen sollten:
-      - Offen und neugierig sein
-      - Zur Selbstreflexion anregen
-      - Konkret und relevant sein
-      - Empathisch und unterstützend wirken
+      - Einfach und verständlich sein
+      - Natürlich und freundlich klingen
+      - Mehr Details erfragen
+      - Nicht zu kompliziert sein
       
       Gib nur die Fragen zurück, eine pro Zeile, ohne Nummerierung.
     `
