@@ -8,53 +8,53 @@ import { generateFollowUpQuestions } from '@/lib/gpt'
 const questions = [
   {
     id: 'role',
-    question: 'Wie verstehst du deine aktuelle Rolle im Unternehmen und welche Verantwortlichkeiten sind dir besonders wichtig?',
-    category: 'Rollenverständnis'
+    question: 'Was machst du in deinem Job am liebsten?',
+    category: 'Arbeit'
   },
   {
     id: 'achievements',
-    question: 'Welche Erfolge und Leistungen machst du im vergangenen Jahr besonders stolz?',
-    category: 'Leistungen'
+    question: 'Worauf bist du im letzten Jahr besonders stolz?',
+    category: 'Erfolge'
   },
   {
     id: 'challenges',
-    question: 'Mit welchen Herausforderungen hast du dich konfrontiert gesehen und wie hast du diese bewältigt?',
+    question: 'Was war für dich schwierig und wie hast du es gelöst?',
     category: 'Herausforderungen'
   },
   {
     id: 'development',
-    question: 'In welchen Bereichen würdest du gerne wachsen und dich weiterentwickeln?',
+    question: 'Was möchtest du noch lernen oder besser können?',
     category: 'Entwicklung'
   },
   {
     id: 'feedback',
-    question: 'Wie bewertest du die Qualität des Feedbacks, das du von Kolleg:innen und Vorgesetzten erhältst?',
+    question: 'Wie findest du das Feedback von deinem Chef und Kollegen?',
     category: 'Feedback'
   },
   {
     id: 'collaboration',
-    question: 'Wie erlebst du die Zusammenarbeit im Team und welche Verbesserungen würdest du dir wünschen?',
-    category: 'Zusammenarbeit'
+    question: 'Wie läuft die Zusammenarbeit mit deinen Kollegen?',
+    category: 'Team'
   },
   {
     id: 'goals',
-    question: 'Welche konkreten Ziele hast du dir für das kommende Jahr gesetzt?',
+    question: 'Was möchtest du im nächsten Jahr erreichen?',
     category: 'Ziele'
   },
   {
     id: 'support',
-    question: 'Welche Art von Unterstützung oder Ressourcen würden dir helfen, deine Ziele zu erreichen?',
+    question: 'Was brauchst du, um deine Ziele zu erreichen?',
     category: 'Unterstützung'
   },
   {
     id: 'work_life',
-    question: 'Wie zufrieden bist du mit deiner Work-Life-Balance und was könnte verbessert werden?',
+    question: 'Wie zufrieden bist du mit deiner Work-Life-Balance?',
     category: 'Work-Life-Balance'
   },
   {
     id: 'future',
-    question: 'Wo siehst du dich in 3-5 Jahren und welche Schritte sind dafür notwendig?',
-    category: 'Zukunftsperspektive'
+    question: 'Wo siehst du dich in 3-5 Jahren?',
+    category: 'Zukunft'
   }
 ]
 
@@ -96,25 +96,40 @@ export default function QuestionForm() {
     // Speichere Antwort
     saveAnswer(currentQuestion.id, currentAnswer)
 
-    // Generiere Follow-up-Fragen
-    setIsGeneratingFollowUp(true)
-    try {
-      const followUps = await generateFollowUpQuestions(
-        currentQuestion.question,
-        currentAnswer
-      )
-      setFollowUpQuestions(followUps)
-      saveFollowUpQuestions(currentQuestion.id, followUps)
-      setShowFollowUp(true)
-    } catch (error) {
-      console.error('Fehler bei Follow-up-Generierung:', error)
-      setFollowUpQuestions([
-        'Können Sie das noch etwas genauer erklären?',
-        'Was bedeutet das für Ihre zukünftige Entwicklung?'
-      ])
-      setShowFollowUp(true)
-    } finally {
-      setIsGeneratingFollowUp(false)
+    // Prüfe, ob die Antwort ausreichend detailliert ist
+    const isDetailed = currentAnswer.length > 50 // Mindestens 50 Zeichen
+    
+    if (isDetailed) {
+      // Generiere Follow-up-Fragen nur bei detaillierten Antworten
+      setIsGeneratingFollowUp(true)
+      try {
+        const followUps = await generateFollowUpQuestions(
+          currentQuestion.question,
+          currentAnswer
+        )
+        setFollowUpQuestions(followUps)
+        saveFollowUpQuestions(currentQuestion.id, followUps)
+        setShowFollowUp(true)
+      } catch (error) {
+        console.error('Fehler bei Follow-up-Generierung:', error)
+        setFollowUpQuestions([
+          'Kannst du das noch etwas genauer erklären?',
+          'Was bedeutet das für dich?'
+        ])
+        setShowFollowUp(true)
+      } finally {
+        setIsGeneratingFollowUp(false)
+      }
+    } else {
+      // Bei kurzen Antworten direkt zur nächsten Frage
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1)
+        setCurrentAnswer('')
+        nextStep()
+      } else {
+        // Alle Fragen beantwortet - zur Zusammenfassung
+        router.push('/summary')
+      }
     }
   }
 
