@@ -133,23 +133,23 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
 
   return (
     <div className="max-w-4xl mx-auto px-4">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
             Mein Profil
           </h1>
-          <p className="text-gray-600 text-left">
+          <p className="text-gray-600 text-left text-sm">
             Deine Informationen helfen uns dabei, dein Mitarbeiterjahresgespräch ideal nur für dich vorzubereiten. Bitte nimm dir einen Moment Zeit, um die Daten sorgfältig und wahrheitsgemäß auszufüllen - das macht unsere Zusammenarbeit umso wertvoller für dich.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Arbeitsbereich */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               In welchem Bereich arbeitest du aktuell?
             </h2>
-            <p className="text-sm text-gray-600 mb-4">Mehrfachauswahl möglich</p>
+            <p className="text-sm text-gray-600 mb-3">Mehrfachauswahl möglich</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {workAreaOptions.map((area) => (
                 <label key={area} className="flex items-center space-x-3 cursor-pointer">
@@ -164,7 +164,7 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
               ))}
             </div>
             {formData.workAreas.includes('Anderes') && (
-              <div className="mt-4">
+              <div className="mt-3">
                 <input
                   type="text"
                   placeholder="Bitte spezifizieren..."
@@ -177,12 +177,12 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
           </div>
 
           {/* Funktionen */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               Welche Funktion hast du aktuell?
             </h2>
-            <p className="text-sm text-gray-600 mb-4">Bitte wähle eine Funktion aus</p>
-            <div className="space-y-3">
+            <p className="text-sm text-gray-600 mb-3">Bitte wähle eine Funktion aus</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {functionOptions.map((func) => (
                 <label key={func} className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -198,7 +198,7 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
               ))}
             </div>
             {formData.functions.includes('Andere') && (
-              <div className="mt-4">
+              <div className="mt-3">
                 <input
                   type="text"
                   placeholder="Bitte spezifizieren..."
@@ -211,11 +211,11 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
           </div>
 
           {/* Erfahrungsjahre */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               Wie lange arbeitest du bereits in dieser Rolle?
             </h2>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {experienceOptions.map((option) => (
                 <label key={option} className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -231,7 +231,7 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
               ))}
             </div>
             {formData.experienceYears === 'Freitext' && (
-              <div className="mt-4">
+              <div className="mt-3">
                 <input
                   type="text"
                   placeholder="z.B. seit 22 Jahren"
@@ -244,11 +244,11 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
           </div>
 
           {/* Kundenkontakt */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               Arbeitest du hauptsächlich im Kundenkontakt?
             </h2>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {customerContactOptions.map((option) => (
                 <label key={option} className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -266,15 +266,15 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
           </div>
 
           {/* Tägliche Aufgaben */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               Wenn du magst, kannst du kurz beschreiben, was deine Aufgabe im Alltag ausmacht?
             </h2>
             <textarea
               value={formData.dailyTasks}
               onChange={(e) => setFormData(prev => ({ ...prev, dailyTasks: e.target.value }))}
               placeholder="Optional - hilft uns dabei, deine Fragen noch persönlicher zu gestalten"
-              rows={4}
+              rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
@@ -283,7 +283,7 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
           <div className="text-center">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Meine Fragen generieren
             </button>
