@@ -45,7 +45,7 @@ export const useSessionStore = create<SessionState>()(
 
       setHashId: (hashId: string) => set({ hashId }),
       
-      login: (hashId: string) => set({ 
+      login: (hashId: string) => set((state) => ({ 
         hashId, 
         isAuthenticated: true,
         progress: {
@@ -54,8 +54,9 @@ export const useSessionStore = create<SessionState>()(
           followUpQuestions: {},
           summary: null,
         },
-        roleContext: null
-      }),
+        // Behalte das roleContext bei, falls es bereits gesetzt ist
+        roleContext: state.roleContext
+      })),
       
       logout: () => set({ 
         hashId: null, 
