@@ -38,6 +38,12 @@ export async function generatePersonalizedQuestions(
 
     if (!response.ok) {
       const errorData = await response.json()
+      
+      // Spezifische Behandlung von Rate Limit Fehlern
+      if (errorData.error && errorData.error.includes('Rate limit')) {
+        throw new Error('Rate limit überschritten. Bitte warte einen Moment und versuche es erneut.')
+      }
+      
       throw new Error(errorData.error || 'API-Anfrage fehlgeschlagen')
     }
 

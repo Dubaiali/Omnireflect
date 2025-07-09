@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'SAMEORIGIN'
           },
           {
             key: 'X-Content-Type-Options',
@@ -29,27 +29,20 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains'
+            value: 'max-age=31536000; includeSubDomains; preload'
           }
         ]
       }
     ]
   },
 
-  // HTTPS in Produktion erzwingen
-  ...(process.env.NODE_ENV === 'production' && {
-    assetPrefix: 'https://',
-  }),
-
   // Environment Variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
-  // Experimental Features
-  experimental: {
-    serverComponentsExternalPackages: ['openai']
-  }
+  // Server External Packages
+  serverExternalPackages: ['openai']
 }
 
 export default nextConfig

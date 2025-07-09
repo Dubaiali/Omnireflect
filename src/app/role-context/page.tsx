@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 import RoleContextForm from '@/components/RoleContextForm'
 import Link from 'next/link'
 
-export default function RoleContextPage() {
+function RoleContextContent() {
   const { isAuthenticated, roleContext, logout } = useSessionStore()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -81,5 +81,13 @@ export default function RoleContextPage() {
         <RoleContextForm isEditing={isEditing} />
       </main>
     </div>
+  )
+}
+
+export default function RoleContextPage() {
+  return (
+    <Suspense fallback={<div>Laden...</div>}>
+      <RoleContextContent />
+    </Suspense>
   )
 } 
