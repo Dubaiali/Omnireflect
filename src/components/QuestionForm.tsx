@@ -91,6 +91,19 @@ export default function QuestionForm() {
         return
       }
       
+      // Spezifische Behandlung von Rate Limit Fehlern
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        setHasError(true)
+        setQuestions([])
+        // Automatischer Retry nach 30 Sekunden bei Rate Limit
+        setTimeout(() => {
+          if (retryCount < 3) {
+            handleRetry()
+          }
+        }, 30000)
+        return
+      }
+      
       setHasError(true)
       setQuestions([])
     } finally {
@@ -187,6 +200,20 @@ export default function QuestionForm() {
     }
   }
 
+  const handleSkipToSummary = () => {
+    // Speichere aktuelle Antwort falls vorhanden
+    if (currentAnswer.trim() && currentQuestion) {
+      saveAnswer(currentQuestion.id, currentAnswer)
+    }
+    
+    // Springe direkt zur letzten Frage
+    setCurrentQuestionIndex(questions.length - 1)
+    setCurrentAnswer('')
+    setFollowUpQuestions([])
+    setShowFollowUp(false)
+    setFollowUpAnswers({})
+  }
+
   if (isLoadingQuestions) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -239,7 +266,9 @@ export default function QuestionForm() {
           
           <p className="text-gray-600 mb-4">
             {isOnline 
-              ? "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuche es erneut."
+              ? (hasError && retryCount > 0 && retryCount < 3 
+                  ? "Rate limit überschritten. Automatischer Retry in 30 Sekunden..."
+                  : "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuche es erneut.")
               : "Bitte stelle sicher, dass du mit dem Internet verbunden bist."
             }
           </p>
@@ -290,9 +319,20 @@ export default function QuestionForm() {
           <span className="text-sm text-gray-600">
             Frage {currentQuestionIndex + 1} von {questions.length}
           </span>
-          <span className="text-sm text-gray-600">
-            {Math.round(progressPercentage)}%
-          </span>
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-gray-600">
+              {Math.round(progressPercentage)}%
+            </span>
+            {currentQuestionIndex < questions.length - 1 && (
+              <button
+                onClick={handleSkipToSummary}
+                className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-2 py-1 rounded-md transition duration-200"
+                title="Direkt zur letzten Frage springen"
+              >
+                ⏭️ Zur Zusammenfassung
+              </button>
+            )}
+          </div>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 

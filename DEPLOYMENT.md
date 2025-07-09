@@ -1,246 +1,255 @@
-# 🚀 OmniReflect Deployment Guide
+# Omnireflect Deployment Guide
 
-## 📋 Sicherheitscheckliste vor Deployment
+## 🌐 Produktionsumgebung
 
-### ✅ Kritische Sicherheitsmaßnahmen
+**Domain:** https://reflect.omni-scient.com  
+**Server:** 188.68.48.168  
+**Port:** 3002  
+**Technologie:** Next.js 15.3.5, Nginx, Let's Encrypt SSL
 
-- [ ] **Umgebungsvariablen konfiguriert**
-  - [ ] `OPENAI_API_KEY` gesetzt
-  - [ ] `PASSWORD_SALT` generiert (mindestens 32 Zeichen)
-  - [ ] `ADMIN_USERNAME` und `ADMIN_PASSWORD` geändert
-  - [ ] `HASH_LIST` mit echten Nutzerdaten konfiguriert
+## 📋 Voraussetzungen
 
-- [ ] **HTTPS erzwingen**
-  - [ ] SSL-Zertifikat installiert
-  - [ ] HTTP zu HTTPS Redirect konfiguriert
-  - [ ] HSTS Header aktiviert
+- SSH-Zugang zum Server (root@188.68.48.168)
+- Git-Repository mit Omni3-Branch
+- OpenAI API-Key
+- Domain reflect.omni-scient.com (DNS A-Record auf 188.68.48.168)
 
-- [ ] **Rate Limiting aktiviert**
-  - [ ] API-Routes geschützt
-  - [ ] Limits für Produktion angepasst
+## 🚀 Schnellstart
 
-- [ ] **Session-Management**
-  - [ ] Sichere Cookies konfiguriert
-  - [ ] Session-Timeout gesetzt
-  - [ ] CSRF-Schutz aktiviert
-
-## 🔧 Deployment-Schritte
-
-### 1. Umgebungsvariablen konfigurieren
-
+### 1. Repository klonen und Branch wechseln
 ```bash
-# .env.local erstellen
-cp env.example .env.local
-
-# Sichere Werte generieren
-PASSWORD_SALT=$(openssl rand -hex 32)
-JWT_SECRET=$(openssl rand -hex 32)
-SESSION_SECRET=$(openssl rand -hex 32)
+git clone https://github.com/Dubaiali/Omnireflect.git
+cd Omnireflect
+git checkout Omni3
 ```
 
-### 2. Produktions-Build erstellen
-
+### 2. Deployment ausführen
 ```bash
-npm run build
-npm start
+chmod +x deploy-clean.sh
+./deploy-clean.sh
 ```
 
-### 3. Vercel Deployment (Empfohlen)
-
+### 3. OpenAI-Key konfigurieren
 ```bash
-# Vercel CLI installieren
-npm i -g vercel
-
-# Projekt deployen
-vercel --prod
-
-# Umgebungsvariablen in Vercel Dashboard setzen
+ssh root@188.68.48.168 "cd /var/www/omnireflect && echo 'OPENAI_API_KEY=your-key-here' > .env.local"
 ```
 
-### 4. Alternative: Docker Deployment
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-## 🛡️ Sicherheitskonfiguration
-
-### Firewall-Regeln
+### 4. Anwendung neu starten
 ```bash
-# Nur HTTPS (443) und SSH (22) erlauben
-ufw allow 443
-ufw allow 22
-ufw enable
+ssh root@188.68.48.168 "pkill -f 'npm start' && cd /var/www/omnireflect && nohup npm start -- -p 3002 > logs/omnireflect.log 2>&1 &"
 ```
 
-### Nginx-Konfiguration
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name your-domain.com;
-    
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-    
-    # Security Headers
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
+## 🔧 Manuelles Deployment
 
-## 📊 Monitoring & Logging
-
-### Logging-Konfiguration
-```typescript
-// src/lib/logger.ts
-export const logger = {
-  info: (message: string, meta?: any) => {
-    console.log(`[INFO] ${new Date().toISOString()}: ${message}`, meta)
-  },
-  error: (message: string, error?: any) => {
-    console.error(`[ERROR] ${new Date().toISOString()}: ${message}`, error)
-  },
-  security: (message: string, meta?: any) => {
-    console.warn(`[SECURITY] ${new Date().toISOString()}: ${message}`, meta)
-  }
-}
-```
-
-### Health Check Endpoint
-```typescript
-// src/app/api/health/route.ts
-export async function GET() {
-  return NextResponse.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version
-  })
-}
-```
-
-## 🔍 Sicherheitsaudit
-
-### Automatisierte Tests
+### Schritt 1: Server vorbereiten
 ```bash
-# Sicherheitsaudit
-npm audit
+# Anwendung stoppen
+ssh root@188.68.48.168 "pkill -f 'npm start'"
 
-# Dependency-Check
-npm audit fix
-
-# Code-Qualität
-npm run lint
+# Verzeichnis erstellen
+ssh root@188.68.48.168 "mkdir -p /var/www/omnireflect"
 ```
 
-### Manuelle Sicherheitstests
-- [ ] SQL-Injection-Tests
-- [ ] XSS-Tests
-- [ ] CSRF-Tests
-- [ ] Rate-Limiting-Tests
-- [ ] Session-Management-Tests
-
-## 📈 Performance-Optimierung
-
-### Caching-Strategie
-```typescript
-// src/lib/cache.ts
-const cache = new Map()
-
-export function getCachedData(key: string) {
-  const item = cache.get(key)
-  if (item && Date.now() - item.timestamp < 5 * 60 * 1000) {
-    return item.data
-  }
-  return null
-}
-```
-
-### CDN-Konfiguration
-- Statische Assets über CDN
-- API-Responses cachen
-- Bilder optimieren
-
-## 🚨 Incident Response
-
-### Notfall-Kontakte
-- System-Administrator: [Kontakt]
-- Security-Team: [Kontakt]
-- OpenAI-Support: [Kontakt]
-
-### Rollback-Plan
+### Schritt 2: Code deployen
 ```bash
-# Schneller Rollback
-git checkout previous-version
-npm run build
-npm start
+# Dateien kopieren
+scp -r src package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs root@188.68.48.168:/var/www/omnireflect/
+
+# Dependencies installieren
+ssh root@188.68.48.168 "cd /var/www/omnireflect && npm install"
+
+# Build erstellen
+ssh root@188.68.48.168 "cd /var/www/omnireflect && npm run build -- --no-lint"
 ```
 
-## 📚 Wartung & Updates
-
-### Regelmäßige Tasks
-- [ ] Dependencies aktualisieren (wöchentlich)
-- [ ] Security-Patches installieren (sofort)
-- [ ] Logs überprüfen (täglich)
-- [ ] Backup testen (wöchentlich)
-- [ ] Performance-Monitoring (kontinuierlich)
-
-### Update-Prozess
+### Schritt 3: Nginx konfigurieren
 ```bash
-# Staging-Umgebung testen
-git checkout staging
-npm install
-npm run build
-npm run test
+# Konfiguration kopieren
+scp nginx-reflect.conf root@188.68.48.168:/etc/nginx/sites-available/reflect.omni-scient.com.conf
 
-# Produktion updaten
-git checkout main
-git pull origin main
-npm install
-npm run build
-npm start
+# Aktivieren
+ssh root@188.68.48.168 "ln -sf /etc/nginx/sites-available/reflect.omni-scient.com.conf /etc/nginx/sites-enabled/"
+
+# Testen und neu laden
+ssh root@188.68.48.168 "nginx -t && systemctl reload nginx"
 ```
 
-## 🔐 Compliance & Datenschutz
-
-### DSGVO-Compliance
-- [ ] Datenschutzerklärung aktualisiert
-- [ ] Cookie-Consent implementiert
-- [ ] Datenlöschung automatisiert
-- [ ] Audit-Logs aktiviert
-
-### Backup-Strategie
+### Schritt 4: SSL-Zertifikat erstellen
 ```bash
-# Automatisches Backup
-0 2 * * * /usr/local/bin/backup-omnireflect.sh
-
-# Backup-Script
-#!/bin/bash
-DATE=$(date +%Y%m%d_%H%M%S)
-tar -czf /backups/omnireflect_$DATE.tar.gz /app/data
+ssh root@188.68.48.168 "certbot --nginx -d reflect.omni-scient.com --non-interactive --agree-tos --email admin@omni-scient.com"
 ```
+
+### Schritt 5: Anwendung starten
+```bash
+ssh root@188.68.48.168 "cd /var/www/omnireflect && mkdir -p logs && nohup npm start -- -p 3002 > logs/omnireflect.log 2>&1 &"
+```
+
+## 🔐 Umgebungsvariablen
+
+### .env.local
+```bash
+OPENAI_API_KEY=sk-proj-your-openai-key-here
+```
+
+### Nächste Schritte für Produktion
+- `NODE_ENV=production`
+- `CUSTOM_KEY=your-custom-key`
+- Datenbank-Integration (Firebase/Supabase)
+
+## 📁 Server-Struktur
+
+```
+/var/www/omnireflect/
+├── src/                    # Next.js Source Code
+├── .next/                  # Build Output
+├── node_modules/           # Dependencies
+├── logs/                   # Application Logs
+├── .env.local             # Environment Variables
+├── package.json           # Package Configuration
+└── next.config.ts         # Next.js Configuration
+```
+
+## 🔍 Monitoring & Logs
+
+### Logs anzeigen
+```bash
+# Live-Logs
+ssh root@188.68.48.168 "tail -f /var/www/omnireflect/logs/omnireflect.log"
+
+# Letzte 100 Zeilen
+ssh root@188.68.48.168 "tail -100 /var/www/omnireflect/logs/omnireflect.log"
+```
+
+### Status prüfen
+```bash
+# Prozess-Status
+ssh root@188.68.48.168 "ps aux | grep 'npm start'"
+
+# Port-Status
+ssh root@188.68.48.168 "netstat -tlnp | grep 3002"
+
+# Nginx-Status
+ssh root@188.68.48.168 "systemctl status nginx"
+```
+
+### Anwendung testen
+```bash
+# HTTP-Status
+curl -I https://reflect.omni-scient.com/
+
+# Lokaler Test
+ssh root@188.68.48.168 "curl -I http://localhost:3002/"
+```
+
+## 🛠️ Wartung & Updates
+
+### Code-Update
+```bash
+# Lokaler Build
+npm run build -- --no-lint
+
+# Dateien aktualisieren
+scp -r src root@188.68.48.168:/var/www/omnireflect/
+
+# Server-Build
+ssh root@188.68.48.168 "cd /var/www/omnireflect && npm run build -- --no-lint"
+
+# Anwendung neu starten
+ssh root@188.68.48.168 "pkill -f 'npm start' && cd /var/www/omnireflect && nohup npm start -- -p 3002 > logs/omnireflect.log 2>&1 &"
+```
+
+### SSL-Zertifikat erneuern
+```bash
+ssh root@188.68.48.168 "certbot renew --nginx"
+```
+
+### Backup erstellen
+```bash
+ssh root@188.68.48.168 "tar -czf /backup/omnireflect-$(date +%Y%m%d).tar.gz /var/www/omnireflect"
+```
+
+## 🚨 Troubleshooting
+
+### Anwendung startet nicht
+```bash
+# Logs prüfen
+ssh root@188.68.48.168 "tail -50 /var/www/omnireflect/logs/omnireflect.log"
+
+# Port-Konflikte prüfen
+ssh root@188.68.48.168 "netstat -tlnp | grep 3002"
+
+# Dependencies neu installieren
+ssh root@188.68.48.168 "cd /var/www/omnireflect && rm -rf node_modules package-lock.json && npm install"
+```
+
+### Nginx-Fehler
+```bash
+# Konfiguration testen
+ssh root@188.68.48.168 "nginx -t"
+
+# Nginx-Logs prüfen
+ssh root@188.68.48.168 "tail -50 /var/log/nginx/error.log"
+```
+
+### SSL-Probleme
+```bash
+# Zertifikat-Status prüfen
+ssh root@188.68.48.168 "certbot certificates"
+
+# Zertifikat erneuern
+ssh root@188.68.48.168 "certbot --nginx -d reflect.omni-scient.com"
+```
+
+## 🔒 Sicherheit
+
+### Firewall
+```bash
+# UFW-Status prüfen
+ssh root@188.68.48.168 "ufw status"
+
+# Ports öffnen (falls nötig)
+ssh root@188.68.48.168 "ufw allow 80 && ufw allow 443"
+```
+
+### Updates
+```bash
+# System-Updates
+ssh root@188.68.48.168 "apt update && apt upgrade -y"
+
+# Node.js-Updates (falls nötig)
+ssh root@188.68.48.168 "npm update -g npm"
+```
+
+## 📊 Zugangsdaten
+
+### Test-Mitarbeiter
+- **Hash-ID:** `abc123` | **Passwort:** `test123`
+- **Hash-ID:** `def456` | **Passwort:** `test456`
+- **Hash-ID:** `ghi789` | **Passwort:** `test789`
+
+### Admin-Zugang
+- **Benutzername:** `admin`
+- **Passwort:** `admin123`
+
+## 🌟 Features
+
+- ✅ KI-gestützte Mitarbeiterjahresgespräche
+- ✅ Anonymisierte Datenspeicherung
+- ✅ PDF-Export-Funktionalität
+- ✅ Admin-Dashboard
+- ✅ Responsive Design
+- ✅ DSGVO-konform
+- ✅ Sichere HTTPS-Verbindung
+
+## 📞 Support
+
+Bei Problemen:
+1. Logs prüfen: `ssh root@188.68.48.168 "tail -f /var/www/omnireflect/logs/omnireflect.log"`
+2. Status prüfen: `ssh root@188.68.48.168 "systemctl status nginx"`
+3. GitHub Issues erstellen: https://github.com/Dubaiali/Omnireflect/issues
 
 ---
 
-**⚠️ WICHTIG:** Diese Checkliste vor jedem Deployment durchgehen! 
+**Letzte Aktualisierung:** 9. Juli 2025  
+**Version:** Omni3-Branch  
+**Deployment-Status:** ✅ Produktiv 
