@@ -102,6 +102,27 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validierung: Alle Pflichtfelder müssen ausgefüllt sein
+    if (formData.workAreas.length === 0) {
+      alert('Bitte wähle mindestens einen Arbeitsbereich aus.')
+      return
+    }
+    
+    if (formData.functions.length === 0) {
+      alert('Bitte wähle eine Funktion aus.')
+      return
+    }
+    
+    if (!formData.experienceYears) {
+      alert('Bitte wähle deine Erfahrungsjahre aus.')
+      return
+    }
+    
+    if (!formData.customerContact) {
+      alert('Bitte wähle aus, ob du im Kundenkontakt arbeitest.')
+      return
+    }
+    
     // Füge "Anderes" Felder hinzu, falls ausgefüllt
     const finalWorkAreas = [...formData.workAreas]
     if (formData.workAreas.includes('Anderes') && otherWorkArea.trim()) {

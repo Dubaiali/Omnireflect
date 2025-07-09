@@ -25,7 +25,8 @@ export default function QuestionForm() {
     saveFollowUpQuestions, 
     progress, 
     roleContext,
-    nextStep 
+    nextStep,
+    isAuthenticated
   } = useSessionStore()
 
   // Internetverbindungsprüfung
@@ -71,8 +72,29 @@ export default function QuestionForm() {
       setRetryCount(0)
     }
     
+    // Validierung: Prüfe ob roleContext vollständig ist
+    if (!roleContext || !roleContext.workAreas || !roleContext.functions || 
+        !roleContext.experienceYears || !roleContext.customerContact) {
+      console.error('DEBUG: roleContext ist unvollständig:', roleContext)
+      setHasError(true)
+      setQuestions([])
+      setIsLoadingQuestions(false)
+      router.push('/role-context')
+      return
+    }
+    
+    // Validierung: Prüfe ob functions Array nicht leer ist
+    if (!roleContext.functions || roleContext.functions.length === 0) {
+      console.error('DEBUG: functions Array ist leer:', roleContext.functions)
+      setHasError(true)
+      setQuestions([])
+      setIsLoadingQuestions(false)
+      router.push('/role-context')
+      return
+    }
+    
     try {
-      const personalizedQuestions = await generatePersonalizedQuestions(roleContext || undefined)
+      const personalizedQuestions = await generatePersonalizedQuestions(roleContext)
       setQuestions(personalizedQuestions)
       setHasError(false)
       
