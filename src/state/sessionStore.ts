@@ -19,6 +19,7 @@ interface SessionState {
     summary: string | null
   }
   roleContext: RoleContext | null
+  questions: any[] | null
   setHashId: (hashId: string) => void
   login: (hashId: string) => void
   logout: () => void
@@ -26,6 +27,7 @@ interface SessionState {
   saveFollowUpQuestions: (questionId: string, questions: string[]) => void
   saveSummary: (summary: string) => void
   saveRoleContext: (roleContext: RoleContext) => void
+  saveQuestions: (questions: any[]) => void
   nextStep: () => void
   resetProgress: () => void
 }
@@ -42,6 +44,7 @@ export const useSessionStore = create<SessionState>()(
         summary: null,
       },
       roleContext: null,
+      questions: null,
 
       setHashId: (hashId: string) => set({ hashId }),
       
@@ -55,7 +58,8 @@ export const useSessionStore = create<SessionState>()(
           summary: null,
         },
         // Behalte das roleContext bei, falls es bereits gesetzt ist
-        roleContext: state.roleContext
+        roleContext: state.roleContext,
+        questions: state.questions
       })),
       
       logout: () => set({ 
@@ -67,7 +71,8 @@ export const useSessionStore = create<SessionState>()(
           followUpQuestions: {},
           summary: null,
         },
-        roleContext: null
+        roleContext: null,
+        questions: null
       }),
 
       saveAnswer: (questionId: string, answer: string) => 
@@ -103,6 +108,9 @@ export const useSessionStore = create<SessionState>()(
       saveRoleContext: (roleContext: RoleContext) =>
         set({ roleContext }),
 
+      saveQuestions: (questions: any[]) =>
+        set({ questions }),
+
       nextStep: () =>
         set((state) => ({
           progress: {
@@ -122,7 +130,8 @@ export const useSessionStore = create<SessionState>()(
           // Behalte Authentifizierung und Rollenkontext bei
           hashId: state.hashId,
           isAuthenticated: state.isAuthenticated,
-          roleContext: state.roleContext
+          roleContext: state.roleContext,
+          questions: state.questions
         })),
     }),
     {
@@ -132,6 +141,7 @@ export const useSessionStore = create<SessionState>()(
         isAuthenticated: state.isAuthenticated,
         progress: state.progress,
         roleContext: state.roleContext,
+        questions: state.questions,
       }),
     }
   )

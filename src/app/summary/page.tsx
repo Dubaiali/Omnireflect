@@ -80,7 +80,7 @@ export default function SummaryPage() {
             <div className="flex justify-between items-center py-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Zusammenfassung & PDF-Export
+                  Meine Zusammenfassung
                 </h1>
                 <p className="text-sm text-gray-600">
                   Generiere eine KI-gestützte Zusammenfassung deiner Reflexion
@@ -135,27 +135,13 @@ export default function SummaryPage() {
           <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Zusammenfassung & PDF-Export
+                Meine Zusammenfassung
               </h1>
               <p className="text-sm text-gray-600">
                 Deine KI-gestützte Zusammenfassung ist bereit
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              {roleContext && (
-                <Link
-                  href="/role-context?edit=true"
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Rollenkontext bearbeiten
-                </Link>
-              )}
-              <Link
-                href="/questions"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Zurück zu Fragen
-              </Link>
               {isAuthenticated && (
                 <button
                   onClick={handleLogout}

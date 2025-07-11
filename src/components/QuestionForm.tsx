@@ -28,6 +28,8 @@ export default function QuestionForm() {
     saveFollowUpQuestions, 
     progress, 
     roleContext,
+    questions: storedQuestions,
+    saveQuestions,
     nextStep,
     isAuthenticated
   } = useSessionStore()
@@ -54,6 +56,13 @@ export default function QuestionForm() {
   const loadPersonalizedQuestions = async (isRetry = false) => {
     // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind
     if (questions.length > 0 && !isRetry) {
+      return
+    }
+    
+    // Prüfe ob bereits Fragen im Store gespeichert sind
+    if (storedQuestions && storedQuestions.length > 0 && !isRetry) {
+      setQuestions(storedQuestions)
+      setIsLoadingQuestions(false) // Stelle sicher, dass Ladezustand deaktiviert ist
       return
     }
     
@@ -104,6 +113,7 @@ export default function QuestionForm() {
       setLoadingProgress(100)
       
       setQuestions(personalizedQuestions)
+      saveQuestions(personalizedQuestions) // Speichere Fragen im Store
       setHasError(false)
       
       // Reset alle Formularfelder bei Neugenerierung
@@ -143,11 +153,18 @@ export default function QuestionForm() {
   }
 
   useEffect(() => {
+    // Prüfe zuerst, ob bereits Fragen im Store vorhanden sind
+    if (storedQuestions && storedQuestions.length > 0) {
+      setQuestions(storedQuestions)
+      setIsLoadingQuestions(false)
+      return
+    }
+    
     // Nur beim ersten Laden oder wenn keine Fragen vorhanden sind
     if (questions.length === 0) {
       loadPersonalizedQuestions()
     }
-  }, []) // Entferne roleContext aus den Dependencies
+  }, [storedQuestions]) // Füge storedQuestions zu den Dependencies hinzu
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)
@@ -367,6 +384,10 @@ export default function QuestionForm() {
 
   // Prüfe ob alle Fragen beantwortet wurden
   const allQuestionsAnswered = questions.every(question => isQuestionAnswered(question.id))
+  
+  // Zähle beantwortete Fragen
+  const answeredQuestionsCount = questions.filter(question => isQuestionAnswered(question.id)).length
+  const totalQuestionsCount = questions.length
 
   // Navigiere zu einer spezifischen Frage
   const navigateToQuestion = (index: number) => {
@@ -383,7 +404,7 @@ export default function QuestionForm() {
     <div className="max-w-4xl mx-auto p-4">
       {/* Erweiterte Navigation */}
       <div className="mb-4 bg-white rounded-lg shadow-md p-3">
-        <div className="flex items-center justify-center gap-1 -ml-8">
+        <div className="flex items-center justify-center gap-1">
           {/* Überschrift */}
           <h3 className="text-sm font-semibold text-gray-800 mr-4">
             Mein Fortschritt
@@ -443,16 +464,26 @@ export default function QuestionForm() {
             </button>
           ))}
           
-          {/* Separator und Zusammenfassung Button - nur anzeigen wenn alle Fragen beantwortet */}
-          {allQuestionsAnswered && (
+          {/* Separator und Zusammenfassung Button */}
+          {answeredQuestionsCount > 0 && (
             <>
               <div className="w-4 h-px bg-gray-300"></div>
               
               {/* Zusammenfassung Button */}
               <button
-                onClick={() => router.push('/summary')}
-                className="w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center bg-purple-100 text-purple-800 hover:bg-purple-200"
-                title="Zur Zusammenfassung"
+                onClick={() => allQuestionsAnswered && router.push('/summary')}
+                disabled={!allQuestionsAnswered}
+                className={`
+                  w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center
+                  ${allQuestionsAnswered 
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer' 
+                    : 'bg-orange-100 text-orange-800 cursor-not-allowed'
+                  }
+                `}
+                title={allQuestionsAnswered 
+                  ? "Zur Zusammenfassung (alle Fragen beantwortet)" 
+                  : `Zur Zusammenfassung (${answeredQuestionsCount}/${totalQuestionsCount} Fragen beantwortet) - erst verfügbar wenn alle Fragen beantwortet sind`
+                }
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -495,6 +526,8 @@ export default function QuestionForm() {
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
+        
+
       </div>
 
       {/* Navigation-Buttons */}
