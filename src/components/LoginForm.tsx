@@ -125,17 +125,7 @@ export default function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-semibold text-blue-800 mb-2">Hilfe bei der Anmeldung</h3>
-        <p className="text-sm text-blue-700 mb-2">
-          Falls du Probleme bei der Anmeldung hast, wende dich bitte an deine Führungskraft oder den IT-Support.
-        </p>
-        <p className="text-sm text-blue-700">
-          Deine Zugangsdaten wurden dir persönlich mitgeteilt und sind vertraulich zu behandeln.
-        </p>
-      </div>
-
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <h3 className="font-semibold text-gray-800 mb-2">Datenschutz & Sicherheit</h3>
         <p className="text-sm text-gray-700">
           Deine Daten werden anonymisiert gespeichert und sind nur dir und deiner Führungskraft zugänglich.
