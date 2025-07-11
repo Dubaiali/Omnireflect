@@ -221,17 +221,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
         {summary && (
           <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Deine Zusammenfassung:
-              </h3>
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                  {summary}
-                </div>
-              </div>
-            </div>
-
+            {/* Buttons und Erläuterungen nach oben verschoben */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleDownloadPDF}
@@ -262,6 +252,18 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                 <li>• Teile das PDF mit deiner Führungskraft vor dem Gespräch</li>
                 <li>• Deine Daten werden automatisch nach 30 Tagen gelöscht</li>
               </ul>
+            </div>
+
+            {/* Zusammenfassung nach unten verschoben */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Deine Zusammenfassung:
+              </h3>
+              <div className="prose max-w-none">
+                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                  {summary}
+                </div>
+              </div>
             </div>
           </div>
         )}
