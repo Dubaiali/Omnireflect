@@ -1,13 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSessionStore } from '@/state/sessionStore'
 import { generateSummary } from '@/lib/gpt'
 
-export default function PDFDownload() {
+interface PDFDownloadProps {
+  initialSummary?: string
+}
+
+export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
   const { progress, hashId, roleContext } = useSessionStore()
+
+  // Verwende initialSummary wenn verfügbar
+  useEffect(() => {
+    if (initialSummary) {
+      setSummary(initialSummary)
+    }
+  }, [initialSummary])
 
   const handleGenerateSummary = async () => {
     setIsGenerating(true)
