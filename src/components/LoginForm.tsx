@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
-import { validateHash } from '@/lib/hashList'
 
 export default function LoginForm() {
   const [hashId, setHashId] = useState('')
@@ -12,7 +11,15 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   
   const login = useSessionStore(state => state.login)
+  const resetProgress = useSessionStore(state => state.resetProgress)
   const router = useRouter()
+
+  // Formulareingaben beim Laden der Komponente löschen
+  useEffect(() => {
+    setHashId('')
+    setPassword('')
+    setError('')
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,16 +27,28 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const user = validateHash(hashId, password)
-      
-      if (user) {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hashId, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Alle vorherigen Daten zurücksetzen
+        resetProgress()
+        // Login durchführen
         login(hashId)
-        router.push('/questions')
+        // Zur Welcome-Seite navigieren
+        router.push('/welcome')
       } else {
-        setError('Ungültige Hash-ID oder Passwort')
+        setError(data.error || 'Ungültige Hash-ID oder Passwort')
       }
     } catch (err) {
-              setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
+      setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
     } finally {
       setIsLoading(false)
     }
@@ -83,13 +102,11 @@ export default function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-md">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Test-Zugangsdaten:</h3>
-        <div className="text-xs text-gray-600 space-y-1">
-          <div>Hash-ID: abc123 | Passwort: test123</div>
-          <div>Hash-ID: def456 | Passwort: test456</div>
-          <div>Hash-ID: ghi789 | Passwort: test789</div>
-        </div>
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h3 className="font-semibold text-blue-800 mb-2">Datenschutz & Sicherheit</h3>
+        <p className="text-sm text-blue-700">
+          Deine Daten werden anonymisiert gespeichert und sind nur dir und deiner Führungskraft zugänglich.
+        </p>
       </div>
     </div>
   )

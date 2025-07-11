@@ -1,20 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSessionStore } from '@/state/sessionStore'
 import { generateSummary } from '@/lib/gpt'
 
-export default function PDFDownload() {
+interface PDFDownloadProps {
+  initialSummary?: string
+}
+
+export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
-  const { progress, hashId } = useSessionStore()
+  const { progress, hashId, roleContext } = useSessionStore()
+
+  // Verwende initialSummary wenn verfügbar
+  useEffect(() => {
+    if (initialSummary) {
+      setSummary(initialSummary)
+    }
+  }, [initialSummary])
 
   const handleGenerateSummary = async () => {
     setIsGenerating(true)
     try {
       const generatedSummary = await generateSummary(
         progress.answers,
-        progress.followUpQuestions
+        progress.followUpQuestions,
+        roleContext || undefined
       )
       setSummary(generatedSummary)
     } catch (error) {
@@ -33,6 +45,19 @@ export default function PDFDownload() {
         <h1 style="color: #1f2937; text-align: center; margin-bottom: 30px;">
           Mitarbeiter:innen-Reflexion & Entwicklungsgespräch
         </h1>
+        
+        ${roleContext ? `
+        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
+          <h2 style="color: #1e40af; margin-bottom: 15px;">Rollenkontext</h2>
+          <div style="color: #1e3a8a; line-height: 1.6;">
+            <p><strong>Arbeitsbereich:</strong> ${roleContext.workAreas.join(', ')}</p>
+            <p><strong>Funktion:</strong> ${roleContext.functions.join(', ')}</p>
+            <p><strong>Erfahrung:</strong> ${roleContext.experienceYears}</p>
+            <p><strong>Kundenkontakt:</strong> ${roleContext.customerContact}</p>
+            ${roleContext.dailyTasks ? `<p><strong>Tägliche Aufgaben:</strong> ${roleContext.dailyTasks}</p>` : ''}
+          </div>
+        </div>
+        ` : ''}
         
         <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
           <h2 style="color: #374151; margin-bottom: 15px;">Zusammenfassung der Selbstreflexion</h2>

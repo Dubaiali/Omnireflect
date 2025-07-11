@@ -7,21 +7,24 @@ import QuestionForm from '@/components/QuestionForm'
 import Link from 'next/link'
 
 export default function QuestionsPage() {
-  const { isAuthenticated, logout } = useSessionStore()
+  const { isAuthenticated, logout, roleContext } = useSessionStore()
   const router = useRouter()
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login')
+    } else if (!roleContext) {
+      // Wenn Rollenkontext nicht ausgefüllt ist, zur Welcome-Seite weiterleiten
+      router.push('/welcome')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, roleContext, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !roleContext) {
     return null
   }
 
@@ -32,20 +35,20 @@ export default function QuestionsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <button
+                onClick={() => {
+                  logout()
+                  router.push('/')
+                }}
+                className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+              >
                 OmniReflect
-              </h1>
+              </button>
               <p className="text-sm text-gray-600">
                 Beantworte die Fragen zur Vorbereitung deines Mitarbeiterjahresgesprächs
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/summary"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Zur Zusammenfassung
-              </Link>
               <button
                 onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-800 text-sm font-medium"

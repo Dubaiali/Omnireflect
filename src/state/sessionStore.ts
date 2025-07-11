@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+interface RoleContext {
+  workAreas: string[]
+  functions: string[]
+  experienceYears: string
+  customerContact: string
+  dailyTasks: string
+}
+
 interface SessionState {
   hashId: string | null
   isAuthenticated: boolean
@@ -10,12 +18,14 @@ interface SessionState {
     followUpQuestions: Record<string, string[]>
     summary: string | null
   }
+  roleContext: RoleContext | null
   setHashId: (hashId: string) => void
   login: (hashId: string) => void
   logout: () => void
   saveAnswer: (questionId: string, answer: string) => void
   saveFollowUpQuestions: (questionId: string, questions: string[]) => void
   saveSummary: (summary: string) => void
+  saveRoleContext: (roleContext: RoleContext) => void
   nextStep: () => void
   resetProgress: () => void
 }
@@ -31,13 +41,22 @@ export const useSessionStore = create<SessionState>()(
         followUpQuestions: {},
         summary: null,
       },
+      roleContext: null,
 
       setHashId: (hashId: string) => set({ hashId }),
       
-      login: (hashId: string) => set({ 
+      login: (hashId: string) => set((state) => ({ 
         hashId, 
-        isAuthenticated: true 
-      }),
+        isAuthenticated: true,
+        progress: {
+          currentStep: 0,
+          answers: {},
+          followUpQuestions: {},
+          summary: null,
+        },
+        // Behalte das roleContext bei, falls es bereits gesetzt ist
+        roleContext: state.roleContext
+      })),
       
       logout: () => set({ 
         hashId: null, 
@@ -47,7 +66,8 @@ export const useSessionStore = create<SessionState>()(
           answers: {},
           followUpQuestions: {},
           summary: null,
-        }
+        },
+        roleContext: null
       }),
 
       saveAnswer: (questionId: string, answer: string) => 
@@ -80,6 +100,9 @@ export const useSessionStore = create<SessionState>()(
           }
         })),
 
+      saveRoleContext: (roleContext: RoleContext) =>
+        set({ roleContext }),
+
       nextStep: () =>
         set((state) => ({
           progress: {
@@ -95,7 +118,11 @@ export const useSessionStore = create<SessionState>()(
             answers: {},
             followUpQuestions: {},
             summary: null,
-          }
+          },
+          // Behalte Authentifizierung und Rollenkontext bei
+          hashId: state.hashId,
+          isAuthenticated: state.isAuthenticated,
+          roleContext: state.roleContext
         })),
     }),
     {
@@ -104,6 +131,7 @@ export const useSessionStore = create<SessionState>()(
         hashId: state.hashId,
         isAuthenticated: state.isAuthenticated,
         progress: state.progress,
+        roleContext: state.roleContext,
       }),
     }
   )
