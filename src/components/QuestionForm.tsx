@@ -194,8 +194,19 @@ export default function QuestionForm() {
     
     // Lade gespeicherte Follow-up-Fragen
     const savedFollowUps = progress.followUpQuestions[currentQuestion.id]
-    if (savedFollowUps) {
+    if (savedFollowUps && savedFollowUps.length > 0) {
       setFollowUpQuestions(savedFollowUps)
+      setShowFollowUp(true)
+      
+      // Lade gespeicherte Follow-up-Antworten
+      const savedFollowUpAnswers: Record<string, string> = {}
+      savedFollowUps.forEach((_, index) => {
+        const followUpAnswer = progress.answers[`${currentQuestion.id}_followup_${index}`]
+        if (followUpAnswer) {
+          savedFollowUpAnswers[index] = followUpAnswer
+        }
+      })
+      setFollowUpAnswers(savedFollowUpAnswers)
     } else {
       // Reset followUpQuestions wenn keine gespeicherten Follow-ups vorhanden sind
       setFollowUpQuestions([])
@@ -243,9 +254,9 @@ export default function QuestionForm() {
     if (!currentQuestion) return
     
     // Speichere Follow-up-Antworten
-    Object.entries(followUpAnswers).forEach(([question, answer]) => {
+    Object.entries(followUpAnswers).forEach(([index, answer]) => {
       if (answer.trim()) {
-        saveAnswer(`${currentQuestion.id}_followup_${question}`, answer)
+        saveAnswer(`${currentQuestion.id}_followup_${index}`, answer)
       }
     })
 
@@ -253,9 +264,7 @@ export default function QuestionForm() {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
       setCurrentAnswer('')
-      setFollowUpQuestions([])
-      setShowFollowUp(false)
-      setFollowUpAnswers({})
+      // Follow-ups werden automatisch durch useEffect geladen
       nextStep()
     } else {
       // Alle Fragen beantwortet - zur Zusammenfassung
@@ -272,9 +281,7 @@ export default function QuestionForm() {
     // Springe direkt zur letzten Frage
     setCurrentQuestionIndex(questions.length - 1)
     setCurrentAnswer('')
-    setFollowUpQuestions([])
-    setShowFollowUp(false)
-    setFollowUpAnswers({})
+    // Follow-ups werden automatisch durch useEffect geladen
   }
 
   if (isLoadingQuestions) {
@@ -408,10 +415,7 @@ export default function QuestionForm() {
   const navigateToQuestion = (index: number) => {
     if (index >= 0 && index < questions.length) {
       setCurrentQuestionIndex(index)
-      // Antwort wird automatisch durch useEffect geladen
-      setFollowUpQuestions([])
-      setShowFollowUp(false)
-      setFollowUpAnswers({})
+      // Antwort und Follow-ups werden automatisch durch useEffect geladen
     }
   }
 
@@ -635,35 +639,60 @@ export default function QuestionForm() {
       {/* Follow-up-Fragen */}
       {showFollowUp && followUpQuestions.length > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-          <h3 className="text-md font-semibold text-green-800 mb-3">
+          <h3 className="text-md font-semibold text-green-800 mb-3 flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
             Vertiefende Nachfragen:
           </h3>
           
           <div className="space-y-3">
-            {followUpQuestions.map((question, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-green-700 mb-1">
-                  {question}
-                </label>
-                <textarea
-                  value={followUpAnswers[index] || ''}
-                  onChange={(e) => setFollowUpAnswers({
-                    ...followUpAnswers,
-                    [index]: e.target.value
-                  })}
-                  className="w-full h-16 p-3 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Deine Antwort..."
-                />
-              </div>
-            ))}
+            {followUpQuestions.map((question, index) => {
+              const hasAnswer = followUpAnswers[index] && followUpAnswers[index].trim().length > 0
+              return (
+                <div key={index}>
+                  <label className="block text-sm font-medium text-green-700 mb-1 flex items-center">
+                    {question}
+                    {hasAnswer && (
+                      <svg className="w-4 h-4 ml-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </label>
+                  <textarea
+                    value={followUpAnswers[index] || ''}
+                    onChange={(e) => setFollowUpAnswers({
+                      ...followUpAnswers,
+                      [index]: e.target.value
+                    })}
+                    className={`w-full h-16 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                      hasAnswer ? 'border-green-400 bg-green-50' : 'border-green-300'
+                    }`}
+                    placeholder="Deine Antwort..."
+                  />
+                </div>
+              )
+            })}
           </div>
 
-          <button
-            onClick={handleFollowUpSubmit}
-            className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
-          >
-            {currentQuestionIndex < questions.length - 1 ? 'Nächste Frage' : 'Zur Zusammenfassung'}
-          </button>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handleFollowUpSubmit}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+            >
+              {currentQuestionIndex < questions.length - 1 ? 'Nächste Frage' : 'Zur Zusammenfassung'}
+            </button>
+            
+            {/* Zeige Status der Follow-up-Antworten */}
+            {Object.values(followUpAnswers).some(answer => answer.trim().length > 0) && (
+              <span className="text-sm text-green-600 flex items-center space-x-1">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Nachfragen beantwortet</span>
+              </span>
+            )}
+          </div>
         </div>
       )}
 
