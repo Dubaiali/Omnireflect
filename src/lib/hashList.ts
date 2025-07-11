@@ -21,24 +21,24 @@ function loadHashList(): HashEntry[] {
     // Fallback für Entwicklung
     return [
       {
-        hashId: 'abc123',
-        password: hashPassword('test123'),
-        name: 'Max Mustermann',
+        hashId: 'user',
+        password: hashPassword('user123'),
+        name: 'Test User',
         department: 'IT',
         status: 'pending',
       },
       {
-        hashId: 'def456',
-        password: hashPassword('test456'),
-        name: 'Anna Schmidt',
+        hashId: 'demo',
+        password: hashPassword('demo123'),
+        name: 'Demo User',
         department: 'Marketing',
         status: 'in_progress',
         lastAccess: '2024-01-15T10:30:00Z',
       },
       {
-        hashId: 'ghi789',
-        password: hashPassword('test789'),
-        name: 'Tom Weber',
+        hashId: 'test',
+        password: hashPassword('test123'),
+        name: 'Test Account',
         department: 'Sales',
         status: 'completed',
         lastAccess: '2024-01-14T15:45:00Z',
