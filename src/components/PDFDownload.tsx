@@ -13,7 +13,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
   const [showResetWarning, setShowResetWarning] = useState(false)
-  const { progress, hashId, roleContext } = useSessionStore()
+  const { progress, hashId, roleContext, questions: storedQuestions } = useSessionStore()
   const router = useRouter()
 
   // Verwende initialSummary wenn verfügbar
@@ -29,7 +29,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       const generatedSummary = await generateSummary(
         progress.answers,
         progress.followUpQuestions,
-        roleContext || undefined
+        roleContext || undefined,
+        storedQuestions || undefined
       )
       setSummary(generatedSummary)
     } catch (error) {
@@ -41,6 +42,99 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   }
 
   const handleDownloadPDF = () => {
+    // Erstelle HTML für Fragen und Antworten
+    let questionsAndAnswersHTML = ''
+    if (storedQuestions && storedQuestions.length > 0) {
+      questionsAndAnswersHTML = `
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #10b981;">
+          <h2 style="color: #065f46; margin-bottom: 20px;">Fragen und Antworten</h2>
+          <div style="color: #064e3b; line-height: 1.6;">
+      `
+      
+      storedQuestions.forEach((question, index) => {
+        const answer = progress.answers[question.id]
+        const followUpQuestions = progress.followUpQuestions[question.id] || []
+        
+        questionsAndAnswersHTML += `
+          <div style="margin-bottom: 25px; padding: 15px; background-color: white; border-radius: 6px; border: 1px solid #e5e7eb;">
+            <div style="margin-bottom: 10px;">
+              <span style="background-color: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">
+                ${question.category}
+              </span>
+            </div>
+            <h3 style="color: #1f2937; font-size: 16px; font-weight: 600; margin-bottom: 10px;">
+              Frage ${index + 1}: ${question.question}
+            </h3>
+        `
+        
+        if (answer) {
+          questionsAndAnswersHTML += `
+            <div style="margin-bottom: 10px;">
+              <strong style="color: #374151;">Antwort:</strong>
+              <div style="background-color: #f3f4f6; padding: 10px; border-radius: 4px; margin-top: 5px; white-space: pre-wrap;">
+                ${answer}
+              </div>
+            </div>
+          `
+        } else {
+          questionsAndAnswersHTML += `
+            <div style="margin-bottom: 10px;">
+              <em style="color: #6b7280;">Nicht beantwortet</em>
+            </div>
+          `
+        }
+        
+        // Follow-up Fragen und Antworten
+        if (followUpQuestions.length > 0) {
+          questionsAndAnswersHTML += `
+            <div style="margin-top: 10px;">
+              <strong style="color: #374151;">Vertiefende Nachfragen:</strong>
+          `
+          
+          followUpQuestions.forEach((followUpQuestion, followUpIndex) => {
+            const followUpAnswer = progress.answers[`${question.id}_followup_${followUpIndex}`]
+            questionsAndAnswersHTML += `
+              <div style="margin-top: 8px; padding: 8px; background-color: #f0fdf4; border-radius: 4px;">
+                <div style="font-weight: 500; color: #166534; margin-bottom: 5px;">
+                  ${followUpQuestion}
+                </div>
+            `
+            
+            if (followUpAnswer) {
+              questionsAndAnswersHTML += `
+                <div style="color: #15803d; font-style: italic;">
+                  ${followUpAnswer}
+                </div>
+              `
+            } else {
+              questionsAndAnswersHTML += `
+                <div style="color: #6b7280; font-style: italic;">
+                  Nicht beantwortet
+                </div>
+              `
+            }
+            
+            questionsAndAnswersHTML += `
+              </div>
+            `
+          })
+          
+          questionsAndAnswersHTML += `
+            </div>
+          `
+        }
+        
+        questionsAndAnswersHTML += `
+          </div>
+        `
+      })
+      
+      questionsAndAnswersHTML += `
+          </div>
+        </div>
+      `
+    }
+
     // Einfache PDF-Generierung mit Browser-API
     const element = document.createElement('div')
     element.innerHTML = `
@@ -61,6 +155,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
           </div>
         </div>
         ` : ''}
+        
+        ${questionsAndAnswersHTML}
         
         <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
           <h2 style="color: #374151; margin-bottom: 15px;">Zusammenfassung der Selbstreflexion</h2>

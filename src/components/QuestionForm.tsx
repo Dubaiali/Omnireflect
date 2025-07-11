@@ -59,10 +59,11 @@ export default function QuestionForm() {
       return
     }
     
-    // Prüfe ob bereits Fragen im Store gespeichert sind
+    // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry überspringen)
     if (storedQuestions && storedQuestions.length > 0 && !isRetry) {
+      console.log('DEBUG: Using stored questions instead of generating')
       setQuestions(storedQuestions)
-      setIsLoadingQuestions(false) // Stelle sicher, dass Ladezustand deaktiviert ist
+      setIsLoadingQuestions(false)
       return
     }
     
@@ -107,7 +108,10 @@ export default function QuestionForm() {
     }
     
     try {
+      console.log('DEBUG: Starting question generation...')
       const personalizedQuestions = await generatePersonalizedQuestions(roleContext)
+      console.log('DEBUG: Questions generated successfully:', personalizedQuestions.length)
+      
       // Beende Progress-Animation
       clearInterval(progressInterval)
       setLoadingProgress(100)
@@ -153,18 +157,21 @@ export default function QuestionForm() {
   }
 
   useEffect(() => {
-    // Prüfe zuerst, ob bereits Fragen im Store vorhanden sind
-    if (storedQuestions && storedQuestions.length > 0) {
-      setQuestions(storedQuestions)
-      setIsLoadingQuestions(false)
-      return
-    }
+    console.log('DEBUG: useEffect triggered - questions.length:', questions.length, 'storedQuestions:', storedQuestions?.length)
     
-    // Nur beim ersten Laden oder wenn keine Fragen vorhanden sind
+    // Intelligente Fragen-Logik: Nur neu generieren wenn nötig
     if (questions.length === 0) {
-      loadPersonalizedQuestions()
+      // Prüfe ob Fragen im Store vorhanden sind und Rollenkontext gleich ist
+      if (storedQuestions && storedQuestions.length > 0) {
+        console.log('DEBUG: Loading existing questions from store')
+        setQuestions(storedQuestions)
+        setIsLoadingQuestions(false)
+      } else {
+        console.log('DEBUG: No stored questions found - generating new ones')
+        loadPersonalizedQuestions()
+      }
     }
-  }, [storedQuestions]) // Füge storedQuestions zu den Dependencies hinzu
+  }, [questions.length, storedQuestions]) // Beide Dependencies für intelligente Entscheidung
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)
@@ -180,12 +187,20 @@ export default function QuestionForm() {
     const savedAnswer = progress.answers[currentQuestion.id]
     if (savedAnswer) {
       setCurrentAnswer(savedAnswer)
+    } else {
+      // Reset currentAnswer wenn keine gespeicherte Antwort vorhanden ist
+      setCurrentAnswer('')
     }
     
     // Lade gespeicherte Follow-up-Fragen
     const savedFollowUps = progress.followUpQuestions[currentQuestion.id]
     if (savedFollowUps) {
       setFollowUpQuestions(savedFollowUps)
+    } else {
+      // Reset followUpQuestions wenn keine gespeicherten Follow-ups vorhanden sind
+      setFollowUpQuestions([])
+      setShowFollowUp(false)
+      setFollowUpAnswers({})
     }
   }, [currentQuestionIndex, currentQuestion, progress])
 

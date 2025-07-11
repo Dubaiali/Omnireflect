@@ -84,7 +84,8 @@ export async function generateFollowUpQuestions(
 export async function generateSummary(
   answers: Record<string, string>,
   followUpQuestions: Record<string, string[]>,
-  roleContext?: RoleContext
+  roleContext?: RoleContext,
+  questions?: Question[]
 ): Promise<string> {
   try {
     const response = await fetch('/api/gpt/summary', {
@@ -92,7 +93,7 @@ export async function generateSummary(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ answers, followUpQuestions, roleContext }),
+      body: JSON.stringify({ answers, followUpQuestions, roleContext, questions }),
     })
 
     if (!response.ok) {
