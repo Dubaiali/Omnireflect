@@ -1,200 +1,240 @@
-# OmniReflect - Mitarbeiter:innen-Reflexion & Mitarbeiterjahresgespräch
+# Omnireflect
 
-Eine datenschutzkonforme, KI-gestützte Plattform für Mitarbeiter:innen zur Vorbereitung auf Mitarbeiterjahresgespräche.
+Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
-## 🎯 Ziel
+## 🌐 Live-Anwendung
 
-Die Plattform ermöglicht es Mitarbeiter:innen, sich gezielt auf ihr Mitarbeiterjahresgespräch vorzubereiten durch:
-
-- **Anonymisierten Zugang** via Hash-ID + Passwort
-- **Persönliche Reflexionsfragen** zu Rollenverständnis, Selbstwahrnehmung und Entwicklungswünschen
-- **KI-gestützte Nachfragen** für mehr Tiefenschärfe (GPT-4)
-- **Empathische Zusammenfassung** aus Antworten und GPT-Rückfragen
-- **PDF-Export** für die Mitarbeiter:in
-- **Admin-Dashboard** für Führungskräfte mit vollständigem Datenschutz
+**Produktionsumgebung:** https://reflect.omni-scient.com
 
 ## 🚀 Features
 
-### Für Mitarbeiter:innen
-- ✅ Sichere Anmeldung mit Hash-ID und Passwort
-- ✅ 10 strukturierte Reflexionsfragen in verschiedenen Kategorien
-- ✅ KI-generierte Follow-up-Fragen für vertiefende Selbstreflexion
-- ✅ Automatische Speicherung des Fortschritts
-- ✅ KI-gestützte Zusammenfassung der Reflexion
-- ✅ PDF-Export für Gesprächsvorbereitung
-
-### Für Führungskräfte (Admin)
-- ✅ Übersicht aller Mitarbeiter:innen-Reflexionen
-- ✅ Status-Tracking (Ausstehend, In Bearbeitung, Abgeschlossen)
-- ✅ PDF-Download für alle abgeschlossenen Reflexionen
-- ✅ Detailansicht mit Antworten und Zusammenfassungen
-- ✅ Vollständige Anonymisierung (keine Klarnamen im System)
+- ✅ KI-gestützte Mitarbeiterjahresgespräche
+- ✅ Anonymisierte Datenspeicherung
+- ✅ PDF-Export-Funktionalität
+- ✅ Admin-Dashboard
+- ✅ Responsive Design
+- ✅ DSGVO-konform
+- ✅ Sichere HTTPS-Verbindung
 
 ## 🛠️ Technologie-Stack
 
-- **Frontend**: Next.js 14 mit App Router
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand mit Persistierung
-- **KI-Integration**: OpenAI GPT-4
-- **PDF-Generierung**: Browser-native Print-API
-- **Authentifizierung**: Hash-ID + Passwort System
-- **Datenspeicherung**: Lokale Speicherung (MVP)
+- **Frontend:** Next.js 15.3.5, React, TypeScript
+- **Styling:** Tailwind CSS
+- **AI:** OpenAI GPT-4 API
+- **Server:** Nginx, Let's Encrypt SSL
+- **Deployment:** SSH, PM2 (optional)
 
-## 📦 Installation
+## 📋 Voraussetzungen
 
-1. **Repository klonen**
-   ```bash
-       git clone <repository-url>
-    cd omnireflect
-   ```
+- Node.js 18+
+- npm oder yarn
+- SSH-Zugang zum Server
+- OpenAI API-Key
 
-2. **Dependencies installieren**
-   ```bash
-   npm install
-   ```
+## 🔧 Lokale Entwicklung
 
-3. **Umgebungsvariablen konfigurieren**
-   ```bash
-   # .env.local erstellen
-   OPENAI_API_KEY=your-openai-api-key-here
-   ```
+### Installation
 
-4. **Entwicklungsserver starten**
-   ```bash
-   npm run dev
-   ```
+```bash
+# Repository klonen
+git clone https://github.com/Dubaiali/Omnireflect.git
+cd Omnireflect
 
-5. **Browser öffnen**
-   ```
-   http://localhost:3000
-   ```
+# Branch wechseln
+git checkout Omni3
 
-## 🔐 Zugangsdaten
+# Dependencies installieren
+npm install
 
-### Test-Mitarbeiter:innen
-- **Hash-ID**: `abc123` | **Passwort**: `test123`
-- **Hash-ID**: `def456` | **Passwort**: `test456`
-- **Hash-ID**: `ghi789` | **Passwort**: `test789`
-
-### Admin-Zugang
-- **Benutzername**: `admin`
-- **Passwort**: `admin123`
-
-## 📁 Projektstruktur
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── login/             # Login-Seite
-│   ├── questions/         # Fragebogen-Seite
-│   ├── summary/           # Zusammenfassung-Seite
-│   ├── admin/             # Admin-Dashboard
-│   └── page.tsx           # Startseite
-├── components/            # React-Komponenten
-│   ├── LoginForm.tsx      # Login-Formular
-│   ├── QuestionForm.tsx   # Fragebogen-Komponente
-│   ├── PDFDownload.tsx    # PDF-Export-Komponente
-│   └── AdminTable.tsx     # Admin-Tabelle
-├── lib/                   # Utility-Funktionen
-│   ├── hashList.ts        # Hash-IDs und Passwörter
-│   ├── gpt.ts            # OpenAI GPT-Integration
-│   └── storage.ts        # Datenspeicherung
-└── state/                # Zustand-Management
-    └── sessionStore.ts   # Zustand-Store
+# Umgebungsvariablen konfigurieren
+cp env.example .env.local
+# OPENAI_API_KEY in .env.local eintragen
 ```
 
-## 🔄 Workflow
+### Entwicklungsserver starten
 
-1. **Mitarbeiter:in meldet sich an** mit Hash-ID und Passwort
-2. **Beantwortung der Reflexionsfragen** mit KI-Follow-ups
-3. **Automatische Speicherung** des Fortschritts
-4. **Generierung der Zusammenfassung** mit GPT-4
-5. **PDF-Export** für Gesprächsvorbereitung
-6. **Admin-Übersicht** für Führungskräfte
-
-## 🛡️ Datenschutz & Sicherheit
-
-- **Anonymisierung**: Keine Klarnamen im System
-- **Hash-basierte Identifikation**: Sichere Identifikation ohne personenbezogene Daten
-- **Lokale Speicherung**: Daten bleiben im Browser (MVP)
-- **Automatische Löschung**: Daten werden nach 30 Tagen gelöscht
-- **DSGVO-konform**: Minimale Datenerhebung, Zweckbindung
-
-## 🚀 Deployment
-
-### Lokale Entwicklung
 ```bash
 npm run dev
 ```
 
-### Produktion
+Die Anwendung ist dann unter http://localhost:3000 erreichbar.
+
+### Build erstellen
+
 ```bash
 npm run build
 npm start
 ```
 
-### Umgebungsvariablen für Produktion
+## 🚀 Deployment
+
+### Schnellstart
+
 ```bash
-OPENAI_API_KEY=your-production-api-key
-NODE_ENV=production
+# Deployment-Skript ausführen
+./deploy-production.sh
 ```
 
-## 🔧 Konfiguration
+### Manuelles Deployment
 
-### Hash-IDs hinzufügen
-Bearbeiten Sie `src/lib/hashList.ts`:
-```typescript
-export const hashList: HashEntry[] = [
-  {
-    hashId: 'neue-hash-id',
-    password: 'sicheres-passwort',
-    name: 'Max Mustermann',
-    department: 'IT',
-    status: 'pending',
-  },
-  // ...
-]
+Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für detaillierte Anweisungen.
+
+## 📊 Monitoring & Wartung
+
+### Status prüfen
+
+```bash
+# Einmaliges Monitoring
+./monitor.sh
+
+# Mit Logs
+./monitor.sh --logs
+
+# Kontinuierliches Monitoring
+./monitor.sh --watch
 ```
 
-### Fragen anpassen
-Bearbeiten Sie `src/components/QuestionForm.tsx`:
-```typescript
-const questions = [
-  {
-    id: 'neue-frage',
-    question: 'Ihre neue Frage hier?',
-    category: 'Neue Kategorie'
-  },
-  // ...
-]
+### Rollback (bei Problemen)
+
+```bash
+# Neuestes Backup wiederherstellen
+./rollback.sh
+
+# Spezifisches Backup wiederherstellen
+./rollback.sh omnireflect-20250109-143022.tar.gz
+
+# Verfügbare Backups anzeigen
+./rollback.sh --list
 ```
+
+## 🔐 Zugangsdaten
+
+### Test-Mitarbeiter
+- **Hash-ID:** `abc123` | **Passwort:** `test123`
+- **Hash-ID:** `def456` | **Passwort:** `test456`
+- **Hash-ID:** `ghi789` | **Passwort:** `test789`
+
+### Admin-Zugang
+- **Benutzername:** `admin`
+- **Passwort:** `admin123`
+
+## 📁 Projektstruktur
+
+```
+Omnireflect/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── admin/          # Admin-Dashboard
+│   │   ├── api/            # API-Routes
+│   │   ├── login/          # Login-Seite
+│   │   ├── questions/      # Fragen-Seite
+│   │   ├── summary/        # Zusammenfassung
+│   │   └── welcome/        # Willkommensseite
+│   ├── components/         # React-Komponenten
+│   ├── lib/               # Utilities und Services
+│   └── state/             # Zustandsverwaltung
+├── public/                # Statische Dateien
+├── deploy-production.sh   # Produktions-Deployment
+├── rollback.sh           # Rollback-Skript
+├── monitor.sh            # Monitoring-Skript
+└── DEPLOYMENT.md         # Deployment-Dokumentation
+```
+
+## 🔧 Skripte
+
+### Deployment-Skripte
+
+- `deploy-production.sh` - Vollständiges Produktions-Deployment
+- `rollback.sh` - Rollback bei Problemen
+- `monitor.sh` - Anwendungs-Monitoring
+
+### Verwendung
+
+```bash
+# Deployment
+./deploy-production.sh
+
+# Monitoring
+./monitor.sh --watch
+
+# Rollback
+./rollback.sh --list
+./rollback.sh
+```
+
+## 🌟 Features im Detail
+
+### KI-gestützte Gesprächsvorbereitung
+- Automatische Generierung von Fragen basierend auf Rolle und Kontext
+- Personalisierte Zusammenfassungen
+- Intelligente Nachfragen
+
+### Datenschutz
+- Anonymisierte Datenspeicherung
+- DSGVO-konforme Verarbeitung
+- Sichere HTTPS-Verbindung
+
+### Benutzerfreundlichkeit
+- Responsive Design für alle Geräte
+- Intuitive Benutzeroberfläche
+- PDF-Export-Funktionalität
+
+## 🚨 Troubleshooting
+
+### Häufige Probleme
+
+1. **Anwendung startet nicht**
+   ```bash
+   ./monitor.sh --logs
+   ssh root@188.68.48.168 "tail -f /var/www/omnireflect/logs/omnireflect.log"
+   ```
+
+2. **SSL-Probleme**
+   ```bash
+   ssh root@188.68.48.168 "certbot certificates"
+   ssh root@188.68.48.168 "certbot --nginx -d reflect.omni-scient.com"
+   ```
+
+3. **Nginx-Fehler**
+   ```bash
+   ssh root@188.68.48.168 "nginx -t"
+   ssh root@188.68.48.168 "systemctl status nginx"
+   ```
+
+### Support
+
+Bei Problemen:
+1. Logs prüfen: `./monitor.sh --logs`
+2. Status prüfen: `./monitor.sh`
+3. GitHub Issues erstellen: https://github.com/Dubaiali/Omnireflect/issues
+
+## 📈 Roadmap
+
+- [ ] Datenbank-Integration (Firebase/Supabase)
+- [ ] Erweiterte Analytics
+- [ ] Multi-Sprach-Support
+- [ ] Mobile App
+- [ ] API-Dokumentation
 
 ## 🤝 Beitragen
 
-1. Fork des Repositories
-2. Feature-Branch erstellen (`git checkout -b feature/AmazingFeature`)
-3. Änderungen committen (`git commit -m 'Add some AmazingFeature'`)
-4. Branch pushen (`git push origin feature/AmazingFeature`)
-5. Pull Request erstellen
+1. Fork das Repository
+2. Erstelle einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
+3. Committe deine Änderungen (`git commit -m 'Add some AmazingFeature'`)
+4. Push zum Branch (`git push origin feature/AmazingFeature`)
+5. Öffne einen Pull Request
 
-## 📝 Lizenz
+## 📄 Lizenz
 
 Dieses Projekt ist unter der MIT-Lizenz lizenziert.
 
-## 🆘 Support
+## 📞 Kontakt
 
-Bei Fragen oder Problemen:
-1. Issues im Repository erstellen
-2. Dokumentation durchsuchen
-3. Admin-Kontakt für technische Unterstützung
+- **GitHub:** https://github.com/Dubaiali/Omnireflect
+- **Live-Anwendung:** https://reflect.omni-scient.com
 
-## 🔮 Roadmap
+---
 
-- [ ] Firebase/Supabase Integration für persistente Datenspeicherung
-- [ ] Erweiterte PDF-Templates
-- [ ] Mehrsprachigkeit (EN/DE)
-- [ ] Mobile App
-- [ ] Integration mit HR-Systemen
-- [ ] Erweiterte Analytics für Führungskräfte
-- [ ] Automatische Erinnerungen
-- [ ] Team-basierte Reflexionen
+**Letzte Aktualisierung:** 9. Juli 2025  
+**Version:** Omni3-Branch  
+**Status:** ✅ Produktiv

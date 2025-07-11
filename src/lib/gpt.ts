@@ -1,16 +1,64 @@
 export interface FollowUpRequest {
   question: string
   answer: string
+  roleContext?: RoleContext
 }
 
 export interface SummaryRequest {
   answers: Record<string, string>
   followUpQuestions: Record<string, string[]>
+  roleContext?: RoleContext
+}
+
+export interface RoleContext {
+  workAreas: string[]
+  functions: string[]
+  experienceYears: string
+  customerContact: string
+  dailyTasks: string
+}
+
+export interface Question {
+  id: string
+  question: string
+  category: string
+}
+
+export async function generatePersonalizedQuestions(
+  roleContext?: RoleContext
+): Promise<Question[]> {
+  try {
+    const response = await fetch('/api/gpt/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ roleContext }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      
+      // Spezifische Behandlung von Rate Limit Fehlern
+      if (errorData.error && errorData.error.includes('Rate limit')) {
+        throw new Error('Rate limit überschritten. Bitte warte einen Moment und versuche es erneut.')
+      }
+      
+      throw new Error(errorData.error || 'API-Anfrage fehlgeschlagen')
+    }
+
+    const data = await response.json()
+    return data.questions || []
+  } catch (error) {
+    console.error('Fehler bei der Fragen-Generierung:', error)
+    throw error // Fehler weiterwerfen, damit das Frontend ihn behandeln kann
+  }
 }
 
 export async function generateFollowUpQuestions(
   question: string,
-  answer: string
+  answer: string,
+  roleContext?: RoleContext
 ): Promise<string[]> {
   try {
     const response = await fetch('/api/gpt/followup', {
@@ -18,7 +66,7 @@ export async function generateFollowUpQuestions(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question, answer }),
+      body: JSON.stringify({ question, answer, roleContext }),
     })
 
     if (!response.ok) {
@@ -29,16 +77,14 @@ export async function generateFollowUpQuestions(
     return data.questions || []
   } catch (error) {
     console.error('Fehler bei der GPT-Anfrage:', error)
-    return [
-      'Können Sie das noch etwas genauer erklären?',
-      'Was bedeutet das für Ihre zukünftige Entwicklung?'
-    ]
+    throw error // Fehler weiterwerfen, damit das Frontend ihn behandeln kann
   }
 }
 
 export async function generateSummary(
   answers: Record<string, string>,
-  followUpQuestions: Record<string, string[]>
+  followUpQuestions: Record<string, string[]>,
+  roleContext?: RoleContext
 ): Promise<string> {
   try {
     const response = await fetch('/api/gpt/summary', {
@@ -46,7 +92,7 @@ export async function generateSummary(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ answers, followUpQuestions }),
+      body: JSON.stringify({ answers, followUpQuestions, roleContext }),
     })
 
     if (!response.ok) {

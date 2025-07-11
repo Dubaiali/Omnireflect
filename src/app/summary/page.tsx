@@ -1,28 +1,91 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 import PDFDownload from '@/components/PDFDownload'
 import Link from 'next/link'
 
 export default function SummaryPage() {
-  const { isAuthenticated, logout } = useSessionStore()
+  const { isAuthenticated, logout, roleContext, progress, hashId } = useSessionStore()
   const router = useRouter()
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [summary, setSummary] = useState<string>('')
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
+    // Wenn keine Antworten vorhanden sind, zurück zu den Fragen
+    if (!progress.answers || Object.keys(progress.answers).length === 0) {
+      router.push('/questions')
+      return
     }
-  }, [isAuthenticated, router])
+
+    // Wenn keine Zusammenfassung vorhanden ist, automatisch generieren
+    if (!summary && !isGenerating && progress.answers && Object.keys(progress.answers).length > 0) {
+      handleAutoGenerateSummary()
+    }
+  }, [progress.answers, summary, isGenerating, router])
+
+  const handleAutoGenerateSummary = async () => {
+    if (isGenerating) return
+    
+    setIsGenerating(true)
+    try {
+      const { generateSummary } = await import('@/lib/gpt')
+      const generatedSummary = await generateSummary(
+        progress.answers,
+        progress.followUpQuestions,
+        roleContext || undefined
+      )
+      setSummary(generatedSummary)
+    } catch (error) {
+      console.error('Fehler bei der automatischen Zusammenfassungsgenerierung:', error)
+      setSummary('Es gab einen Fehler bei der Generierung der Zusammenfassung.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
-  if (!isAuthenticated) {
-    return null
+  // Zeige Ladebildschirm während der Generierung
+  if (isGenerating) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Zusammenfassung & PDF-Export
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Generiere eine KI-gestützte Zusammenfassung deiner Reflexion
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="py-8">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-6"></div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  <span className="text-3xl">🤖</span> Ich erstelle jetzt deine Zusammenfassung <span className="text-3xl">🤖</span>
+                </h3>
+                <p className="text-gray-600 text-lg">
+                  Bitte warte einen Moment...
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -36,22 +99,32 @@ export default function SummaryPage() {
                 Zusammenfassung & PDF-Export
               </h1>
               <p className="text-sm text-gray-600">
-                Generiere eine KI-gestützte Zusammenfassung deiner Reflexion
+                Deine KI-gestützte Zusammenfassung ist bereit
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              {roleContext && (
+                <Link
+                  href="/role-context?edit=true"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Rollenkontext bearbeiten
+                </Link>
+              )}
               <Link
                 href="/questions"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 Zurück zu Fragen
               </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-800 text-sm font-medium"
-              >
-                Abmelden
-              </button>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                >
+                  Abmelden
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -59,7 +132,7 @@ export default function SummaryPage() {
 
       {/* Main Content */}
       <main className="py-8">
-        <PDFDownload />
+        <PDFDownload initialSummary={summary} />
       </main>
     </div>
   )
