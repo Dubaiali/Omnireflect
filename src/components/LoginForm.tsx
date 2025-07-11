@@ -72,7 +72,7 @@ export default function LoginForm() {
             value={hashId}
             onChange={(e) => setHashId(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="z.B. user, demo, test"
+            placeholder="Deine persönliche Hash-ID"
             required
           />
         </div>
@@ -88,7 +88,7 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Dein Passwort"
+              placeholder="Dein persönliches Passwort"
               required
             />
             <button
@@ -126,12 +126,13 @@ export default function LoginForm() {
       </form>
 
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-semibold text-blue-800 mb-2">Test-Zugangsdaten</h3>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>User:</strong> user / user123</p>
-          <p><strong>Demo:</strong> demo / demo123</p>
-          <p><strong>Test:</strong> test / test123</p>
-        </div>
+        <h3 className="font-semibold text-blue-800 mb-2">Hilfe bei der Anmeldung</h3>
+        <p className="text-sm text-blue-700 mb-2">
+          Falls du Probleme bei der Anmeldung hast, wende dich bitte an deine Führungskraft oder den IT-Support.
+        </p>
+        <p className="text-sm text-blue-700">
+          Deine Zugangsdaten wurden dir persönlich mitgeteilt und sind vertraulich zu behandeln.
+        </p>
       </div>
 
       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
