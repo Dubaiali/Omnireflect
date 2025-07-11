@@ -13,8 +13,11 @@ export default function QuestionForm() {
   const [isGeneratingFollowUp, setIsGeneratingFollowUp] = useState(false)
   const [showFollowUp, setShowFollowUp] = useState(false)
   const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({})
-  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
-  const [countdown, setCountdown] = useState(30) // 30 Sekunden Countdown
+    const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingTime, setLoadingTime] = useState(0)
+  const [showResetWarning, setShowResetWarning] = useState(false)
+ 
   const [hasError, setHasError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
@@ -45,18 +48,7 @@ export default function QuestionForm() {
     }
   }, [])
 
-  // Countdown Timer
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isLoadingQuestions && countdown > 0) {
-      interval = setInterval(() => {
-        setCountdown(prev => prev - 1)
-      }, 1000)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isLoadingQuestions, countdown])
+
 
   // Lade personalisierte Fragen beim ersten Laden
   const loadPersonalizedQuestions = async (isRetry = false) => {
@@ -67,8 +59,20 @@ export default function QuestionForm() {
     
     setIsLoadingQuestions(true)
     setHasError(false)
+    setLoadingProgress(0)
+    setLoadingTime(0)
+    
+    // Starte Progress-Animation
+    const startTime = Date.now()
+    const progressInterval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000
+      setLoadingTime(Math.floor(elapsed))
+      // Simuliere realistischen Fortschritt (0-90% in 8 Sekunden)
+      const progress = Math.min(90, (elapsed / 8) * 90)
+      setLoadingProgress(progress)
+    }, 100)
+    
     if (!isRetry) {
-      setCountdown(30) // Reset countdown nur beim ersten Versuch
       setRetryCount(0)
     }
     
@@ -95,6 +99,10 @@ export default function QuestionForm() {
     
     try {
       const personalizedQuestions = await generatePersonalizedQuestions(roleContext)
+      // Beende Progress-Animation
+      clearInterval(progressInterval)
+      setLoadingProgress(100)
+      
       setQuestions(personalizedQuestions)
       setHasError(false)
       
@@ -129,6 +137,7 @@ export default function QuestionForm() {
       setHasError(true)
       setQuestions([])
     } finally {
+      clearInterval(progressInterval)
       setIsLoadingQuestions(false)
     }
   }
@@ -245,8 +254,26 @@ export default function QuestionForm() {
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               <span className="text-3xl">🤖</span> Ich erstelle jetzt deine persönlichen Vorbereitungsfragen <span className="text-3xl">🤖</span>
             </h3>
-            <p className="text-gray-600 text-lg">
-              Noch {countdown} Sekunden...
+            
+            {/* Progress Bar */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-600">Fortschritt</span>
+                <span className="text-sm text-gray-600">{Math.round(loadingProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${loadingProgress}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 text-lg mb-2">
+              Ich erstelle deine persönlichen Fragen...
+            </p>
+            <p className="text-sm text-gray-500">
+              {loadingTime > 0 ? `${loadingTime} Sekunden` : 'Starte...'}
             </p>
           </div>
         </div>
@@ -338,6 +365,9 @@ export default function QuestionForm() {
     return progress.answers[questionId] && progress.answers[questionId].trim().length > 0
   }
 
+  // Prüfe ob alle Fragen beantwortet wurden
+  const allQuestionsAnswered = questions.every(question => isQuestionAnswered(question.id))
+
   // Navigiere zu einer spezifischen Frage
   const navigateToQuestion = (index: number) => {
     if (index >= 0 && index < questions.length) {
@@ -351,18 +381,48 @@ export default function QuestionForm() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Fragen-Übersicht */}
-      <div className="mb-6 bg-white rounded-lg shadow-md p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          Fragen-Übersicht
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+      {/* Erweiterte Navigation */}
+      <div className="mb-4 bg-white rounded-lg shadow-md p-3">
+        <div className="flex items-center justify-center gap-1 -ml-8">
+          {/* Überschrift */}
+          <h3 className="text-sm font-semibold text-gray-800 mr-4">
+            Mein Fortschritt
+          </h3>
+          
+          {/* Rollenkontext Button */}
+          <button
+            onClick={() => {
+              const answeredQuestions = Object.keys(progress.answers).length
+              console.log('DEBUG: Rollenkontext Button geklickt!')
+              console.log('DEBUG: answeredQuestions:', answeredQuestions)
+              console.log('DEBUG: progress.answers:', progress.answers)
+              
+              if (answeredQuestions > 0) {
+                console.log('DEBUG: Zeige Popup - setShowResetWarning(true)')
+                setShowResetWarning(true)
+              } else {
+                console.log('DEBUG: Keine Antworten - navigiere direkt')
+                router.push('/role-context?edit=true')
+              }
+            }}
+            className="w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center bg-green-100 text-green-800 hover:bg-green-200"
+            title={Object.keys(progress.answers).length > 0 ? "Rollenkontext bearbeiten (Achtung: Löscht alle Antworten)" : "Rollenkontext bearbeiten"}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          
+          {/* Separator */}
+          <div className="w-4 h-px bg-gray-300"></div>
+          
+          {/* Fragen Buttons */}
           {questions.map((question, index) => (
             <button
               key={question.id}
               onClick={() => navigateToQuestion(index)}
               className={`
-                p-2 rounded-md text-xs font-medium transition-all duration-200
+                w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center
                 ${currentQuestionIndex === index 
                   ? 'bg-blue-600 text-white shadow-md' 
                   : isQuestionAnswered(question.id)
@@ -372,29 +432,49 @@ export default function QuestionForm() {
               `}
               title={`Frage ${index + 1}: ${question.category}`}
             >
-              <div className="flex items-center justify-center space-x-1">
+              <div className="flex items-center justify-center">
                 <span>{index + 1}</span>
                 {isQuestionAnswered(question.id) && (
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-2 h-2 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 )}
               </div>
             </button>
           ))}
-        </div>
-        <div className="mt-3 text-xs text-gray-500 flex items-center justify-center space-x-4">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-gray-100 rounded"></div>
-            <span>Nicht beantwortet</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-green-100 rounded"></div>
-            <span>Beantwortet</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-blue-600 rounded"></div>
-            <span>Aktuell</span>
+          
+          {/* Separator und Zusammenfassung Button - nur anzeigen wenn alle Fragen beantwortet */}
+          {allQuestionsAnswered && (
+            <>
+              <div className="w-4 h-px bg-gray-300"></div>
+              
+              {/* Zusammenfassung Button */}
+              <button
+                onClick={() => router.push('/summary')}
+                className="w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center bg-purple-100 text-purple-800 hover:bg-purple-200"
+                title="Zur Zusammenfassung"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            </>
+          )}
+          
+          {/* Legende */}
+          <div className="flex items-center space-x-2 text-xs text-gray-500 ml-4">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-gray-100 rounded"></div>
+              <span>offen</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-green-100 rounded"></div>
+              <span>beantwortet</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-blue-600 rounded"></div>
+              <span>aktuell</span>
+            </div>
           </div>
         </div>
       </div>
@@ -405,20 +485,9 @@ export default function QuestionForm() {
           <span className="text-sm text-gray-600">
             Frage {currentQuestionIndex + 1} von {questions.length}
           </span>
-          <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-600">
-              {Math.round(progressPercentage)}%
-            </span>
-            {currentQuestionIndex < questions.length - 1 && (
-              <button
-                onClick={handleSkipToSummary}
-                className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-2 py-1 rounded-md transition duration-200"
-                title="Direkt zur letzten Frage springen"
-              >
-                ⏭️ Zur Zusammenfassung
-              </button>
-            )}
-          </div>
+          <span className="text-sm text-gray-600">
+            {Math.round(progressPercentage)}%
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
@@ -430,16 +499,19 @@ export default function QuestionForm() {
 
       {/* Navigation-Buttons */}
       <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={() => navigateToQuestion(currentQuestionIndex - 1)}
-          disabled={currentQuestionIndex === 0}
-          className="flex items-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white font-medium rounded-md transition duration-200"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span>Zurück</span>
-        </button>
+        {currentQuestionIndex > 0 && (
+          <button
+            onClick={() => navigateToQuestion(currentQuestionIndex - 1)}
+            className="flex items-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md transition duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Zurück</span>
+          </button>
+        )}
+        
+        {currentQuestionIndex === 0 && <div></div>} {/* Spacer für erste Frage */}
         
         <button
           onClick={() => navigateToQuestion(currentQuestionIndex + 1)}
@@ -544,6 +616,58 @@ export default function QuestionForm() {
           >
             {currentQuestionIndex < questions.length - 1 ? 'Nächste Frage' : 'Zur Zusammenfassung'}
           </button>
+        </div>
+      )}
+
+      {/* Reset Warning Modal */}
+      {showResetWarning && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-md max-w-md mx-4 p-6 border border-gray-200">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Prozess neu starten?
+                </h3>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-3">
+                Du hast bereits {Object.keys(progress.answers).length} Frage{Object.keys(progress.answers).length > 1 ? 'n' : ''} beantwortet.
+              </p>
+              <p className="text-sm text-gray-600 mb-3">
+                Wenn du den Rollenkontext änderst, werden:
+              </p>
+              <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                <li>• Alle deine Antworten gelöscht</li>
+                <li>• Neue Fragen generiert</li>
+                <li>• Der gesamte Prozess neu gestartet</li>
+              </ul>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowResetWarning(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-200"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  setShowResetWarning(false)
+                  router.push('/role-context?edit=true')
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition duration-200"
+              >
+                Neu starten
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

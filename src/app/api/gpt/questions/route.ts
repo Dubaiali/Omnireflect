@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     `
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 Berücksichtige folgende Kontextdaten:
 
 Arbeitsbereich (z. B. Verkauf, Werkstatt, Büro, Refraktion, Hörakustik)
-Rolle/Funktion (z. B. Mitarbeiter:in, Azubi, Führungskraft)
+Rolle/Funktion (z. B. Mitarbeiter, Azubi, Führungskraft)
 Erfahrung / Unternehmenszugehörigkeit (z. B. 6 Monate, 3 Jahre, über 10 Jahre)
 Kundenkontakt (z. B. täglich, situativ, kaum)
 Aufgabenbeschreibung (optional)
@@ -76,7 +76,7 @@ implizites Alter (z. B. 1. Lehrjahr ≈ jung; 20+ Jahre im Betrieb = erfahren, e
 
 Bitte formuliere 11 offene, individuell abgestimmte Reflexionsfragen, die:
 - in Du-Form verfasst sind (klar, menschlich, ohne Floskeln oder Suggestion)
-- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
+- ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
 - sprachlich dem Erfahrungs- und Alterskontext angepasst sind
 - sich an der Tiefe und der Rolle der Person orientieren
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
@@ -97,8 +97,8 @@ gleichmäßig auf diese Kategorien verteilt sind:
 11. Perspektive & Zukunft
 
 Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
-- Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
-- Für erfahrene oder langjährige Mitarbeitende: eher würdevoll, respektvoll, anerkennend
+- Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
+- Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
 
 Gib die Fragen ausschließlich im folgenden JSON-Format zurück:
 [

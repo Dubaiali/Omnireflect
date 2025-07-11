@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       
       Die Zusammenfassung sollte:
 - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
+- ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
 - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
 - empathisch und unterstützend wirken
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
 - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
-      - Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
-      - Für erfahrene oder langjährige Mitarbeitende: eher würdevoll, respektvoll, anerkennend
+      - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
+      - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
       
       Strukturiere die Zusammenfassung in:
       1. Einleitung: Überblick über die Reflexion
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     `
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',

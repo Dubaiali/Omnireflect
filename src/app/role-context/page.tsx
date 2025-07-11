@@ -57,14 +57,6 @@ function RoleContextContent() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              {isEditing && (
-                <Link
-                  href="/questions"
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Zurück zu den Fragen
-                </Link>
-              )}
               <button
                 onClick={handleLogout}
                 className="text-gray-600 hover:text-gray-800 text-sm font-medium"

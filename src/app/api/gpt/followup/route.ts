@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
       Falls Nachfragen angebracht sind, sollten sie:
 - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-- NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen" etc.)
+- ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
 - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
 - maximal 1-2 Sätze lang sein
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
 - empathisch und unterstützend wirken
 
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
-      - Für junge oder neue Mitarbeitende: eher klar, freundlich, einladend
-      - Für erfahrene oder langjährige Mitarbeitende: eher würdevoll, respektvoll, anerkennend
+      - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
+      - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
 
       Antworte mit:
       - "KEINE_NACHFRAGEN" wenn keine Nachfragen angebracht sind
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     `
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
