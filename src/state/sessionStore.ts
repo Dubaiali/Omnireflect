@@ -119,7 +119,10 @@ export const useSessionStore = create<SessionState>()(
             followUpQuestions: {},
             summary: null,
           },
-          roleContext: null
+          // Behalte Authentifizierung und Rollenkontext bei
+          hashId: state.hashId,
+          isAuthenticated: state.isAuthenticated,
+          roleContext: state.roleContext
         })),
     }),
     {
