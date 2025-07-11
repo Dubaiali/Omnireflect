@@ -333,8 +333,72 @@ export default function QuestionForm() {
 
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100
 
+  // Prüfe ob eine Frage bereits beantwortet wurde
+  const isQuestionAnswered = (questionId: string) => {
+    return progress.answers[questionId] && progress.answers[questionId].trim().length > 0
+  }
+
+  // Navigiere zu einer spezifischen Frage
+  const navigateToQuestion = (index: number) => {
+    if (index >= 0 && index < questions.length) {
+      setCurrentQuestionIndex(index)
+      // Antwort wird automatisch durch useEffect geladen
+      setFollowUpQuestions([])
+      setShowFollowUp(false)
+      setFollowUpAnswers({})
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4">
+      {/* Fragen-Übersicht */}
+      <div className="mb-6 bg-white rounded-lg shadow-md p-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          Fragen-Übersicht
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {questions.map((question, index) => (
+            <button
+              key={question.id}
+              onClick={() => navigateToQuestion(index)}
+              className={`
+                p-2 rounded-md text-xs font-medium transition-all duration-200
+                ${currentQuestionIndex === index 
+                  ? 'bg-blue-600 text-white shadow-md' 
+                  : isQuestionAnswered(question.id)
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }
+              `}
+              title={`Frage ${index + 1}: ${question.category}`}
+            >
+              <div className="flex items-center justify-center space-x-1">
+                <span>{index + 1}</span>
+                {isQuestionAnswered(question.id) && (
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 text-xs text-gray-500 flex items-center justify-center space-x-4">
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-gray-100 rounded"></div>
+            <span>Nicht beantwortet</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-green-100 rounded"></div>
+            <span>Beantwortet</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 bg-blue-600 rounded"></div>
+            <span>Aktuell</span>
+          </div>
+        </div>
+      </div>
+
       {/* Fortschrittsanzeige */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1">
@@ -364,6 +428,31 @@ export default function QuestionForm() {
         </div>
       </div>
 
+      {/* Navigation-Buttons */}
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={() => navigateToQuestion(currentQuestionIndex - 1)}
+          disabled={currentQuestionIndex === 0}
+          className="flex items-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white font-medium rounded-md transition duration-200"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Zurück</span>
+        </button>
+        
+        <button
+          onClick={() => navigateToQuestion(currentQuestionIndex + 1)}
+          disabled={currentQuestionIndex === questions.length - 1}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-md transition duration-200"
+        >
+          <span>Weiter</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
       {/* Aktuelle Frage */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-4">
         <div className="mb-2">
@@ -383,13 +472,24 @@ export default function QuestionForm() {
           placeholder="Schreibe deine Antwort hier..."
         />
 
-        <button
-          onClick={handleAnswerSubmit}
-          disabled={!currentAnswer.trim() || isGeneratingFollowUp}
-          className="mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
-        >
-          {isGeneratingFollowUp ? 'Generiere Nachfragen...' : 'Antwort speichern'}
-        </button>
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={handleAnswerSubmit}
+            disabled={!currentAnswer.trim() || isGeneratingFollowUp}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+          >
+            {isGeneratingFollowUp ? 'Generiere Nachfragen...' : 'Antwort speichern'}
+          </button>
+          
+          {isQuestionAnswered(currentQuestion.id) && (
+            <span className="text-sm text-green-600 flex items-center space-x-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span>Antwort gespeichert</span>
+            </span>
+          )}
+        </div>
 
         {/* Ladebalken für Follow-up-Generierung */}
         {isGeneratingFollowUp && (
