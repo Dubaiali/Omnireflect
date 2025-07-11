@@ -11,6 +11,8 @@ export default function SummaryPage() {
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingTime, setLoadingTime] = useState(0)
 
   useEffect(() => {
     // Wenn keine Antworten vorhanden sind, zurück zu den Fragen
@@ -29,6 +31,19 @@ export default function SummaryPage() {
     if (isGenerating) return
     
     setIsGenerating(true)
+    setLoadingProgress(0)
+    setLoadingTime(0)
+    
+    // Starte Progress-Animation
+    const startTime = Date.now()
+    const progressInterval = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000
+      setLoadingTime(Math.floor(elapsed))
+      // Simuliere realistischen Fortschritt (0-90% in 6 Sekunden)
+      const progress = Math.min(90, (elapsed / 6) * 90)
+      setLoadingProgress(progress)
+    }, 100)
+    
     try {
       const { generateSummary } = await import('@/lib/gpt')
       const generatedSummary = await generateSummary(
@@ -36,11 +51,17 @@ export default function SummaryPage() {
         progress.followUpQuestions,
         roleContext || undefined
       )
+      
+      // Beende Progress-Animation
+      clearInterval(progressInterval)
+      setLoadingProgress(100)
+      
       setSummary(generatedSummary)
     } catch (error) {
       console.error('Fehler bei der automatischen Zusammenfassungsgenerierung:', error)
       setSummary('Es gab einen Fehler bei der Generierung der Zusammenfassung.')
     } finally {
+      clearInterval(progressInterval)
       setIsGenerating(false)
     }
   }
@@ -77,8 +98,26 @@ export default function SummaryPage() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   <span className="text-3xl">🤖</span> Ich erstelle jetzt deine Zusammenfassung <span className="text-3xl">🤖</span>
                 </h3>
-                <p className="text-gray-600 text-lg">
-                  Bitte warte einen Moment...
+                
+                {/* Progress Bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">Fortschritt</span>
+                    <span className="text-sm text-gray-600">{Math.round(loadingProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${loadingProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 text-lg mb-2">
+                  Ich erstelle deine Zusammenfassung...
+                </p>
+                <p className="text-sm text-gray-500">
+                  {loadingTime > 0 ? `${loadingTime} Sekunden` : 'Starte...'}
                 </p>
               </div>
             </div>
