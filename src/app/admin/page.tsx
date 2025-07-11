@@ -123,10 +123,10 @@ export default function AdminPage() {
             </form>
 
             <div className="mt-6 p-4 bg-gray-50 rounded-md">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Admin-Zugangsdaten:</h3>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Admin-Zugang</h3>
               <div className="text-xs text-gray-600">
-                <div>Benutzername: admin</div>
-                <div>Passwort: admin123</div>
+                <p>Für den Admin-Zugang wende dich bitte an den Systemadministrator.</p>
+                <p>Die Zugangsdaten werden aus Sicherheitsgründen nicht hier angezeigt.</p>
               </div>
             </div>
 

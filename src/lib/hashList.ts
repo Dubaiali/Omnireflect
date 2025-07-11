@@ -21,24 +21,24 @@ function loadHashList(): HashEntry[] {
     // Fallback für Entwicklung
     return [
       {
-        hashId: 'user',
-        password: hashPassword('user123'),
-        name: 'Test User',
+        hashId: 'mitarbeiter1',
+        password: hashPassword('OmniReflect2024!'),
+        name: 'Max Mustermann',
         department: 'IT',
         status: 'pending',
       },
       {
-        hashId: 'demo',
-        password: hashPassword('demo123'),
-        name: 'Demo User',
+        hashId: 'mitarbeiter2',
+        password: hashPassword('Sicherheit123#'),
+        name: 'Anna Schmidt',
         department: 'Marketing',
         status: 'in_progress',
         lastAccess: '2024-01-15T10:30:00Z',
       },
       {
-        hashId: 'test',
-        password: hashPassword('test123'),
-        name: 'Test Account',
+        hashId: 'mitarbeiter3',
+        password: hashPassword('DatenSchutz456$'),
+        name: 'Tom Weber',
         department: 'Sales',
         status: 'completed',
         lastAccess: '2024-01-14T15:45:00Z',
@@ -61,7 +61,7 @@ export const hashList: HashEntry[] = loadHashList()
 // Admin-Credentials aus Umgebungsvariablen
 export const adminCredentials = {
   username: process.env.ADMIN_USERNAME || 'admin',
-  password: process.env.ADMIN_PASSWORD || 'admin123',
+  password: process.env.ADMIN_PASSWORD || 'OmniAdmin2024!',
 }
 
 export function validateHash(hashId: string, password: string): HashEntry | null {
