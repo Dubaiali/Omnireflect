@@ -7,7 +7,7 @@ import PDFDownload from '@/components/PDFDownload'
 import Link from 'next/link'
 
 export default function SummaryPage() {
-  const { isAuthenticated, logout, roleContext, progress, hashId } = useSessionStore()
+  const { isAuthenticated, logout, roleContext, progress, hashId, questions: storedQuestions } = useSessionStore()
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
@@ -49,7 +49,8 @@ export default function SummaryPage() {
       const generatedSummary = await generateSummary(
         progress.answers,
         progress.followUpQuestions,
-        roleContext || undefined
+        roleContext || undefined,
+        storedQuestions || undefined
       )
       
       // Beende Progress-Animation

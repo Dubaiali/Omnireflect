@@ -15,7 +15,7 @@ interface RoleContext {
 
 export async function POST(request: NextRequest) {
   try {
-    const { answers, followUpQuestions, roleContext } = await request.json()
+    const { answers, followUpQuestions, roleContext, questions } = await request.json()
 
     if (!answers || Object.keys(answers).length === 0) {
       return NextResponse.json(
@@ -24,8 +24,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Erstelle eine strukturierte Darstellung der Antworten mit Kategorien
     const answersText = Object.entries(answers)
-      .map(([question, answer]) => `Frage: ${question}\nAntwort: ${answer}`)
+      .filter(([questionId, answer]) => !questionId.includes('_followup_')) // Nur Hauptantworten
+      .map(([questionId, answer]) => {
+        // Finde die entsprechende Frage basierend auf der ID
+        const question = questions?.find((q: any) => q.id === questionId)
+        return `Kategorie: ${question?.category || 'Unbekannt'}\nFrage: ${question?.question || questionId}\nAntwort: ${answer}`
+      })
       .join('\n\n')
 
     let roleContextInfo = ''
@@ -66,8 +72,11 @@ export async function POST(request: NextRequest) {
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
 - empathisch und unterstützend wirken
 - den beruflichen Kontext der Person berücksichtigen
-- nur die Kategorien einbeziehen, zu denen es relevante Antworten gibt
-- für jede relevante Kategorie die wichtigsten Erkenntnisse hervorheben
+- WICHTIG: Verwende IMMER die konkreten Antworten der Person - keine generischen Aussagen
+- Beziehe dich direkt auf die gegebenen Antworten und zitiere sie sinngemäß
+- Erstelle eine personalisierte Analyse basierend auf den tatsächlichen Antworten
+- Nur Kategorien behandeln, zu denen es Antworten gibt
+- für jede beantwortete Kategorie die wichtigsten Erkenntnisse aus den Antworten hervorheben
 - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
@@ -76,7 +85,7 @@ export async function POST(request: NextRequest) {
       
       Strukturiere die Zusammenfassung in:
       1. Einleitung: Überblick über die Reflexion
-      2. Kategorienbasierte Analyse (nur relevante Kategorien)
+      2. Kategorienbasierte Analyse (nur beantwortete Kategorien)
       3. Zusammenfassung der wichtigsten Erkenntnisse
       4. Konkrete Handlungsimpulse und nächste Schritte
     `
@@ -93,7 +102,8 @@ Berücksichtige dabei:
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
-- Strukturierung nach den 11 definierten Reflexionskategorien`
+- WICHTIG: Verwende IMMER die konkreten Antworten der Person - keine generischen Aussagen
+- Erstelle eine personalisierte Analyse basierend auf den tatsächlichen Antworten`
         },
         {
           role: 'user',
