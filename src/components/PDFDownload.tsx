@@ -257,7 +257,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
             {/* Zusammenfassung nach unten verschoben */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Deine Zusammenfassung:
+                Zusammenfassung & PDF-Export:
               </h3>
               <div className="prose max-w-none">
                 <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
