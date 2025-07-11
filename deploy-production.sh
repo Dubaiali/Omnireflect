@@ -37,9 +37,9 @@ error() {
 check_prerequisites() {
     log "🔍 Prüfe Voraussetzungen..."
     
-    # Git-Status prüfen
+    # Git-Status prüfen (nur Warnung, da wir vom Repository deployen)
     if [ -n "$(git status --porcelain)" ]; then
-        warn "Uncommitted changes detected. Consider committing before deployment."
+        warn "Uncommitted changes detected locally. Deployment will use repository version."
     fi
     
     # SSH-Verbindung testen
@@ -84,14 +84,14 @@ stop_application() {
 
 # Code deployen
 deploy_code() {
-    log "📦 Erstelle lokalen Build..."
-    npm run build -- --no-lint
+    log "🗑️ Lösche alte Version..."
+    ssh $SERVER "rm -rf $APP_DIR/* $APP_DIR/.[^.]* 2>/dev/null || true"
     
     log "📤 Erstelle Anwendungsverzeichnis..."
     ssh $SERVER "mkdir -p $APP_DIR"
     
-    log "📤 Lade Dateien hoch..."
-    scp -r src package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs $SERVER:$APP_DIR/
+    log "📥 Clone Repository..."
+    ssh $SERVER "cd $APP_DIR && git clone https://github.com/Dubaiali/Omnireflect.git ."
     
     log "🔧 Installiere Dependencies..."
     ssh $SERVER "cd $APP_DIR && npm ci --only=production"
