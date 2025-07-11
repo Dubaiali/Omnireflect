@@ -81,7 +81,7 @@ export default function SummaryPage() {
             <div className="flex justify-between items-center py-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Meine Zusammenfassung
+                  Zusammenfassung & PDF-Export
                 </h1>
                 <p className="text-sm text-gray-600">
                   Generiere eine KI-gestützte Zusammenfassung deiner Reflexion
@@ -136,7 +136,7 @@ export default function SummaryPage() {
           <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Meine Zusammenfassung
+                Zusammenfassung & PDF-Export
               </h1>
               <p className="text-sm text-gray-600">
                 Deine KI-gestützte Zusammenfassung ist bereit

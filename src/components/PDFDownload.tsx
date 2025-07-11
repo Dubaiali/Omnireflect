@@ -18,7 +18,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
   // Verwende initialSummary wenn verfügbar
   useEffect(() => {
-    if (initialSummary) {
+    if (initialSummary && !summary) {
       setSummary(initialSummary)
     }
   }, [initialSummary])
@@ -201,7 +201,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-          Zusammenfassung & PDF-Export
+          Zusammenfassung für dein Mitarbeiterjahresgespräch
         </h2>
 
         {!summary && (
@@ -256,9 +256,6 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
             {/* Zusammenfassung nach unten verschoben */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Zusammenfassung & PDF-Export:
-              </h3>
               <div className="prose max-w-none">
                 <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
                   {summary}

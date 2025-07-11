@@ -15,7 +15,7 @@ interface RoleContext {
 
 export async function POST(request: NextRequest) {
   try {
-    const { answers, followUpQuestions, roleContext, questions } = await request.json()
+    const { answers, followUpQuestions, roleContext } = await request.json()
 
     if (!answers || Object.keys(answers).length === 0) {
       return NextResponse.json(
@@ -24,14 +24,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Erstelle eine strukturierte Darstellung der Antworten mit Kategorien
     const answersText = Object.entries(answers)
-      .filter(([questionId, answer]) => !questionId.includes('_followup_')) // Nur Hauptantworten
-      .map(([questionId, answer]) => {
-        // Finde die entsprechende Frage basierend auf der ID
-        const question = questions?.find((q: any) => q.id === questionId)
-        return `Kategorie: ${question?.category || 'Unbekannt'}\nFrage: ${question?.question || questionId}\nAntwort: ${answer}`
-      })
+      .map(([question, answer]) => `Frage: ${question}\nAntwort: ${answer}`)
       .join('\n\n')
 
     let roleContextInfo = ''
@@ -52,18 +46,19 @@ export async function POST(request: NextRequest) {
       
       ${answersText}${roleContextInfo}
       
-      Erstelle eine Zusammenfassung, die die Antworten nach diesen 11 Kategorien analysiert und strukturiert:
-      1. Rollenverständnis
-      2. Stolz & persönliche Leistung
-      3. Herausforderungen & Umgang mit Druck
-      4. Verantwortung & Selbstorganisation
-      5. Zusammenarbeit & Feedback
-      6. Entwicklung & Lernen
-      7. Energie & Belastung
-      8. Kultur & Werte
-      9. Entscheidungsspielräume & Freiheit
-      10. Wertschätzung & Gesehenwerden
-      11. Perspektive & Zukunft
+      Analysiere die Antworten systematisch nach ALLEN 11 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
+      
+      1. **Rollenverständnis**: Wie siehst du deine Rolle und Verantwortlichkeiten?
+      2. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
+      3. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
+      4. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
+      5. **Zusammenarbeit & Feedback**: Wie arbeitest du mit anderen zusammen?
+      6. **Entwicklung & Lernen**: Wo siehst du Entwicklungsmöglichkeiten?
+      7. **Energie & Belastung**: Wie erlebst du deine Energie und Belastung?
+      8. **Kultur & Werte**: Wie erlebst du die Unternehmenskultur?
+      9. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
+      10. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
+      11. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
       
       Die Zusammenfassung sollte:
 - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
@@ -72,22 +67,56 @@ export async function POST(request: NextRequest) {
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
 - empathisch und unterstützend wirken
 - den beruflichen Kontext der Person berücksichtigen
-- WICHTIG: Verwende IMMER die konkreten Antworten der Person - keine generischen Aussagen
-- Beziehe dich direkt auf die gegebenen Antworten und zitiere sie sinngemäß
-- Erstelle eine personalisierte Analyse basierend auf den tatsächlichen Antworten
-- Nur Kategorien behandeln, zu denen es Antworten gibt
-- für jede beantwortete Kategorie die wichtigsten Erkenntnisse aus den Antworten hervorheben
+- ALLE 11 Kategorien systematisch durchgehen, auch wenn zu manchen keine direkten Antworten vorliegen
+- für jede Kategorie die wichtigsten Erkenntnisse hervorheben oder feststellen, dass hier noch Potenzial für Reflexion besteht
 - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
       - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
       - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
       
-      Strukturiere die Zusammenfassung in:
-      1. Einleitung: Überblick über die Reflexion
-      2. Kategorienbasierte Analyse (nur beantwortete Kategorien)
-      3. Zusammenfassung der wichtigsten Erkenntnisse
-      4. Konkrete Handlungsimpulse und nächste Schritte
+      Strukturiere die Zusammenfassung in folgendem Format:
+      
+      Einleitung:
+      [Überblick über die Reflexion mit den wichtigsten Erkenntnissen und Kernaussagen]
+      
+      Systematische Analyse:
+      
+      1. Rollenverständnis:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      2. Stolz & persönliche Leistung:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      3. Herausforderungen & Umgang mit Druck:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      4. Verantwortung & Selbstorganisation:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      5. Zusammenarbeit & Feedback:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      6. Entwicklung & Lernen:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      7. Energie & Belastung:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      8. Kultur & Werte:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      9. Entscheidungsspielräume & Freiheit:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      10. Wertschätzung & Gesehenwerden:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      11. Perspektive & Zukunft:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      Empfehlungen für dein Mitarbeiterjahresgespräch:
+      [Handlungsimpulse ohne Aufzählungszeichen, nur normaler Text]
     `
 
     const completion = await openai.chat.completions.create({
@@ -102,8 +131,7 @@ Berücksichtige dabei:
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
-- WICHTIG: Verwende IMMER die konkreten Antworten der Person - keine generischen Aussagen
-- Erstelle eine personalisierte Analyse basierend auf den tatsächlichen Antworten`
+- Strukturierung nach den 11 definierten Reflexionskategorien`
         },
         {
           role: 'user',
