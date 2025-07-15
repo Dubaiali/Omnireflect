@@ -66,59 +66,48 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein empathischer Coach mit tiefem Verständnis für die Augenoptik-Branche und persönliche Entwicklung. Deine Aufgabe ist es, für ${roleContext.firstName} einen individuellen Fragenkatalog zu erstellen, der spezifisch auf ${roleContext.firstName}s Situation zugeschnitten ist.
+          content: `Du bist ein empathischer Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Erstelle 11 personalisierte Reflexionsfragen für ${roleContext.firstName}.
 
-WICHTIG: Nutze ${roleContext.firstName}s spezifische Kontextdaten, um Fragen zu stellen, die nur für ${roleContext.firstName} relevant sind. Vermeide generische Fragen - jede Frage sollte sich direkt auf ${roleContext.firstName}s Rolle, Erfahrung und Arbeitsbereich beziehen.
+KONTEXT:
+- Name: ${roleContext.firstName} ${roleContext.lastName}
+- Arbeitsbereiche: ${roleContext.workAreas.join(', ')}
+- Funktion: ${roleContext.functions.join(', ')}
+- Erfahrung: ${roleContext.experienceYears}
+- Kundenkontakt: ${roleContext.customerContact}
+${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
 
-KONTEXT-ANALYSE für ${roleContext.firstName}:
-- Arbeitsbereiche: ${roleContext.workAreas.join(', ')} - Nutze diese spezifisch in den Fragen
-- Funktion: ${roleContext.functions.join(', ')} - Berücksichtige die Hierarchie und Verantwortung
-- Erfahrung: ${roleContext.experienceYears} - Passe die Tiefe und Komplexität entsprechend an
-- Kundenkontakt: ${roleContext.customerContact} - Integriere dies in relevante Fragen
-${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks} - Nutze diese für konkrete Beispiele` : ''}
-
-SPRACHLICHE ANPASSUNG:
-- Für ${roleContext.experienceYears.includes('Monate') || roleContext.experienceYears.includes('< 6') ? 'neue' : 'erfahrene'} Mitarbeiter: ${roleContext.experienceYears.includes('Monate') || roleContext.experienceYears.includes('< 6') ? 'klar, freundlich, einladend' : 'würdevoll, respektvoll, anerkennend'}
-- Verwende ${roleContext.firstName}s Namen gelegentlich für persönlichere Ansprache
-- ABSOLUT NICHT gendern (keine "Mitarbeiter:in", "Kolleg:innen" etc.)
-
-FRAGEN-CHARAKTERISTIKA:
-- Konkret und spezifisch für ${roleContext.firstName}s Situation
+ANFORDERUNGEN:
+- Verwende ${roleContext.firstName}s spezifische Daten in den Fragen
 - Verschiedene Fragetypen: "Was", "Wie", "Wann", "Welche", "Inwiefern"
-- Einige Fragen sollten konkrete Situationen oder Szenarien erwähnen
-- Abwechselnd zwischen persönlich-reflektiv und beruflich-konkret
-- Maximal 2 Sätze, aber variabel in Länge und Stil
-- Keine Wiederholungen oder ähnliche Formulierungen
+- Konkrete Beispiele aus ${roleContext.firstName}s Arbeitsbereich
+- Maximal 2 Sätze pro Frage
+- Keine Gendersprache (keine "Mitarbeiter:in", "Kolleg:innen")
+- Persönliche Ansprache mit ${roleContext.firstName}s Namen
 
-KATEGORIEN mit spezifischen Fokusbereichen:
-1. Rollenverständnis - Wie siehst du deine spezifische Rolle in ${roleContext.workAreas.join(' und ')}?
-2. Stolz & persönliche Leistung - Was macht dich besonders stolz in deiner Arbeit?
-3. Herausforderungen & Umgang mit Druck - Welche spezifischen Herausforderungen erlebst du?
-4. Verantwortung & Selbstorganisation - Wie organisierst du deine Verantwortlichkeiten?
-5. Zusammenarbeit & Feedback - Wie arbeitest du mit anderen zusammen?
-6. Entwicklung & Lernen - Wo siehst du Entwicklungsmöglichkeiten für dich?
-7. Energie & Belastung - Wie erlebst du deine Energie und Belastung?
-8. Kultur & Werte - Wie erlebst du die Unternehmenskultur?
-9. Entscheidungsspielräume & Freiheit - Welche Freiheiten hast du in deiner Rolle?
-10. Wertschätzung & Gesehenwerden - Fühlst du dich wertgeschätzt und gesehen?
-11. Perspektive & Zukunft - Wie siehst du deine berufliche Zukunft?
+KATEGORIEN (je eine Frage):
+1. Rollenverständnis
+2. Stolz & persönliche Leistung  
+3. Herausforderungen & Umgang mit Druck
+4. Verantwortung & Selbstorganisation
+5. Zusammenarbeit & Feedback
+6. Entwicklung & Lernen
+7. Energie & Belastung
+8. Kultur & Werte
+9. Entscheidungsspielräume & Freiheit
+10. Wertschätzung & Gesehenwerden
+11. Perspektive & Zukunft
 
-BEISPIELE für konkrete, spezifische Fragen:
+BEISPIELE für spezifische Fragen:
 - "Was macht für dich einen guten ${roleContext.functions[0]} in der ${roleContext.workAreas[0]} aus?"
-- "Welche Situation in deiner Arbeit mit ${roleContext.customerContact.includes('täglich') ? 'Kunden' : 'Kollegen'} hat dich zuletzt besonders gefordert?"
+- "Welche Situation mit ${roleContext.customerContact.includes('täglich') ? 'Kunden' : 'Kollegen'} hat dich zuletzt besonders gefordert?"
 - "Wie hat sich dein Verständnis deiner Rolle in den ${roleContext.experienceYears} entwickelt?"
 
-Gib die Fragen ausschließlich im folgenden JSON-Format zurück:
+Antworte nur mit JSON im Format:
 [
-{
-"id": "role",
-"question": "...",
-"category": "Rollenverständnis"
-},
+{"id": "role", "question": "...", "category": "Rollenverständnis"},
+{"id": "stolz", "question": "...", "category": "Stolz & persönliche Leistung"},
 ...
-]
-
-Keine Kommentare. Keine Erklärungen. Nur JSON.`
+]`
         }
       ],
       max_tokens: 2000,
