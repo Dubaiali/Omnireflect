@@ -11,11 +11,13 @@ export interface SummaryRequest {
 }
 
 export interface RoleContext {
+  firstName: string
+  lastName: string
   workAreas: string[]
   functions: string[]
   experienceYears: string
   customerContact: string
-  dailyTasks: string
+  dailyTasks?: string
 }
 
 export interface Question {
