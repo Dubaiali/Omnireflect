@@ -22,6 +22,7 @@ interface SessionState {
   }
   roleContext: RoleContext | null
   questions: any[] | null
+  roleContextHash: string | null // Hash des Rollenkontexts für Änderungsprüfung
   setHashId: (hashId: string) => void
   login: (hashId: string) => void
   logout: () => void
@@ -32,6 +33,7 @@ interface SessionState {
   saveQuestions: (questions: any[]) => void
   nextStep: () => void
   resetProgress: () => void
+  hasRoleContextChanged: (newRoleContext: RoleContext) => boolean
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -47,6 +49,7 @@ export const useSessionStore = create<SessionState>()(
       },
       roleContext: null,
       questions: null,
+      roleContextHash: null,
 
       setHashId: (hashId: string) => set({ hashId }),
       
@@ -107,8 +110,14 @@ export const useSessionStore = create<SessionState>()(
           }
         })),
 
-      saveRoleContext: (roleContext: RoleContext) =>
-        set({ roleContext }),
+      saveRoleContext: (roleContext: RoleContext) => {
+        // Berechne Hash des neuen Rollenkontexts
+        const newHash = JSON.stringify(roleContext)
+        set({ 
+          roleContext,
+          roleContextHash: newHash
+        })
+      },
 
       saveQuestions: (questions: any[]) =>
         set({ questions }),
@@ -133,8 +142,15 @@ export const useSessionStore = create<SessionState>()(
           hashId: state.hashId,
           isAuthenticated: state.isAuthenticated,
           roleContext: state.roleContext,
-          questions: state.questions
+          questions: state.questions,
+          roleContextHash: state.roleContextHash
         })),
+
+      hasRoleContextChanged: (newRoleContext: RoleContext) => {
+        const state = get()
+        const newHash = JSON.stringify(newRoleContext)
+        return state.roleContextHash !== newHash
+      },
     }),
     {
       name: 'session-storage',
@@ -144,6 +160,7 @@ export const useSessionStore = create<SessionState>()(
         progress: state.progress,
         roleContext: state.roleContext,
         questions: state.questions,
+        roleContextHash: state.roleContextHash,
       }),
     }
   )

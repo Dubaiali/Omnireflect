@@ -53,7 +53,7 @@ const customerContactOptions = [
 
 export default function RoleContextForm({ isEditing = false }: { isEditing?: boolean }) {
   const router = useRouter()
-  const { saveRoleContext, roleContext } = useSessionStore()
+  const { saveRoleContext, roleContext, hasRoleContextChanged, saveQuestions } = useSessionStore()
   
   const [formData, setFormData] = useState<RoleContext>({
     firstName: roleContext?.firstName || '',
@@ -161,7 +161,18 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
       dailyTasks: formData.dailyTasks
     }
 
+    // Prüfe ob sich der Rollenkontext geändert hat
+    const hasChanged = hasRoleContextChanged(roleContext)
+    
+    // Speichere den neuen Rollenkontext
     saveRoleContext(roleContext)
+    
+    // Wenn sich der Rollenkontext geändert hat, lösche gespeicherte Fragen
+    if (hasChanged) {
+      console.log('DEBUG: RoleContext changed - clearing stored questions')
+      saveQuestions([])
+    }
+
     router.push('/questions')
   }
 

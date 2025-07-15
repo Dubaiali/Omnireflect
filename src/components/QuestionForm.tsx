@@ -31,7 +31,8 @@ export default function QuestionForm() {
     questions: storedQuestions,
     saveQuestions,
     nextStep,
-    isAuthenticated
+    isAuthenticated,
+    hasRoleContextChanged
   } = useSessionStore()
 
   // Internetverbindungsprüfung
@@ -53,18 +54,37 @@ export default function QuestionForm() {
 
 
   // Lade personalisierte Fragen beim ersten Laden
-  const loadPersonalizedQuestions = async (isRetry = false) => {
-    // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind
-    if (questions.length > 0 && !isRetry) {
+  const loadPersonalizedQuestions = async (isRetry = false, forceRegenerate = false) => {
+    // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind und keine Neugenerierung erzwungen wird
+    if (questions.length > 0 && !isRetry && !forceRegenerate) {
       return
     }
     
-    // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry überspringen)
-    if (storedQuestions && storedQuestions.length > 0 && !isRetry) {
+    // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry oder Neugenerierung überspringen)
+    if (storedQuestions && storedQuestions.length > 0 && !isRetry && !forceRegenerate) {
       console.log('DEBUG: Using stored questions instead of generating')
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
       return
+    }
+    
+    // Prüfe ob Rollenkontext sich geändert hat (nur wenn Fragen vorhanden sind)
+    if (storedQuestions && storedQuestions.length > 0 && roleContext && !forceRegenerate) {
+      const hasChanged = hasRoleContextChanged(roleContext)
+      if (!hasChanged) {
+        console.log('DEBUG: RoleContext unchanged - using stored questions')
+        setQuestions(storedQuestions)
+        setIsLoadingQuestions(false)
+        return
+      } else {
+        console.log('DEBUG: RoleContext changed - regenerating questions')
+        // Lösche gespeicherte Fragen und Antworten bei Rollenkontext-Änderung
+        saveQuestions([])
+        // Reset alle Antworten bei Rollenkontext-Änderung
+        Object.keys(progress.answers).forEach(questionId => {
+          // Lösche Antworten (wird durch resetProgress gemacht)
+        })
+      }
     }
     
     setIsLoadingQuestions(true)
@@ -162,8 +182,18 @@ export default function QuestionForm() {
     // Intelligente Fragen-Logik: Nur neu generieren wenn nötig
     if (questions.length === 0) {
       // Prüfe ob Fragen im Store vorhanden sind und Rollenkontext gleich ist
-      if (storedQuestions && storedQuestions.length > 0) {
-        console.log('DEBUG: Loading existing questions from store')
+      if (storedQuestions && storedQuestions.length > 0 && roleContext) {
+        const hasChanged = hasRoleContextChanged(roleContext)
+        if (!hasChanged) {
+          console.log('DEBUG: Loading existing questions from store (RoleContext unchanged)')
+          setQuestions(storedQuestions)
+          setIsLoadingQuestions(false)
+        } else {
+          console.log('DEBUG: RoleContext changed - regenerating questions')
+          loadPersonalizedQuestions(false, true) // Force regenerate
+        }
+      } else if (storedQuestions && storedQuestions.length > 0) {
+        console.log('DEBUG: Loading existing questions from store (no RoleContext to compare)')
         setQuestions(storedQuestions)
         setIsLoadingQuestions(false)
       } else {
@@ -171,7 +201,7 @@ export default function QuestionForm() {
         loadPersonalizedQuestions()
       }
     }
-  }, [questions.length, storedQuestions]) // Beide Dependencies für intelligente Entscheidung
+  }, [questions.length, storedQuestions, roleContext]) // roleContext als Dependency hinzugefügt
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)
