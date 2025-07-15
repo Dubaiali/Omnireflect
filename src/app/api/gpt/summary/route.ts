@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       
       ${answersText}${roleContextInfo}
       
-      Analysiere die Antworten systematisch nach ALLEN 11 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
+      Analysiere die Antworten systematisch nach ALLEN 12 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
       
       1. **Rollenverständnis**: Wie siehst du deine Rolle und Verantwortlichkeiten?
       2. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       9. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
       10. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
       11. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
+      12. **Rollentausch & Führungsperspektive**: Was würdest du als Vorgesetzter anders machen?
       
       Die Zusammenfassung sollte:
 - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
 - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
 - empathisch und unterstützend wirken
 - den beruflichen Kontext der Person berücksichtigen
-- ALLE 11 Kategorien systematisch durchgehen, auch wenn zu manchen keine direkten Antworten vorliegen
+- ALLE 12 Kategorien systematisch durchgehen, auch wenn zu manchen keine direkten Antworten vorliegen
 - für jede Kategorie die wichtigsten Erkenntnisse hervorheben oder feststellen, dass hier noch Potenzial für Reflexion besteht
 - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
@@ -115,6 +116,9 @@ export async function POST(request: NextRequest) {
       11. Perspektive & Zukunft:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
+      12. Rollentausch & Führungsperspektive:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
       Empfehlungen für dein Mitarbeiterjahresgespräch:
       [Handlungsimpulse ohne Aufzählungszeichen, nur normaler Text]
     `
@@ -131,7 +135,7 @@ Berücksichtige dabei:
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
-- Strukturierung nach den 11 definierten Reflexionskategorien`
+- Strukturierung nach den 12 definierten Reflexionskategorien`
         },
         {
           role: 'user',
