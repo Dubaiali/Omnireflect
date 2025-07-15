@@ -1,4 +1,17 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
 export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // Direkt zur Mitarbeiter-Login-Seite weiterleiten
+    router.push('/login')
+  }, [router])
+
+  // Loading-Zustand während der Weiterleitung
   return (
     <div style={{
       minHeight: '100vh',
@@ -9,7 +22,6 @@ export default function Home() {
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       <div style={{
-        maxWidth: '600px',
         textAlign: 'center',
         padding: '2rem',
         backgroundColor: 'white',
@@ -28,65 +40,27 @@ export default function Home() {
         <p style={{
           fontSize: '1.125rem',
           color: '#6B7280',
-          marginBottom: '2rem'
+          marginBottom: '1rem'
         }}>
-          KI-gestützte Vorbereitung für dein Mitarbeiterjahresgespräch
+          Weiterleitung...
         </p>
         
-        <div style={{ marginBottom: '2rem' }}>
-          <a 
-            href="/login"
-            style={{
-              display: 'block',
-              width: '100%',
-              backgroundColor: '#2563EB',
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              textDecoration: 'none',
-              fontWeight: '600',
-              marginBottom: '1rem'
-            }}
-          >
-            Mitarbeiter:in Login
-          </a>
-          
-          <a 
-            href="/admin"
-            style={{
-              display: 'block',
-              width: '100%',
-              backgroundColor: '#6B7280',
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              textDecoration: 'none',
-              fontWeight: '600'
-            }}
-          >
-            Admin-Bereich
-          </a>
-        </div>
-        
         <div style={{
-          padding: '1rem',
-          backgroundColor: '#EBF8FF',
-          borderRadius: '0.5rem'
-        }}>
-          <h3 style={{
-            fontWeight: '600',
-            color: '#1E40AF',
-            marginBottom: '0.5rem'
-          }}>
-            Datenschutz & Sicherheit
-          </h3>
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#1E40AF'
-          }}>
-            Deine Daten werden anonymisiert gespeichert und sind nur dir und deiner Führungskraft zugänglich.
-          </p>
-        </div>
+          width: '40px',
+          height: '40px',
+          border: '4px solid #E5E7EB',
+          borderTop: '4px solid #2563EB',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto'
+        }} />
+        
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     </div>
   )

@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 // Role Context Schema
 export const roleContextSchema = z.object({
+  firstName: z.string().min(1).max(50),
+  lastName: z.string().min(1).max(50),
   workAreas: z.array(z.string().min(1).max(100)).min(1).max(10),
   functions: z.array(z.string().min(1).max(100)).min(1).max(10),
   experienceYears: z.string().min(1).max(50),

@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface RoleContext {
+  firstName: string
+  lastName: string
   workAreas: string[]
   functions: string[]
   experienceYears: string

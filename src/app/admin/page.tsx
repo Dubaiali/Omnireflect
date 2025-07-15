@@ -130,13 +130,24 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="mt-8 text-center">
-              <Link 
-                href="/"
-                className="text-gray-600 hover:text-gray-800 text-sm"
-              >
-                ← Zurück zur Startseite
-              </Link>
+            <div className="mt-8 text-center space-y-4">
+              <div>
+                <Link 
+                  href="/login"
+                  className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+                >
+                  Mitarbeiter-Login
+                </Link>
+              </div>
+              
+              <div>
+                <Link 
+                  href="/"
+                  className="text-gray-600 hover:text-gray-800 text-sm"
+                >
+                  ← Zurück zur Startseite
+                </Link>
+              </div>
             </div>
           </div>
         </div>

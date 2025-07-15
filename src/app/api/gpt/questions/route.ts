@@ -8,6 +8,8 @@ const openai = new OpenAI({
 })
 
 interface RoleContext {
+  firstName: string
+  lastName: string
   workAreas: string[]
   functions: string[]
   experienceYears: string
@@ -51,6 +53,7 @@ export async function POST(request: NextRequest) {
 
     const roleContextInfo = `
     Rollenkontext der Person:
+    - Name: ${roleContext.firstName} ${roleContext.lastName}
     - Arbeitsbereich: ${roleContext.workAreas.join(', ')}
     - Funktion: ${roleContext.functions.join(', ')}
     - Erfahrung: ${roleContext.experienceYears}

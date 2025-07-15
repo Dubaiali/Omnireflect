@@ -69,13 +69,7 @@ export function middleware(request: NextRequest) {
     // }
   }
   
-  // Admin-Route schützen
-  if (pathname.startsWith('/admin')) {
-    const adminToken = request.cookies.get('admin-token')?.value
-    if (!adminToken) {
-      return NextResponse.redirect(new URL('/admin', request.url))
-    }
-  }
+  // Admin-Route: Keine Middleware-Schutz, da die Admin-Seite ihre eigene Authentifizierung hat
   
   // Für geschützte Seiten: Nur Security Headers, keine Session-Validierung
   // (Session wird client-seitig durch Zustand-Store verwaltet)

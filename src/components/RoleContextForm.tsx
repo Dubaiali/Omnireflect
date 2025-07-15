@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 
 interface RoleContext {
+  firstName: string
+  lastName: string
   workAreas: string[]
   functions: string[]
   experienceYears: string
@@ -25,10 +27,11 @@ const workAreaOptions = [
 ]
 
 const functionOptions = [
-  'Mitarbeiter:in',
+  'Mitarbeiter',
   'Abteilungsleitung',
-  'Ausbilder:in',
-  'Azubi / Lernende:r',
+  'Ausbilder',
+  'Auszubildender',
+  'Fachverantwortlicher',
   'Andere'
 ]
 
@@ -39,8 +42,7 @@ const experienceOptions = [
   '3–5 Jahre',
   'länger als 5 Jahre',
   'länger als 10 Jahre',
-  'länger als 15 Jahre',
-  'Freitext'
+  'länger als 15 Jahre'
 ]
 
 const customerContactOptions = [
@@ -54,6 +56,8 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
   const { saveRoleContext, roleContext } = useSessionStore()
   
   const [formData, setFormData] = useState<RoleContext>({
+    firstName: roleContext?.firstName || '',
+    lastName: roleContext?.lastName || '',
     workAreas: roleContext?.workAreas || [],
     functions: roleContext?.functions || [],
     experienceYears: roleContext?.experienceYears || '',
@@ -63,12 +67,13 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
   
   const [otherWorkArea, setOtherWorkArea] = useState('')
   const [otherFunction, setOtherFunction] = useState('')
-  const [customExperience, setCustomExperience] = useState('')
 
   // Lade vorhandene Daten beim Bearbeiten
   useEffect(() => {
     if (isEditing && roleContext) {
       setFormData({
+        firstName: roleContext.firstName || '',
+        lastName: roleContext.lastName || '',
         workAreas: roleContext.workAreas,
         functions: roleContext.functions,
         experienceYears: roleContext.experienceYears,
@@ -103,6 +108,16 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
     e.preventDefault()
     
     // Validierung: Alle Pflichtfelder müssen ausgefüllt sein
+    if (!formData.firstName.trim()) {
+      alert('Bitte gib deinen Vornamen ein.')
+      return
+    }
+    
+    if (!formData.lastName.trim()) {
+      alert('Bitte gib deinen Nachnamen ein.')
+      return
+    }
+    
     if (formData.workAreas.length === 0) {
       alert('Bitte wähle mindestens einen Arbeitsbereich aus.')
       return
@@ -136,14 +151,12 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
       finalFunctions[index] = `Andere: ${otherFunction.trim()}`
     }
 
-    const finalExperienceYears = formData.experienceYears === 'Freitext' 
-      ? customExperience.trim() 
-      : formData.experienceYears
-
     const roleContext: RoleContext = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
       workAreas: finalWorkAreas,
       functions: finalFunctions,
-      experienceYears: finalExperienceYears,
+      experienceYears: formData.experienceYears,
       customerContact: formData.customerContact,
       dailyTasks: formData.dailyTasks
     }
@@ -165,6 +178,39 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Wie ist dein Name?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Vorname
+                </label>
+                <input
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  placeholder="Dein Vorname"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nachname
+                </label>
+                <input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  placeholder="Dein Nachname"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Arbeitsbereich */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -251,17 +297,6 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
                 </label>
               ))}
             </div>
-            {formData.experienceYears === 'Freitext' && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  placeholder="z.B. seit 22 Jahren"
-                  value={customExperience}
-                  onChange={(e) => setCustomExperience(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
           </div>
 
           {/* Kundenkontakt */}

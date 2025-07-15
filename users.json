@@ -1,0 +1,23 @@
+[
+  {
+    "hashId": "mitarbeiter1",
+    "password": "OmniReflect2024!",
+    "name": "Max Mustermann",
+    "department": "IT",
+    "status": "pending"
+  },
+  {
+    "hashId": "mitarbeiter2",
+    "password": "Sicherheit123#",
+    "name": "Anna Schmidt",
+    "department": "Marketing",
+    "status": "in_progress"
+  },
+  {
+    "hashId": "mitarbeiter3",
+    "password": "DatenSchutz456$",
+    "name": "Tom Weber",
+    "department": "Sales",
+    "status": "completed"
+  }
+] 

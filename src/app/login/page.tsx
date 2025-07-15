@@ -17,13 +17,24 @@ export default function LoginPage() {
 
           <LoginForm />
 
-          <div className="mt-8 text-center">
-            <Link 
-              href="/"
-              className="text-blue-600 hover:text-blue-800 text-sm"
-            >
-              ← Zurück zur Startseite
-            </Link>
+          <div className="mt-8 text-center space-y-4">
+            <div>
+              <Link 
+                href="/admin"
+                className="inline-block w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+              >
+                Admin-Bereich
+              </Link>
+            </div>
+            
+            <div>
+              <Link 
+                href="/"
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                ← Zurück zur Startseite
+              </Link>
+            </div>
           </div>
         </div>
       </div>

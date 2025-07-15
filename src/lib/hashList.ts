@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import fs from 'fs'
+import path from 'path'
 
 export interface HashEntry {
   hashId: string
@@ -14,8 +16,26 @@ function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password + process.env.PASSWORD_SALT).digest('hex')
 }
 
-// Hash-Liste aus Umgebungsvariablen laden
-function loadHashList(): HashEntry[] {
+// User aus Datei laden
+function loadHashListFromFile(): HashEntry[] | null {
+  try {
+    const filePath = path.resolve(process.cwd(), 'users.json')
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf-8')
+      return JSON.parse(fileContent).map((entry: any) => ({
+        ...entry,
+        password: hashPassword(entry.password)
+      }))
+    }
+    return null
+  } catch (err) {
+    console.error('Fehler beim Laden der users.json:', err)
+    return null
+  }
+}
+
+// Hash-Liste aus Umgebungsvariablen laden (Fallback)
+function loadHashListFromEnv(): HashEntry[] {
   const hashListEnv = process.env.HASH_LIST
   if (!hashListEnv) {
     // Fallback für Entwicklung
@@ -26,37 +46,24 @@ function loadHashList(): HashEntry[] {
         name: 'Max Mustermann',
         department: 'IT',
         status: 'pending',
-      },
-      {
-        hashId: 'mitarbeiter2',
-        password: hashPassword('Sicherheit123#'),
-        name: 'Anna Schmidt',
-        department: 'Marketing',
-        status: 'in_progress',
-        lastAccess: '2024-01-15T10:30:00Z',
-      },
-      {
-        hashId: 'mitarbeiter3',
-        password: hashPassword('DatenSchutz456$'),
-        name: 'Tom Weber',
-        department: 'Sales',
-        status: 'completed',
-        lastAccess: '2024-01-14T15:45:00Z',
-      },
+      }
     ]
   }
-
   try {
     return JSON.parse(hashListEnv).map((entry: any) => ({
       ...entry,
       password: hashPassword(entry.password)
     }))
-  } catch {
+  } catch (err) {
+    console.error('Fehler beim Parsen der HASH_LIST:', err, 'HASH_LIST:', hashListEnv)
     return []
   }
 }
 
-export const hashList: HashEntry[] = loadHashList()
+// Hash-Liste dynamisch laden
+export function getHashList(): HashEntry[] {
+  return loadHashListFromFile() || loadHashListFromEnv()
+}
 
 // Admin-Credentials aus Umgebungsvariablen
 export const adminCredentials = {
@@ -66,12 +73,14 @@ export const adminCredentials = {
 
 export function validateHash(hashId: string, password: string): HashEntry | null {
   const hashedPassword = hashPassword(password)
+  const hashList = getHashList()
   return hashList.find(entry => 
     entry.hashId === hashId && entry.password === hashedPassword
   ) || null
 }
 
 export function updateHashStatus(hashId: string, status: HashEntry['status']): void {
+  const hashList = getHashList()
   const entry = hashList.find(e => e.hashId === hashId)
   if (entry) {
     entry.status = status
