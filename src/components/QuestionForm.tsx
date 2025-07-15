@@ -72,6 +72,7 @@ export default function QuestionForm() {
     }
     
     // Prüfe ob Rollenkontext sich geändert hat (nur wenn Fragen vorhanden sind UND nicht von Zusammenfassung zurück)
+    // WICHTIG: Wenn questionParam vorhanden ist, bedeutet das, dass wir von der Zusammenfassung zurückkommen
     if (storedQuestions && storedQuestions.length > 0 && roleContext && !forceRegenerate && !questionParam) {
       const hasChanged = hasRoleContextChanged(roleContext)
       if (!hasChanged) {
@@ -88,6 +89,14 @@ export default function QuestionForm() {
           // Lösche Antworten (wird durch resetProgress gemacht)
         })
       }
+    }
+    
+    // Wenn wir von der Zusammenfassung zurückkommen, verwende die gespeicherten Fragen
+    if (questionParam && storedQuestions && storedQuestions.length > 0) {
+      console.log('DEBUG: Returning from summary - using stored questions')
+      setQuestions(storedQuestions)
+      setIsLoadingQuestions(false)
+      return
     }
     
     setIsLoadingQuestions(true)
@@ -207,8 +216,9 @@ export default function QuestionForm() {
   }, [questions.length, storedQuestions, roleContext]) // roleContext als Dependency hinzugefügt
 
   // Prüfe URL-Parameter für direkte Navigation zu einer spezifischen Frage
+  // WICHTIG: Diese Logik wird NUR ausgeführt, wenn Fragen bereits geladen sind
   useEffect(() => {
-    if (questions.length > 0 && questionParam) {
+    if (questions.length > 0 && questionParam && !isLoadingQuestions) {
       const targetQuestionIndex = parseInt(questionParam) - 1 // Frage 11 = Index 10
       if (targetQuestionIndex >= 0 && targetQuestionIndex < questions.length) {
         console.log(`DEBUG: Navigating to question ${questionParam} (index ${targetQuestionIndex})`)
@@ -217,7 +227,7 @@ export default function QuestionForm() {
         router.replace('/questions')
       }
     }
-  }, [questions.length, questionParam, router])
+  }, [questions.length, questionParam, router, isLoadingQuestions])
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)
