@@ -96,17 +96,28 @@ KATEGORIEN (je eine Frage):
 9. Entscheidungsspielräume & Freiheit
 10. Wertschätzung & Gesehenwerden
 11. Perspektive & Zukunft
+12. Rollentausch & Führungsperspektive
 
 BEISPIELE für spezifische Fragen:
 - "Was macht für dich einen guten ${roleContext.functions[0]} in der ${roleContext.workAreas[0]} aus?"
 - "Welche Situation mit ${roleContext.customerContact.includes('täglich') ? 'Kunden' : 'Kollegen'} hat dich zuletzt besonders gefordert?"
 - "Wie hat sich dein Verständnis deiner Rolle in den ${roleContext.experienceYears} entwickelt?"
+- "Was würdest du als Vorgesetzter anders machen, ${roleContext.firstName}?"
 
 Antworte nur mit JSON im Format:
 [
 {"id": "role", "question": "...", "category": "Rollenverständnis"},
 {"id": "stolz", "question": "...", "category": "Stolz & persönliche Leistung"},
-...
+{"id": "challenges", "question": "...", "category": "Herausforderungen & Umgang mit Druck"},
+{"id": "responsibility", "question": "...", "category": "Verantwortung & Selbstorganisation"},
+{"id": "collaboration", "question": "...", "category": "Zusammenarbeit & Feedback"},
+{"id": "development", "question": "...", "category": "Entwicklung & Lernen"},
+{"id": "energy", "question": "...", "category": "Energie & Belastung"},
+{"id": "values", "question": "...", "category": "Kultur & Werte"},
+{"id": "decisions", "question": "...", "category": "Entscheidungsspielräume & Freiheit"},
+{"id": "appreciation", "question": "...", "category": "Wertschätzung & Gesehenwerden"},
+{"id": "future", "question": "...", "category": "Perspektive & Zukunft"},
+{"id": "leadership", "question": "...", "category": "Rollentausch & Führungsperspektive"}
 ]`
         }
       ],
@@ -128,7 +139,7 @@ Antworte nur mit JSON im Format:
             q && q.id && q.question && q.category
           )
           
-          if (validQuestions.length >= 10) { // Mindestens 10 von 11 Fragen sollten vorhanden sein
+          if (validQuestions.length >= 11) { // Mindestens 11 von 12 Fragen sollten vorhanden sein
             return NextResponse.json({ questions: validQuestions })
           }
         }
