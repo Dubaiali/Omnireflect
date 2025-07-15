@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 import { generateFollowUpQuestions, generatePersonalizedQuestions, Question } from '@/lib/gpt'
 
@@ -23,6 +23,9 @@ export default function QuestionForm() {
   const [isOnline, setIsOnline] = useState(true)
   
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const questionParam = searchParams.get('question')
+  
   const { 
     saveAnswer, 
     saveFollowUpQuestions, 
@@ -68,8 +71,8 @@ export default function QuestionForm() {
       return
     }
     
-    // Prüfe ob Rollenkontext sich geändert hat (nur wenn Fragen vorhanden sind)
-    if (storedQuestions && storedQuestions.length > 0 && roleContext && !forceRegenerate) {
+    // Prüfe ob Rollenkontext sich geändert hat (nur wenn Fragen vorhanden sind UND nicht von Zusammenfassung zurück)
+    if (storedQuestions && storedQuestions.length > 0 && roleContext && !forceRegenerate && !questionParam) {
       const hasChanged = hasRoleContextChanged(roleContext)
       if (!hasChanged) {
         console.log('DEBUG: RoleContext unchanged - using stored questions')
@@ -202,6 +205,19 @@ export default function QuestionForm() {
       }
     }
   }, [questions.length, storedQuestions, roleContext]) // roleContext als Dependency hinzugefügt
+
+  // Prüfe URL-Parameter für direkte Navigation zu einer spezifischen Frage
+  useEffect(() => {
+    if (questions.length > 0 && questionParam) {
+      const targetQuestionIndex = parseInt(questionParam) - 1 // Frage 11 = Index 10
+      if (targetQuestionIndex >= 0 && targetQuestionIndex < questions.length) {
+        console.log(`DEBUG: Navigating to question ${questionParam} (index ${targetQuestionIndex})`)
+        setCurrentQuestionIndex(targetQuestionIndex)
+        // Entferne den URL-Parameter nach der Navigation
+        router.replace('/questions')
+      }
+    }
+  }, [questions.length, questionParam, router])
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1)

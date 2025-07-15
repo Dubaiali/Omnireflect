@@ -235,7 +235,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                   if (summary && summary.trim().length > 0) {
                     setShowResetWarning(true)
                   } else {
-                    router.push('/questions')
+                    // Direkt zu Frage 11 (letzte Frage) springen
+                    router.push('/questions?question=11')
                   }
                 }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-200"
@@ -307,7 +308,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
               <button
                 onClick={() => {
                   setShowResetWarning(false)
-                  router.push('/questions')
+                  // Direkt zu Frage 11 (letzte Frage) springen
+                  router.push('/questions?question=11')
                 }}
                 className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition duration-200"
               >
