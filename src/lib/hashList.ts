@@ -52,12 +52,8 @@ export function validateHash(hashId: string, password: string): HashEntry | null
 }
 
 export function updateHashStatus(hashId: string, status: HashEntry['status']): void {
-  const hashList = getHashList()
-  const entry = hashList.find(e => e.hashId === hashId)
-  if (entry) {
-    entry.status = status
-    entry.lastAccess = new Date().toISOString()
-  }
+  // Diese Funktion ist ein Platzhalter und tut aktuell nichts,
+  // da die Hash-Liste nicht persistent gespeichert wird.
 }
 
 // Admin-Validierung
