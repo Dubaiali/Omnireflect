@@ -5,8 +5,15 @@ import { validateAndSanitize, adminLoginSchema } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
+    const rawBody = await request.json()
+    let body = rawBody
+    if (typeof rawBody === 'string') {
+      try {
+        body = JSON.parse(rawBody)
+      } catch (e) {
+        return NextResponse.json({ error: 'Request-Body konnte nicht geparst werden.' }, { status: 400 })
+      }
+    }
     // Input validieren und sanitieren
     const validatedData = validateAndSanitize(adminLoginSchema, body)
     
