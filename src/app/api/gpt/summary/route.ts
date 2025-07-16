@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
       Empfehlungen für dein Mitarbeiterjahresgespräch:
-      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (1-3 Monate)]
+      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate)]
     `
 
     const completion = await openai.chat.completions.create({
