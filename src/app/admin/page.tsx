@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminTable from '@/components/AdminTable'
-import { adminCredentials } from '@/lib/hashList'
 import Link from 'next/link'
 
 export default function AdminPage() {
@@ -22,13 +21,21 @@ export default function AdminPage() {
     setIsLoading(true)
 
     try {
-      if (username === adminCredentials.username && password === adminCredentials.password) {
+      const response = await fetch('/api/auth/admin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
         setIsAuthenticated(true)
       } else {
-        setError('Ungültige Anmeldedaten')
+        setError(data.error || 'Ungültige Anmeldedaten')
       }
     } catch (err) {
-              setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
+      setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
     } finally {
       setIsLoading(false)
     }
