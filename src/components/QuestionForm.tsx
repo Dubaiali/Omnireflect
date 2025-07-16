@@ -13,7 +13,7 @@ export default function QuestionForm() {
   const [isGeneratingFollowUp, setIsGeneratingFollowUp] = useState(false)
   const [showFollowUp, setShowFollowUp] = useState(false)
   const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({})
-    const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
+    const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingTime, setLoadingTime] = useState(0)
   const [showResetWarning, setShowResetWarning] = useState(false)
@@ -61,47 +61,18 @@ export default function QuestionForm() {
   const loadPersonalizedQuestions = async (isRetry = false, forceRegenerate = false) => {
     // Verhindere mehrfaches Laden während der Generierung
     if (isLoadingQuestions && !isRetry) {
-      console.log('DEBUG: Already loading questions - skipping')
       return
     }
     
-    // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind und keine Neugenerierung erzwungen wird
-    if (questions.length > 0 && !isRetry && !forceRegenerate) {
-      console.log('DEBUG: Questions already loaded - skipping')
-      return
-    }
-    
-    // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry oder Neugenerierung überspringen)
-    if (storedQuestions && storedQuestions.length > 0 && !isRetry && !forceRegenerate) {
-      console.log('DEBUG: Using stored questions instead of generating')
+    // Wenn wir von der Zusammenfassung zurückkommen, verwende die gespeicherten Fragen
+    if (questionParam && storedQuestions && storedQuestions.length > 0) {
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
       return
     }
     
-    // Prüfe ob Rollenkontext sich geändert hat (nur wenn Fragen vorhanden sind UND nicht von Zusammenfassung zurück)
-    // WICHTIG: Wenn questionParam vorhanden ist, bedeutet das, dass wir von der Zusammenfassung zurückkommen
-    if (storedQuestions && storedQuestions.length > 0 && roleContext && !forceRegenerate && !questionParam) {
-      const hasChanged = hasRoleContextChanged(roleContext)
-      if (!hasChanged) {
-        console.log('DEBUG: RoleContext unchanged - using stored questions')
-        setQuestions(storedQuestions)
-        setIsLoadingQuestions(false)
-        return
-      } else {
-        console.log('DEBUG: RoleContext changed - regenerating questions')
-        // Lösche gespeicherte Fragen und Antworten bei Rollenkontext-Änderung
-        saveQuestions([])
-        // Reset alle Antworten bei Rollenkontext-Änderung
-        Object.keys(progress.answers).forEach(questionId => {
-          // Lösche Antworten (wird durch resetProgress gemacht)
-        })
-      }
-    }
-    
-    // Wenn wir von der Zusammenfassung zurückkommen, verwende die gespeicherten Fragen
-    if (questionParam && storedQuestions && storedQuestions.length > 0) {
-      console.log('DEBUG: Returning from summary - using stored questions')
+    // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry oder Neugenerierung überspringen)
+    if (storedQuestions && storedQuestions.length > 0 && !isRetry && !forceRegenerate) {
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
       return
@@ -148,9 +119,7 @@ export default function QuestionForm() {
     }
     
     try {
-      console.log('DEBUG: Starting question generation...')
       const personalizedQuestions = await generatePersonalizedQuestions(roleContext)
-      console.log('DEBUG: Questions generated successfully:', personalizedQuestions.length)
       
       // Beende Progress-Animation
       clearInterval(progressInterval)
@@ -197,46 +166,16 @@ export default function QuestionForm() {
   }
 
   useEffect(() => {
-    console.log('DEBUG: useEffect triggered - questions.length:', questions.length, 'storedQuestions:', storedQuestions?.length)
-    
-    // Intelligente Fragen-Logik: Nur neu generieren wenn nötig
-    if (questions.length === 0) {
-      // Prüfe ob Fragen im Store vorhanden sind und Rollenkontext gleich ist
-      if (storedQuestions && storedQuestions.length > 0 && roleContext) {
-        const hasChanged = hasRoleContextChanged(roleContext)
-        if (!hasChanged) {
-          console.log('DEBUG: Loading existing questions from store (RoleContext unchanged)')
-          setQuestions(storedQuestions)
-          setIsLoadingQuestions(false)
-        } else {
-          console.log('DEBUG: RoleContext changed - regenerating questions')
-          loadPersonalizedQuestions(false, true) // Force regenerate
-        }
-      } else if (storedQuestions && storedQuestions.length > 0) {
-        console.log('DEBUG: Loading existing questions from store (no RoleContext to compare)')
+    // Wenn Rollenkontext vorhanden ist und keine Fragen geladen sind, lade sie
+    if (roleContext && questions.length === 0) {
+      if (storedQuestions && storedQuestions.length > 0) {
         setQuestions(storedQuestions)
         setIsLoadingQuestions(false)
-      } else {
-        console.log('DEBUG: No stored questions found - generating new ones')
+      } else if (!isLoadingQuestions) {
         loadPersonalizedQuestions()
       }
     }
-  }, [questions.length, storedQuestions]) // roleContext als Dependency entfernt - verhindert Race Conditions
-
-  // Separater useEffect für Rollenkontext-Änderungen
-  useEffect(() => {
-    if (roleContext && storedQuestions && storedQuestions.length > 0) {
-      const hasChanged = hasRoleContextChanged(roleContext)
-      if (hasChanged) {
-        console.log('DEBUG: RoleContext changed - clearing questions for regeneration')
-        // Lösche Fragen aus dem Store, damit sie neu generiert werden
-        saveQuestions([])
-        setQuestions([])
-        // Starte Neugenerierung
-        loadPersonalizedQuestions(false, true)
-      }
-    }
-  }, [roleContext]) // Nur roleContext als Dependency
+  }, [roleContext, questions.length, storedQuestions, isLoadingQuestions])
 
   // Prüfe URL-Parameter für direkte Navigation zu einer spezifischen Frage
   // WICHTIG: Diese Logik wird NUR ausgeführt, wenn Fragen bereits geladen sind

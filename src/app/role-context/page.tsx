@@ -15,24 +15,16 @@ function RoleContextContent() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login')
-    } else if (roleContext && !isEditing) {
-      // Nur weiterleiten, wenn nicht im Bearbeitungsmodus
-      router.push('/questions')
     }
-  }, [isAuthenticated, roleContext, router, isEditing])
+  }, [isAuthenticated, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
-  // Zeige die Komponente wenn authentifiziert UND (kein Rollenkontext ODER im Bearbeitungsmodus)
+  // Zeige die Komponente wenn authentifiziert
   if (!isAuthenticated) {
-    return null
-  }
-
-  // Wenn Rollenkontext vorhanden und NICHT im Bearbeitungsmodus, zeige nichts (wird weitergeleitet)
-  if (roleContext && !isEditing) {
     return null
   }
 

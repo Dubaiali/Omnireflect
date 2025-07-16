@@ -2,6 +2,23 @@
 
 Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
+## 📚 Dokumentation
+
+- **[Technische Dokumentation](TECHNICAL_DOCUMENTATION.md)** - Vollständige technische Details
+- **[Debugging-Dokumentation](DEBUGGING.md)** - Bekannte Probleme und Lösungen
+- **[Deployment-Anleitung](DEPLOYMENT.md)** - Produktions-Deployment
+
+## 🔧 Wichtige Hinweise
+
+### Bekannte Probleme & Lösungen
+- **Fragengenerierung funktioniert nicht:** Siehe [DEBUGGING.md](DEBUGGING.md) für die Lösung
+- **Rollenkontext wird übersprungen:** Bereits behoben in Version 1.4.1
+
+### Sicherheit
+- Alle Benutzerdaten werden lokal im Browser gespeichert
+- Keine dauerhafte Server-Speicherung von Antworten
+- OpenAI API-Schlüssel muss in `.env.local` konfiguriert werden
+
 ## 🌐 Live-Anwendung
 
 **Produktionsumgebung:** https://reflect.omni-scient.com
