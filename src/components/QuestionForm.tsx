@@ -621,16 +621,18 @@ export default function QuestionForm() {
         
         {currentQuestionIndex === 0 && <div></div>} {/* Spacer für erste Frage */}
         
-        <button
-          onClick={() => navigateToQuestion(currentQuestionIndex + 1)}
-          disabled={currentQuestionIndex === questions.length - 1}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-md transition duration-200"
-        >
-          <span>Weiter</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        {/* Weiter-Button nur anzeigen, wenn es nicht die letzte Frage ist */}
+        {currentQuestionIndex < questions.length - 1 && (
+          <button
+            onClick={() => navigateToQuestion(currentQuestionIndex + 1)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200"
+          >
+            <span>Weiter</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Aktuelle Frage */}
