@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     let roleContext: RoleContext | undefined
     if (body.roleContext) {
       try {
-        roleContext = validateAndSanitize(roleContextSchema, body.roleContext)
+        roleContext = validateAndSanitize(roleContextSchema, body.roleContext) as RoleContext
       } catch (error) {
         console.error('Validierungsfehler:', error)
         return NextResponse.json(
