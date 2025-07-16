@@ -359,57 +359,59 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
         <Text style={styles.subtitle}>Strukturierte Selbstreflexion</Text>
         
         {summarySections.map((section, index) => (
-          <View key={index} style={[styles.card, styles[`${section.color}Card`]]}>
-            <Text style={[styles.cardTitle, styles[`${section.color}Title`]]}>
-              {section.title}
-            </Text>
-            
-            {section.type === 'kernaussagen' && (
-              <Text style={[styles.cardContent, styles[`${section.color}Content`]]}>
-                {section.content}
+          section && (
+            <View key={index} style={[styles.card, styles[`${section.color}Card` as keyof typeof styles]]}>
+              <Text style={[styles.cardTitle, styles[`${section.color}Title` as keyof typeof styles]]}>
+                {section.title}
               </Text>
-            )}
-            
-            {section.type === 'fuehrungsperspektive' && (
-              <Text style={[styles.cardContent, styles[`${section.color}Content`]]}>
-                {section.content}
-              </Text>
-            )}
-            
-            {section.type === 'prioritaetsanalyse' && (
-              <View>
-                {section.items.map((item, itemIndex) => (
-                  <View key={itemIndex} style={styles.numberedItem}>
-                    <View style={styles.number}>
-                      <Text>{item.number}</Text>
+              
+              {section.type === 'kernaussagen' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'fuehrungsperspektive' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'prioritaetsanalyse' && (
+                <View>
+                  {section.items.map((item, itemIndex) => (
+                    <View key={itemIndex} style={styles.numberedItem}>
+                      <View style={styles.number}>
+                        <Text>{item.number}</Text>
+                      </View>
+                      <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                        {item.content}
+                      </Text>
                     </View>
-                    <Text style={[styles.cardContent, styles[`${section.color}Content`]]}>
-                      {item.content}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-            
-            {section.type === 'entwicklungsbereiche' && (
-              <Text style={[styles.cardContent, styles[`${section.color}Content`]]}>
-                {section.content}
-              </Text>
-            )}
-            
-            {section.type === 'handlungsempfehlungen' && (
-              <View>
-                {section.items.map((item, itemIndex) => (
-                  <View key={itemIndex} style={styles.bulletItem}>
-                    <View style={styles.bullet} />
-                    <Text style={[styles.cardContent, styles[`${section.color}Content`]]}>
-                      {item}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
+                  ))}
+                </View>
+              )}
+              
+              {section.type === 'entwicklungsbereiche' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'handlungsempfehlungen' && (
+                <View>
+                  {section.items.map((item, itemIndex) => (
+                    <View key={itemIndex} style={styles.bulletItem}>
+                      <View style={styles.bullet} />
+                      <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                        {item}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )
         ))}
         
         <View style={styles.footer}>
