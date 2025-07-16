@@ -1,4 +1,4 @@
-import { HashEntry } from './hashList'
+import { HashEntry } from './types'
 
 export interface StoredData {
   hashId: string
@@ -7,11 +7,21 @@ export interface StoredData {
   summary: string | null
   completedAt: string | null
   lastUpdated: string
+  roleContext?: {
+    firstName: string
+    lastName: string
+    workAreas: string[]
+    functions: string[]
+    experienceYears: string
+    customerContact: string
+    dailyTasks: string
+  }
 }
 
 // Lokale Speicherung (für MVP)
 export class LocalStorage {
   private static readonly STORAGE_KEY = 'mitarbeiter_reflexion_data'
+  private static readonly ROLE_CONTEXT_KEY = 'mitarbeiter_role_context'
 
   static saveData(data: StoredData): void {
     try {
@@ -20,6 +30,27 @@ export class LocalStorage {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(existingData))
     } catch (error) {
       console.error('Fehler beim Speichern der Daten:', error)
+    }
+  }
+
+  static saveRoleContext(hashId: string, roleContext: any): void {
+    try {
+      const existingData = this.getAllData()
+      if (!existingData[hashId]) {
+        existingData[hashId] = {
+          hashId,
+          answers: {},
+          followUpQuestions: {},
+          summary: null,
+          completedAt: null,
+          lastUpdated: new Date().toISOString()
+        }
+      }
+      existingData[hashId].roleContext = roleContext
+      existingData[hashId].lastUpdated = new Date().toISOString()
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(existingData))
+    } catch (error) {
+      console.error('Fehler beim Speichern des Rollenkontexts:', error)
     }
   }
 
@@ -66,20 +97,48 @@ export class LocalStorage {
 export function getAdminOverview(): Array<HashEntry & { data?: StoredData }> {
   const allData = LocalStorage.getAllData()
   
-  // Hier würden wir normalerweise die Hash-Liste aus der Datenbank laden
-  // Für das MVP verwenden wir die statische Liste
-  const hashList = [
-    { hashId: 'abc123', password: 'test123', name: 'Max Mustermann', department: 'IT', status: 'pending' as const },
-    { hashId: 'def456', password: 'test456', name: 'Anna Schmidt', department: 'Marketing', status: 'in_progress' as const },
-    { hashId: 'ghi789', password: 'test789', name: 'Tom Weber', department: 'Sales', status: 'completed' as const },
-    { hashId: 'jkl012', password: 'test012', name: 'Lisa Müller', department: 'HR', status: 'pending' as const },
-    { hashId: 'mno345', password: 'test345', name: 'Paul Fischer', department: 'Finance', status: 'in_progress' as const },
-  ]
+  // Lade Hash-Liste aus localStorage oder verwende Fallback
+  let hashList: HashEntry[] = []
+  try {
+    const storedHashList = localStorage.getItem('hash-list')
+    if (storedHashList) {
+      hashList = JSON.parse(storedHashList)
+    } else {
+      // Fallback für Entwicklung
+      hashList = [
+        { hashId: 'mitarbeiter1', password: 'test123', name: 'Max Mustermann', department: 'IT', status: 'pending' as const },
+        { hashId: 'mitarbeiter2', password: 'test456', name: 'Anna Schmidt', department: 'Marketing', status: 'in_progress' as const },
+        { hashId: 'mitarbeiter3', password: 'test789', name: 'Tom Weber', department: 'Sales', status: 'completed' as const },
+      ]
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Hash-Liste:', error)
+    // Fallback bei Fehler
+    hashList = [
+      { hashId: 'mitarbeiter1', password: 'test123', name: 'Max Mustermann', department: 'IT', status: 'pending' as const },
+    ]
+  }
 
-  return hashList.map(entry => ({
-    ...entry,
-    data: allData[entry.hashId] || undefined
-  }))
+  return hashList.map(entry => {
+    const storedData = allData[entry.hashId]
+    
+    // Wenn echte Daten vorhanden sind, verwende diese
+    if (storedData) {
+      return {
+        ...entry,
+        department: storedData.roleContext?.workAreas.join(', ') || entry.department,
+        status: storedData.summary ? 'completed' as const : 
+                Object.keys(storedData.answers).length > 0 ? 'in_progress' as const : 'pending' as const,
+        lastAccess: storedData.lastUpdated,
+        data: storedData
+      }
+    }
+    
+    return {
+      ...entry,
+      data: undefined
+    }
+  })
 }
 
 // Export-Funktion für PDF-Daten

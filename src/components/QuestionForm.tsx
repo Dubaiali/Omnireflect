@@ -35,7 +35,8 @@ export default function QuestionForm() {
     saveQuestions,
     nextStep,
     isAuthenticated,
-    hasRoleContextChanged
+    hasRoleContextChanged,
+    saveToStorage
   } = useSessionStore()
 
   // Internetverbindungsprüfung
@@ -298,6 +299,7 @@ export default function QuestionForm() {
 
     // Speichere Antwort
     saveAnswer(currentQuestion.id, currentAnswer)
+    saveToStorage()
 
     // Generiere Follow-up-Fragen mit Rollenkontext
     setIsGeneratingFollowUp(true)
@@ -337,6 +339,7 @@ export default function QuestionForm() {
         saveAnswer(`${currentQuestion.id}_followup_${index}`, answer)
       }
     })
+    saveToStorage()
 
     // Nächste Frage oder Zusammenfassung
     if (currentQuestionIndex < questions.length - 1) {

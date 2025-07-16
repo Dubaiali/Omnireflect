@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { LocalStorage } from '@/lib/storage'
 
 interface RoleContext {
   firstName: string
@@ -34,6 +35,7 @@ interface SessionState {
   nextStep: () => void
   resetProgress: () => void
   hasRoleContextChanged: (newRoleContext: RoleContext) => boolean
+  saveToStorage: () => void
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -113,6 +115,13 @@ export const useSessionStore = create<SessionState>()(
       saveRoleContext: (roleContext: RoleContext) => {
         // Berechne Hash des neuen Rollenkontexts
         const newHash = JSON.stringify(roleContext)
+        const state = get()
+        
+        // Speichere auch in localStorage für Admin-Zugriff
+        if (state.hashId) {
+          LocalStorage.saveRoleContext(state.hashId, roleContext)
+        }
+        
         set({ 
           roleContext,
           roleContextHash: newHash
@@ -150,6 +159,22 @@ export const useSessionStore = create<SessionState>()(
         const state = get()
         const newHash = JSON.stringify(newRoleContext)
         return state.roleContextHash !== newHash
+      },
+
+      saveToStorage: () => {
+        const state = get()
+        if (state.hashId) {
+          const data = {
+            hashId: state.hashId,
+            answers: state.progress.answers,
+            followUpQuestions: state.progress.followUpQuestions,
+            summary: state.progress.summary,
+            completedAt: state.progress.summary ? new Date().toISOString() : null,
+            lastUpdated: new Date().toISOString(),
+            roleContext: state.roleContext || undefined
+          }
+          LocalStorage.saveData(data)
+        }
       },
     }),
     {

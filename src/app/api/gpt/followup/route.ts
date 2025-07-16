@@ -6,11 +6,28 @@ const openai = new OpenAI({
 })
 
 interface RoleContext {
+  firstName?: string
   workAreas: string[]
   functions: string[]
   experienceYears: string
   customerContact: string
-  dailyTasks: string
+  dailyTasks?: string
+}
+
+// Verschiedene Follow-up-Fragetypen für mehr Variation
+const getFollowUpQuestionTypes = () => {
+  return [
+    'Vertiefungsfrage',
+    'Beispielsfrage',
+    'Emotionsfrage',
+    'Perspektivenfrage',
+    'Lernfrage',
+    'Zukunftsorientierte Frage',
+    'Vergleichsfrage',
+    'Hypothetische Frage',
+    'Wertefrage',
+    'Erfahrungsfrage'
+  ]
 }
 
 export async function POST(request: NextRequest) {
@@ -28,7 +45,8 @@ export async function POST(request: NextRequest) {
     if (roleContext) {
       roleContextInfo = `
       
-      Rollenkontext der Person:
+      PERSÖNLICHER KONTEXT:
+      - Name: ${roleContext.firstName || 'der Mitarbeiter'}
       - Arbeitsbereich: ${roleContext.workAreas.join(', ')}
       - Funktion: ${roleContext.functions.join(', ')}
       - Erfahrung: ${roleContext.experienceYears}
@@ -37,64 +55,79 @@ export async function POST(request: NextRequest) {
       `
     }
 
+    const questionTypes = getFollowUpQuestionTypes()
+
     const prompt = `
-      Als reflektierter Coach mit Feingefühl für Sprache, berücksichtige den beruflichen Kontext der Person und analysiere die gegebene Antwort.
+      Als erfahrener Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche, analysiere die gegebene Antwort und entscheide, ob vertiefende Nachfragen hilfreich wären.
 
-      Ursprungsfrage: ${question}
-      Antwort: ${answer}${roleContextInfo}
+      URSPRUNGSFRAGE: ${question}
+      ANTWORT: ${answer}${roleContextInfo}
 
-      WICHTIG: Generiere nur dann 1-2 vertiefende Nachfragen, wenn die Antwort Spielraum für weitere Reflexion offen lässt. Das ist der Fall, wenn:
-      - Die Antwort oberflächlich oder kurz ist
-      - Emotionale oder persönliche Aspekte angesprochen werden, die vertieft werden könnten
-      - Konkrete Beispiele oder Situationen erwähnt werden, die ausführlicher besprochen werden könnten
+      ANALYSE-KRITERIEN für Nachfragen:
+      ✅ GENERIERE Nachfragen, wenn:
+      - Die Antwort oberflächlich oder kurz ist (< 50 Wörter)
+      - Emotionale Aspekte angesprochen werden, die vertieft werden könnten
+      - Konkrete Beispiele erwähnt werden, die ausführlicher besprochen werden könnten
       - Entwicklungsmöglichkeiten oder Herausforderungen angedeutet werden
       - Die Antwort Fragen aufwirft oder unvollständig erscheint
+      - Potenzial für Selbstreflexion erkennbar ist
 
-      Generiere KEINE Nachfragen, wenn:
-      - Die Antwort bereits sehr detailliert und vollständig ist
+      ❌ KEINE Nachfragen, wenn:
+      - Die Antwort bereits sehr detailliert und vollständig ist (> 100 Wörter)
       - Die Antwort eine klare, abschließende Position vertritt
       - Keine weiteren Reflexionsmöglichkeiten erkennbar sind
+      - Die Person bereits sehr offen und reflektiert geantwortet hat
 
-      Falls Nachfragen angebracht sind, sollten sie:
-- in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-- ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
-- sprachlich dem Erfahrungs- und Alterskontext angepasst sein
-- kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
-- maximal 1-2 Sätze lang sein
-- offen und neugierig wirken
-- zur Selbstreflexion anregen
-- konkret und relevant sein
-- empathisch und unterstützend wirken
+      VIELFALT & VARIATION:
+      - Verwende verschiedene Fragetypen: ${questionTypes.join(', ')}
+      - Variiere die Ansprache: Direkt, empathisch, neugierig, respektvoll
+      - Nutze verschiedene Perspektiven: Vergangenheit, Gegenwart, Zukunft
+      - Verwende unterschiedliche Techniken: Beispiele, Hypothesen, Vergleiche
 
-      Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
-      - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
-      - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
+      FRAGETECHNIKEN für Follow-ups:
+      - "Kannst du mir ein konkretes Beispiel geben..." (Beispiele)
+      - "Wie hat sich das auf dich ausgewirkt..." (Emotionen)
+      - "Was würdest du anders machen..." (Lernen)
+      - "Stell dir vor..." (Hypothesen)
+      - "Vergleiche das mit..." (Vergleiche)
+      - "Was bedeutet das für dich..." (Werte)
+      - "Wie siehst du das in Zukunft..." (Zukunft)
+
+      QUALITÄTSKRITERIEN:
+      - Genau 1 Nachfrage (nicht mehr, nicht weniger)
+      - Jede Frage maximal 2 Sätze
+      - Persönlich und einladend
+      - Konkret und relevant
+      - Empathisch und unterstützend
+      - Keine Gendersprache (keine "Mitarbeiter:in", "Kolleg:innen")
+      - Sprachlich dem Erfahrungskontext angepasst
 
       Antworte mit:
       - "KEINE_NACHFRAGEN" wenn keine Nachfragen angebracht sind
-      - Oder gib 1-2 Nachfragen zurück, eine pro Zeile, ohne Nummerierung
+      - Oder gib genau 1 Nachfrage zurück, ohne Nummerierung
     `
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache, berufliche Rollen und persönliche Entwicklung. Deine Aufgabe ist es, bei Mitarbeiterentwicklungsgesprächen in einem augenoptischen Unternehmen vertiefende Nachfragen zu generieren, aber nur wenn diese sinnvoll und hilfreich sind.
+          content: `Du bist ein erfahrener Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Deine Aufgabe ist es, bei Bedarf vertiefende Nachfragen zu generieren, die zur Selbstreflexion anregen.
 
 Berücksichtige dabei:
-- Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
+- Den persönlichen Kontext und die Erfahrung der Person
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
-- Empathie und Unterstützung ohne Suggestion oder Floskeln`
+- Empathie und Unterstützung ohne Suggestion oder Floskeln
+- Vielfalt in Fragetypen und Ansprache`
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 300,
-      temperature: 0.7,
+      max_tokens: 400,
+      temperature: 0.8,
     })
 
     const response = completion.choices[0]?.message?.content || ''

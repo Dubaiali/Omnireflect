@@ -7,7 +7,7 @@ import PDFDownload from '@/components/PDFDownload'
 import Link from 'next/link'
 
 export default function SummaryPage() {
-  const { isAuthenticated, logout, roleContext, progress, hashId, questions: storedQuestions } = useSessionStore()
+  const { isAuthenticated, logout, roleContext, progress, hashId, questions: storedQuestions, saveSummary, saveToStorage } = useSessionStore()
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
@@ -58,6 +58,8 @@ export default function SummaryPage() {
       setLoadingProgress(100)
       
       setSummary(generatedSummary)
+      saveSummary(generatedSummary)
+      saveToStorage()
     } catch (error) {
       console.error('Fehler bei der automatischen Zusammenfassungsgenerierung:', error)
       setSummary('Es gab einen Fehler bei der Generierung der Zusammenfassung.')

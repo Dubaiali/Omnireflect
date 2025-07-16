@@ -166,7 +166,7 @@ export default function AdminPage() {
                 OmniReflect Dashboard
               </h1>
               <p className="text-sm text-gray-600">
-                Übersicht aller Mitarbeiter:innen-Reflexionen
+                Übersicht aller Reflexionen
               </p>
             </div>
             <div className="flex items-center space-x-4">
