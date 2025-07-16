@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Erstelle strukturierte Antworten mit Follow-ups
-    let structuredAnswers = ''
-    let followUpAnswers = ''
+    let answersText = ''
+    let followUpText = ''
     
     if (questions && Array.isArray(questions)) {
       questions.forEach((question, index) => {
@@ -34,20 +34,20 @@ export async function POST(request: NextRequest) {
         const followUps = followUpQuestions[question.id] || []
         
         if (answer) {
-          structuredAnswers += `Frage ${index + 1} (${question.category}): ${question.question}\nAntwort: ${answer}\n\n`
+          answersText += `Frage ${index + 1} (${question.category}): ${question.question}\nAntwort: ${answer}\n\n`
           
           // Sammle Follow-up-Antworten
           followUps.forEach((followUpQuestion: string, followUpIndex: number) => {
             const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
             if (followUpAnswer) {
-              followUpAnswers += `Vertiefung zu Frage ${index + 1}: ${followUpQuestion}\nAntwort: ${followUpAnswer}\n\n`
+              followUpText += `Vertiefung zu Frage ${index + 1}: ${followUpQuestion}\nAntwort: ${followUpAnswer}\n\n`
             }
           })
         }
       })
     } else {
       // Fallback für alte Struktur
-      structuredAnswers = Object.entries(answers)
+      answersText = Object.entries(answers)
         .filter(([key]) => !key.includes('_followup_'))
         .map(([question, answer]) => `Frage: ${question}\nAntwort: ${answer}`)
         .join('\n\n')
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (roleContext) {
       roleContextInfo = `
       
-      Rollenkontext:
+      Rollenkontext der Person:
       - Arbeitsbereich: ${roleContext.workAreas.join(', ')}
       - Funktion: ${roleContext.functions.join(', ')}
       - Erfahrung: ${roleContext.experienceYears}
@@ -67,41 +67,87 @@ export async function POST(request: NextRequest) {
     }
 
     const prompt = `
-      Als reflektierter Coach erstelle eine empathische und handlungsorientierte Zusammenfassung der Mitarbeiterreflexion.
+      Als reflektierter Coach mit Feingefühl für Sprache, erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiterreflexion basierend auf den gegebenen Antworten.
       
       HAUPTANTWORTEN:
-      ${structuredAnswers}
+      ${answersText}
       
-      ${followUpAnswers ? `VERTIEFENDE NACHFRAGEN:\n${followUpAnswers}` : ''}${roleContextInfo}
+      ${followUpText ? `VERTIEFENDE NACHFRAGEN:\n${followUpText}` : ''}${roleContextInfo}
       
-      ANALYSEAUFGABE:
+      Analysiere die Antworten systematisch nach den 12 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
       
-      1. **Kernaussagen identifizieren** (2-3 wichtigste Erkenntnisse)
-      2. **Prioritätsbereiche analysieren** (6-8 wichtigste Themen basierend auf Antworttiefe)
-      3. **Entwicklungsbereiche erkennen** (2-3 "Blinde Flecken" oder wenig reflektierte Bereiche)
-      4. **Konkrete Handlungsempfehlungen** (3-5 spezifische, umsetzbare Schritte)
+      1. **Rollenverständnis**: Wie siehst du deine Rolle und Verantwortlichkeiten?
+      2. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
+      3. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
+      4. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
+      5. **Zusammenarbeit & Feedback**: Wie arbeitest du mit anderen zusammen?
+      6. **Entwicklung & Lernen**: Wo siehst du Entwicklungsmöglichkeiten?
+      7. **Energie & Belastung**: Wie erlebst du deine Energie und Belastung?
+      8. **Kultur & Werte**: Wie erlebst du die Unternehmenskultur?
+      9. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
+      10. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
+      11. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
+      12. **Rollentausch & Führungsperspektive**: Was würdest du als Vorgesetzter anders machen?
       
-      ANFORDERUNGEN:
-      - Du-Form, klar und menschlich, ohne Floskeln
-      - ABSOLUT NICHT gendern (keine "Mitarbeiter:innen", "Kolleg:innen" etc.)
-      - Sprachlich an Erfahrungslevel angepasst
+      Die Zusammenfassung sollte:
+      - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
+      - ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
+      - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
+      - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+      - empathisch und unterstützend wirken
+      - den beruflichen Kontext der Person berücksichtigen
       - Follow-up-Antworten für tiefere Einblicke nutzen
-      - Konkrete, umsetzbare Empfehlungen mit Zeitrahmen
-      - Fokus auf Qualität statt Quantität
+      - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
-      STRUKTUR:
+      Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
+      - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
+      - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
       
-      KERNAUSSAGEN:
-      [2-3 wichtigste Erkenntnisse aus der Reflexion]
+      Strukturiere die Zusammenfassung in folgendem Format:
       
-      PRIORITÄTSANALYSE:
-      [6-8 wichtigste Bereiche, priorisiert nach Antworttiefe und Relevanz]
+      Einleitung:
+      [Überblick über die Reflexion mit den wichtigsten Erkenntnissen und Kernaussagen]
       
-      ENTWICKLUNGSBEREICHE:
-      [2-3 Bereiche mit Potenzial für weitere Reflexion oder Entwicklung]
+      Systematische Analyse:
       
-      HANDLUNGSEMPFEHLUNGEN:
-      [3-5 konkrete, umsetzbare Schritte mit Zeitrahmen (1-3 Monate)]
+      1. Rollenverständnis:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      2. Stolz & persönliche Leistung:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      3. Herausforderungen & Umgang mit Druck:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      4. Verantwortung & Selbstorganisation:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      5. Zusammenarbeit & Feedback:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      6. Entwicklung & Lernen:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      7. Energie & Belastung:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      8. Kultur & Werte:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      9. Entscheidungsspielräume & Freiheit:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      10. Wertschätzung & Gesehenwerden:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      11. Perspektive & Zukunft:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      12. Rollentausch & Führungsperspektive:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
+      Empfehlungen für dein Mitarbeiterjahresgespräch:
+      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (1-3 Monate)]
     `
 
     const completion = await openai.chat.completions.create({
@@ -109,14 +155,15 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache und persönliche Entwicklung. Deine Aufgabe ist es, bei Mitarbeiterentwicklungsgesprächen empathische und handlungsorientierte Zusammenfassungen zu erstellen.
+          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache, berufliche Rollen und persönliche Entwicklung. Deine Aufgabe ist es, bei Mitarbeiterentwicklungsgesprächen empathische und hilfreiche Zusammenfassungen zu erstellen.
 
 Berücksichtige dabei:
-- Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt
-- Follow-up-Antworten für tiefere Einblicke
-- Sprachliche Anpassung an den Erfahrungskontext
-- Konkrete, umsetzbare Handlungsempfehlungen
-- Fokus auf Qualität und Relevanz statt Vollständigkeit`
+- Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
+- Follow-up-Antworten für tiefere Einblicke und Perspektivenentwicklung
+- Sprachliche Anpassung an den Erfahrungs- und Alterskontext
+- Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
+- Empathie und Unterstützung ohne Suggestion oder Floskeln
+- Konkrete, umsetzbare Handlungsempfehlungen`
         },
         {
           role: 'user',
