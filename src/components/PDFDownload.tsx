@@ -41,159 +41,188 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     }
   }
 
-  const handleDownloadPDF = () => {
-    // Erstelle HTML für Fragen und Antworten
-    let questionsAndAnswersHTML = ''
-    if (storedQuestions && storedQuestions.length > 0) {
-      questionsAndAnswersHTML = `
-        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #10b981;">
-          <h2 style="color: #065f46; margin-bottom: 20px;">Fragen und Antworten</h2>
-          <div style="color: #064e3b; line-height: 1.6;">
-      `
+  const formatSummary = (summaryText: string) => {
+    if (!summaryText) return null
+    
+    const sections = summaryText.split(/\n(?=\d+\.|KERNAUSSAGEN:|PRIORITÄTSANALYSE:|ENTWICKLUNGSBEREICHE:|HANDLUNGSEMPFEHLUNGEN:|Einleitung:|Systematische Analyse:|Empfehlungen für dein Mitarbeiterjahresgespräch:)/)
+    
+    return sections.map((section, index) => {
+      const trimmedSection = section.trim()
+      if (!trimmedSection) return null
       
-      storedQuestions.forEach((question, index) => {
-        const answer = progress.answers[question.id]
-        const followUpQuestions = progress.followUpQuestions[question.id] || []
-        
-        questionsAndAnswersHTML += `
-          <div style="margin-bottom: 25px; padding: 15px; background-color: white; border-radius: 6px; border: 1px solid #e5e7eb;">
-            <div style="margin-bottom: 10px;">
-              <span style="background-color: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">
-                ${question.category}
-              </span>
-            </div>
-            <h3 style="color: #1f2937; font-size: 16px; font-weight: 600; margin-bottom: 10px;">
-              Frage ${index + 1}: ${question.question}
-            </h3>
-        `
-        
-        if (answer) {
-          questionsAndAnswersHTML += `
-            <div style="margin-bottom: 10px;">
-              <strong style="color: #374151;">Antwort:</strong>
-              <div style="background-color: #f3f4f6; padding: 10px; border-radius: 4px; margin-top: 5px; white-space: pre-wrap;">
-                ${answer}
+      // Erkenne Sektionen
+      if (trimmedSection.includes('KERNAUSSAGEN:') || trimmedSection.includes('Einleitung:')) {
+        return (
+          <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
+              <h4 className="text-lg font-semibold text-blue-900">Kernaussagen</h4>
             </div>
-          `
-        } else {
-          questionsAndAnswersHTML += `
-            <div style="margin-bottom: 10px;">
-              <em style="color: #6b7280;">Nicht beantwortet</em>
+            <div className="text-blue-800 leading-relaxed">
+              {trimmedSection.replace(/^(KERNAUSSAGEN:|Einleitung:)/, '').trim()}
             </div>
-          `
-        }
-        
-        // Follow-up Fragen und Antworten
-        if (followUpQuestions.length > 0) {
-          questionsAndAnswersHTML += `
-            <div style="margin-top: 10px;">
-              <strong style="color: #374151;">Vertiefende Nachfragen:</strong>
-          `
-          
-          followUpQuestions.forEach((followUpQuestion, followUpIndex) => {
-            const followUpAnswer = progress.answers[`${question.id}_followup_${followUpIndex}`]
-            questionsAndAnswersHTML += `
-              <div style="margin-top: 8px; padding: 8px; background-color: #f0fdf4; border-radius: 4px;">
-                <div style="font-weight: 500; color: #166534; margin-bottom: 5px;">
-                  ${followUpQuestion}
-                </div>
-            `
-            
-            if (followUpAnswer) {
-              questionsAndAnswersHTML += `
-                <div style="color: #15803d; font-style: italic;">
-                  ${followUpAnswer}
-                </div>
-              `
-            } else {
-              questionsAndAnswersHTML += `
-                <div style="color: #6b7280; font-style: italic;">
-                  Nicht beantwortet
-                </div>
-              `
-            }
-            
-            questionsAndAnswersHTML += `
-              </div>
-            `
-          })
-          
-          questionsAndAnswersHTML += `
-            </div>
-          `
-        }
-        
-        questionsAndAnswersHTML += `
           </div>
-        `
-      })
+        )
+      }
       
-      questionsAndAnswersHTML += `
+      if (trimmedSection.includes('FÜHRUNGSPERSPEKTIVE & VERBESSERUNGSVORSCHLÄGE:') || trimmedSection.includes('Führungsperspektive & Verbesserungsvorschläge:')) {
+        return (
+          <div key={index} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h4 className="text-lg font-semibold text-indigo-900">Führungsperspektive & Verbesserungsvorschläge</h4>
+            </div>
+            <div className="text-indigo-800 leading-relaxed">
+              {trimmedSection.replace(/^(FÜHRUNGSPERSPEKTIVE & VERBESSERUNGSVORSCHLÄGE:|Führungsperspektive & Verbesserungsvorschläge:)/, '').trim()}
+            </div>
+          </div>
+        )
+      }
+      
+      if (trimmedSection.includes('PRIORITÄTSANALYSE:') || trimmedSection.includes('Systematische Analyse:')) {
+        const items = trimmedSection
+          .replace(/^(PRIORITÄTSANALYSE:|Systematische Analyse:)/, '')
+          .split(/\n(?=\d+\.)/)
+          .filter(item => item.trim())
+        
+        return (
+          <div key={index} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-green-100 p-2 rounded-lg mr-3">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h4 className="text-lg font-semibold text-green-900">Prioritätsanalyse</h4>
+            </div>
+            <div className="space-y-4">
+              {items.map((item, itemIndex) => {
+                const match = item.match(/^(\d+)\.\s*(.+)/)
+                if (match) {
+                  const [, number, content] = match
+                  return (
+                    <div key={itemIndex} className="bg-white rounded-lg p-4 border border-green-200">
+                      <div className="flex items-start">
+                        <div className="bg-green-100 text-green-700 font-semibold rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">
+                          {number}
+                        </div>
+                        <div className="text-green-800 leading-relaxed flex-1">
+                          {content.trim()}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })}
+            </div>
+          </div>
+        )
+      }
+      
+      if (trimmedSection.includes('ENTWICKLUNGSBEREICHE:')) {
+        return (
+          <div key={index} className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 border border-orange-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h4 className="text-lg font-semibold text-orange-900">Entwicklungsbereiche</h4>
+            </div>
+            <div className="text-orange-800 leading-relaxed">
+              {trimmedSection.replace(/^ENTWICKLUNGSBEREICHE:/, '').trim()}
+            </div>
+          </div>
+        )
+      }
+      
+      if (trimmedSection.includes('HANDLUNGSEMPFEHLUNGEN:') || trimmedSection.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
+        const recommendations = trimmedSection
+          .replace(/^(HANDLUNGSEMPFEHLUNGEN:|Empfehlungen für dein Mitarbeiterjahresgespräch:)/, '')
+          .split(/\n(?=\d+\.|•)/)
+          .filter(item => item.trim())
+        
+        return (
+          <div key={index} className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
+            <div className="flex items-center mb-4">
+              <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </div>
+              <h4 className="text-lg font-semibold text-purple-900">Handlungsempfehlungen</h4>
+            </div>
+            <div className="space-y-3">
+              {recommendations.map((rec, recIndex) => {
+                const cleanRec = rec.replace(/^(\d+\.|•)\s*/, '').trim()
+                if (cleanRec) {
+                  return (
+                    <div key={recIndex} className="flex items-start space-x-3">
+                      <div className="bg-purple-100 p-1 rounded-full mt-1">
+                        <svg className="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span className="text-purple-800 leading-relaxed">{cleanRec}</span>
+                    </div>
+                  )
+                }
+                return null
+              })}
+            </div>
+          </div>
+        )
+      }
+      
+      // Fallback für andere Inhalte
+      return (
+        <div key={index} className="bg-gray-50 rounded-lg p-4">
+          <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+            {trimmedSection}
           </div>
         </div>
-      `
-    }
+      )
+    }).filter(Boolean)
+  }
 
-    // Einfache PDF-Generierung mit Browser-API
-    const element = document.createElement('div')
-    element.innerHTML = `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #1f2937; text-align: center; margin-bottom: 30px;">
-          Mitarbeiter:innen-Reflexion & Entwicklungsgespräch
-        </h1>
-        
-        ${roleContext ? `
-        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
-          <h2 style="color: #1e40af; margin-bottom: 15px;">Rollenkontext</h2>
-          <div style="color: #1e3a8a; line-height: 1.6;">
-            <p><strong>Arbeitsbereich:</strong> ${roleContext.workAreas.join(', ')}</p>
-            <p><strong>Funktion:</strong> ${roleContext.functions.join(', ')}</p>
-            <p><strong>Erfahrung:</strong> ${roleContext.experienceYears}</p>
-            <p><strong>Kundenkontakt:</strong> ${roleContext.customerContact}</p>
-            ${roleContext.dailyTasks ? `<p><strong>Tägliche Aufgaben:</strong> ${roleContext.dailyTasks}</p>` : ''}
-          </div>
-        </div>
-        ` : ''}
-        
-        ${questionsAndAnswersHTML}
-        
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="color: #374151; margin-bottom: 15px;">Zusammenfassung der Selbstreflexion</h2>
-          <div style="white-space: pre-wrap; line-height: 1.6; color: #4b5563;">
-            ${summary}
-          </div>
-        </div>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-          <p style="color: #6b7280; font-size: 14px; text-align: center;">
-            Generiert am ${new Date().toLocaleDateString('de-DE')} | 
-            Hash-ID: ${hashId || 'Unbekannt'}
-          </p>
-        </div>
-      </div>
-    `
-
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Mitarbeiter:innen-Reflexion</title>
-            <style>
-              body { font-family: Arial, sans-serif; }
-              @media print {
-                body { margin: 0; }
-              }
-            </style>
-          </head>
-          <body>
-            ${element.innerHTML}
-          </body>
-        </html>
-      `)
-      printWindow.document.close()
-      printWindow.print()
+  const handleDownloadPDF = async () => {
+    try {
+      const { pdf } = await import('@react-pdf/renderer')
+      const PDFDocument = (await import('./PDFDocument')).default
+      
+      const blob = await pdf(
+        <PDFDocument
+          summary={summary || ''}
+          questions={storedQuestions || []}
+          answers={progress.answers}
+          followUpQuestions={progress.followUpQuestions}
+          roleContext={roleContext}
+          userName={roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
+          department={roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
+        />
+      ).toBlob()
+      
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Fehler beim PDF-Download:', error)
+      alert('Fehler beim PDF-Download. Bitte versuche es erneut.')
     }
   }
 
@@ -357,24 +386,24 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
               </div>
 
               {/* Zusammenfassung */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 border border-gray-200">
-                <div className="flex items-center mb-6">
-                  <div className="bg-purple-100 p-3 rounded-lg mr-4">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">KI-Zusammenfassung</h3>
-                    <p className="text-gray-600">Deine strukturierte Selbstreflexion</p>
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-6">
+                  <div className="flex items-center">
+                    <div className="bg-white/20 p-3 rounded-lg mr-4">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">KI-Zusammenfassung</h3>
+                      <p className="text-purple-100">Deine strukturierte Selbstreflexion</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="prose prose-lg max-w-none">
-                  <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base">
-                      {summary}
-                    </div>
+                <div className="p-8">
+                  <div className="space-y-6">
+                    {formatSummary(summary)}
                   </div>
                 </div>
               </div>

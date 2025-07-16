@@ -85,7 +85,7 @@ ANFORDERUNGEN:
 - Persönliche Ansprache mit ${roleContext.firstName}s Namen
 
 KATEGORIEN (je eine Frage):
-1. Rollenverständnis
+1. Führungsperspektive & Verbesserungsvorschläge
 2. Stolz & persönliche Leistung  
 3. Herausforderungen & Umgang mit Druck
 4. Verantwortung & Selbstorganisation
@@ -99,14 +99,14 @@ KATEGORIEN (je eine Frage):
 12. Rollentausch & Führungsperspektive
 
 BEISPIELE für spezifische Fragen:
-- "Was macht für dich einen guten ${roleContext.functions[0]} in der ${roleContext.workAreas[0]} aus?"
+- "Wenn du Chef wärst: Was würdest du in deinem Arbeitsbereich, Team oder Unternehmen anders machen oder verbessern, ${roleContext.firstName}?"
 - "Welche Situation mit ${roleContext.customerContact.includes('täglich') ? 'Kunden' : 'Kollegen'} hat dich zuletzt besonders gefordert?"
 - "Wie hat sich dein Verständnis deiner Rolle in den ${roleContext.experienceYears} entwickelt?"
 - "Was würdest du als Vorgesetzter anders machen, ${roleContext.firstName}?"
 
 Antworte nur mit JSON im Format:
 [
-{"id": "role", "question": "...", "category": "Rollenverständnis"},
+{"id": "leadership_improvements", "question": "...", "category": "Führungsperspektive & Verbesserungsvorschläge"},
 {"id": "stolz", "question": "...", "category": "Stolz & persönliche Leistung"},
 {"id": "challenges", "question": "...", "category": "Herausforderungen & Umgang mit Druck"},
 {"id": "responsibility", "question": "...", "category": "Verantwortung & Selbstorganisation"},

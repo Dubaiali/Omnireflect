@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       
       Analysiere die Antworten systematisch nach den 12 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
       
-      1. **Rollenverständnis**: Wie siehst du deine Rolle und Verantwortlichkeiten?
+      1. **Führungsperspektive & Verbesserungsvorschläge**: Was würdest du als Chef anders machen oder verbessern?
       2. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
       3. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
       4. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       
       Systematische Analyse:
       
-      1. Rollenverständnis:
+      1. Führungsperspektive & Verbesserungsvorschläge:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
       2. Stolz & persönliche Leistung:

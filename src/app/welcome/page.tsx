@@ -62,7 +62,7 @@ export default function WelcomePage() {
           <div className="bg-white rounded-lg shadow-md p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Willkommen bei OmniReflect! 👋
+                Willkommen bei Omni! 👋
               </h1>
               <p className="text-lg text-gray-600">
                 Dein persönlicher Begleiter für das Mitarbeiterjahresgespräch
@@ -75,7 +75,7 @@ export default function WelcomePage() {
                   Was erwartet dich hier?
                 </h2>
                 <p className="text-blue-800">
-                  OmniReflect hilft dir dabei, dich optimal auf dein Mitarbeiterjahresgespräch vorzubereiten. 
+                  Omni hilft dir dabei, dich optimal auf dein Mitarbeiterjahresgespräch vorzubereiten. 
                   Durch eine strukturierte Reflexion deiner Rolle, Erfahrungen und Ziele wirst du Klarheit gewinnen 
                   und das Gespräch produktiv gestalten können.
                 </p>

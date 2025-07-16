@@ -58,8 +58,15 @@ export default function QuestionForm() {
 
   // Lade personalisierte Fragen beim ersten Laden
   const loadPersonalizedQuestions = async (isRetry = false, forceRegenerate = false) => {
+    // Verhindere mehrfaches Laden während der Generierung
+    if (isLoadingQuestions && !isRetry) {
+      console.log('DEBUG: Already loading questions - skipping')
+      return
+    }
+    
     // Verhindere mehrfaches Laden, wenn bereits Fragen vorhanden sind und keine Neugenerierung erzwungen wird
     if (questions.length > 0 && !isRetry && !forceRegenerate) {
+      console.log('DEBUG: Questions already loaded - skipping')
       return
     }
     
@@ -213,7 +220,22 @@ export default function QuestionForm() {
         loadPersonalizedQuestions()
       }
     }
-  }, [questions.length, storedQuestions, roleContext]) // roleContext als Dependency hinzugefügt
+  }, [questions.length, storedQuestions]) // roleContext als Dependency entfernt - verhindert Race Conditions
+
+  // Separater useEffect für Rollenkontext-Änderungen
+  useEffect(() => {
+    if (roleContext && storedQuestions && storedQuestions.length > 0) {
+      const hasChanged = hasRoleContextChanged(roleContext)
+      if (hasChanged) {
+        console.log('DEBUG: RoleContext changed - clearing questions for regeneration')
+        // Lösche Fragen aus dem Store, damit sie neu generiert werden
+        saveQuestions([])
+        setQuestions([])
+        // Starte Neugenerierung
+        loadPersonalizedQuestions(false, true)
+      }
+    }
+  }, [roleContext]) // Nur roleContext als Dependency
 
   // Prüfe URL-Parameter für direkte Navigation zu einer spezifischen Frage
   // WICHTIG: Diese Logik wird NUR ausgeführt, wenn Fragen bereits geladen sind
