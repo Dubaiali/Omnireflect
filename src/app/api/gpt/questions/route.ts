@@ -33,8 +33,16 @@ export async function POST(request: NextRequest) {
     // Input validieren
     let roleContext: RoleContext | undefined
     if (body.roleContext) {
+      let rc = body.roleContext
+      if (typeof rc === 'string') {
+        try {
+          rc = JSON.parse(rc)
+        } catch (e) {
+          return NextResponse.json({ error: 'Rollenkontext konnte nicht geparst werden.' }, { status: 400 })
+        }
+      }
       try {
-        roleContext = validateAndSanitize(roleContextSchema, body.roleContext) as RoleContext
+        roleContext = validateAndSanitize(roleContextSchema, rc) as RoleContext
       } catch (error) {
         console.error('Validierungsfehler:', error)
         return NextResponse.json(
