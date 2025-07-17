@@ -2,7 +2,7 @@
 
 ## 🎯 Übersicht
 
-Diese Dokumentation beschreibt die Optimierungen der AI-Prompts in Omnireflect v1.5, die darauf abzielen, interessantere und tiefgründigere Reflexionsfragen zu generieren.
+Diese Dokumentation beschreibt die Optimierungen der AI-Prompts in Omnireflect v2.2, die darauf abzielen, interessantere und tiefgründigere Reflexionsfragen zu generieren.
 
 ## 🚀 Optimierungsziele
 

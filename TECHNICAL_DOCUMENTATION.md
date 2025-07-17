@@ -150,7 +150,7 @@ Omnireflect/
   - `/api/gpt/followup` - Nachfragen
   - `/api/gpt/summary` - Zusammenfassung
 
-### Prompt-Engineering (Optimiert v1.5)
+### Prompt-Engineering (Optimiert v2.2)
 - **Fokus:** Persönliche Entwicklung und berufliche Reflexion
 - **Kontext:** Rollenkontext des Benutzers als Hintergrund
 - **Kategorien:** 12 spezifische Reflexionskategorien
@@ -178,7 +178,7 @@ Omnireflect/
 11. **Perspektive & Zukunft** - Wie siehst du deine berufliche Zukunft?
 12. **Rollentausch & Führungsperspektive** - Was würdest du als Vorgesetzter anders machen?
 
-### Design-System (Optimiert v1.5)
+### Design-System (Optimiert v2.2)
 - **Farbkodierung:** 11 verschiedene Farben für verschiedene Kategorien
 - **Gradient-Designs:** Moderne visuelle Hierarchie
 - **Konsistente Darstellung:** Web und PDF verwenden das gleiche Design-System

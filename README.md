@@ -5,7 +5,7 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mi
 ## 📚 Dokumentation
 
 - **[Technische Dokumentation](TECHNICAL_DOCUMENTATION.md)** - Vollständige technische Details
-- **[Prompt-Optimierung](PROMPT_OPTIMIZATION.md)** - AI-Prompt-Optimierungen v1.5
+- **[Prompt-Optimierung](PROMPT_OPTIMIZATION.md)** - AI-Prompt-Optimierungen v2.2
 - **[Debugging-Dokumentation](DEBUGGING.md)** - Bekannte Probleme und Lösungen
 - **[Deployment-Anleitung](DEPLOYMENT.md)** - Produktions-Deployment
 
@@ -23,15 +23,17 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mi
 
 ## 🌐 Live-Anwendung
 
-**Produktionsumgebung:** https://reflect.omni-scient.com
+**Produktionsumgebung:** https://reflect.omni-scient.com  
+**Status:** ✅ Produktiv (Version 2.2.3)  
+**Deployment:** PM2, Node.js 20.19.4, Let's Encrypt SSL
 
 ## 🚀 Features
 
 - ✅ HashID-basiertes Login-System
 - ✅ Admin-Dashboard für HashID-Verwaltung
 - ✅ KI-gestützte Mitarbeiterjahresgespräche
-- ✅ **Optimierte AI-Prompts v1.5** - Interessantere und tiefgründigere Reflexionsfragen
-- ✅ **Verbessertes Design-System** - Farbkodierte Kategorien und Gradient-Designs
+- ✅ **Optimierte AI-Prompts v2.2** - Interessantere und tiefgründigere Reflexionsfragen
+- ✅ **Verbessertes Design-System v2.2** - Farbkodierte Kategorien und Gradient-Designs
 - ✅ Personalisierte Zusammenfassungen mit strukturierter Darstellung
 - ✅ Anonymisierte Datenspeicherung
 - ✅ PDF-Export-Funktionalität
@@ -89,16 +91,32 @@ npm start
 
 ## 🚀 Deployment
 
-### Schnellstart
+### Produktionsumgebung
+Die Anwendung läuft auf https://reflect.omni-scient.com mit PM2-Prozessmanagement.
 
+**Automatisches Deployment:**
 ```bash
-# Deployment-Skript ausführen
-./deploy-production.sh
+# Auf dem Server ausführen
+cd /var/www/omnireflect
+./deploy-pm2-server.sh
 ```
 
-### Manuelles Deployment
+**Manuelles Deployment:**
+```bash
+# Branch wechseln und Code aktualisieren
+git checkout Omni3
+git pull origin Omni3
 
-Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für detaillierte Anweisungen.
+# Dependencies installieren und Build erstellen
+npm ci
+npm run build -- --no-lint
+
+# PM2 starten
+pm2 start npm --name 'reflect-app' -- start -- -p 3002
+pm2 save
+```
+
+**Detaillierte Dokumentation:** [DEPLOYMENT_PRODUCTION.md](DEPLOYMENT_PRODUCTION.md)
 
 ## 📊 Monitoring & Wartung
 
@@ -135,8 +153,9 @@ Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für detaillierte Anweisungen.
 Das System verwendet ein HashID-basiertes Login-System für maximale Sicherheit:
 
 #### Test-Mitarbeiter (HashIDs)
-- **Hash-ID:** `abc123` | **Passwort:** `test123` | **Name:** Max Mustermann (IT)
-- **Hash-ID:** `def456` | **Passwort:** `test456` | **Name:** Anna Schmidt (Marketing)
+- **Hash-ID:** `mitarbeiter1` | **Passwort:** `OmniReflect2024!` | **Name:** Max Mustermann (IT)
+- **Hash-ID:** `mitarbeiter2` | **Passwort:** `Sicherheit123#` | **Name:** Anna Schmidt (Marketing)
+- **Hash-ID:** `mitarbeiter3` | **Passwort:** `DatenSchutz456$` | **Name:** Tom Weber (Sales)
 
 #### Admin-Zugang
 - **URL:** `http://localhost:3000/admin`

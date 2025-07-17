@@ -5,11 +5,39 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0] - 2025-01-17
+## [2.2.3] - 2025-07-17
 
 ### ✅ Hinzugefügt
-- **Prompt-Optimierung v1.5**: Interessantere und tiefgründigere Reflexionsfragen
-- **Design-System v1.5**: Farbkodierte Kategorien und Gradient-Designs
+- **Vollständige Produktionsumgebung**: PM2-basiertes Deployment
+- **Automatisches SSL-Zertifikat**: Let's Encrypt Integration
+- **Umfassende Deployment-Dokumentation**: DEPLOYMENT_PRODUCTION.md
+- **OWASP Sicherheitstest**: Sicherheitskonfiguration und -tests
+- **PM2-Monitoring**: Log-Rotation und Prozessüberwachung
+- **Backup-System**: Automatische Backups für Produktionsumgebung
+
+### 🔧 Geändert
+- **Deployment-System**: Von nohup auf PM2 umgestellt
+- **Node.js-Version**: Auf 20.19.4 aktualisiert
+- **Nginx-Konfiguration**: HTTPS-Optimierung
+- **Security Headers**: CSP, HSTS, XSS-Schutz implementiert
+
+### 🐛 Behoben
+- **Port-Konflikte**: Anwendungsneustart ohne Endlosschleifen
+- **SSL-Zertifikat**: Korrekte Domain-Konfiguration
+- **Build-Prozess**: Linting-Fehler umgangen
+- **Umgebungsvariablen**: Synchronisation mit Entwicklungsumgebung
+
+### 🔐 Sicherheit
+- **HTTPS-Only**: HTTP zu HTTPS Redirect
+- **XSS-Schutz**: Security Headers implementiert
+- **Clickjacking-Schutz**: X-Frame-Options konfiguriert
+- **Content Security Policy**: CSP für Ressourcen-Schutz
+
+## [2.2.2] - 2025-01-17
+
+### ✅ Hinzugefügt
+- **Prompt-Optimierung v2.2**: Interessantere und tiefgründigere Reflexionsfragen
+- **Design-System v2.2**: Farbkodierte Kategorien und Gradient-Designs
 - **Fokus-Bereiche**: Neue Kategorien für persönliche Entwicklung
 - **Inspirierende Fragen**: "Was hat dich am meisten überrascht?", "Was würdest du deinem jüngeren Ich raten?"
 - **Verbesserte Follow-ups**: Vertiefende Fragen zu Wachstumserfahrungen
