@@ -113,9 +113,16 @@ export const useSessionStore = create<SessionState>()(
         })),
 
       saveRoleContext: (roleContext: RoleContext) => {
-        // Berechne Hash des neuen Rollenkontexts
-        const newHash = JSON.stringify(roleContext)
+        // Erstelle eine normalisierte Version für den Hash
+        const normalizedContext = {
+          ...roleContext,
+          workAreas: [...roleContext.workAreas].sort(),
+          functions: [...roleContext.functions].sort()
+        }
+        const newHash = JSON.stringify(normalizedContext)
         const state = get()
+        
+        console.log('DEBUG: Speichere Rollenkontext mit Hash:', newHash)
         
         // Speichere auch in localStorage für Admin-Zugriff
         if (state.hashId) {
@@ -157,8 +164,36 @@ export const useSessionStore = create<SessionState>()(
 
       hasRoleContextChanged: (newRoleContext: RoleContext) => {
         const state = get()
-        const newHash = JSON.stringify(newRoleContext)
-        return state.roleContextHash !== newHash
+        
+        // Erstelle eine normalisierte Version des neuen Rollenkontexts
+        const normalizedNewContext = {
+          ...newRoleContext,
+          workAreas: [...newRoleContext.workAreas].sort(),
+          functions: [...newRoleContext.functions].sort()
+        }
+        
+        // Erstelle eine normalisierte Version des aktuellen Rollenkontexts
+        const currentContext = state.roleContext
+        if (!currentContext) {
+          return true // Wenn kein aktueller Kontext vorhanden ist, hat sich etwas geändert
+        }
+        
+        const normalizedCurrentContext = {
+          ...currentContext,
+          workAreas: [...currentContext.workAreas].sort(),
+          functions: [...currentContext.functions].sort()
+        }
+        
+        const newHash = JSON.stringify(normalizedNewContext)
+        const currentHash = JSON.stringify(normalizedCurrentContext)
+        
+        console.log('DEBUG: Rollenkontext-Vergleich:', {
+          newHash,
+          currentHash,
+          changed: newHash !== currentHash
+        })
+        
+        return newHash !== currentHash
       },
 
       saveToStorage: () => {

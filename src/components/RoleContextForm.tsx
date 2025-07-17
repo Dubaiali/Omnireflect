@@ -163,13 +163,17 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
 
     // Prüfe ob sich der Rollenkontext geändert hat
     const hasChanged = hasRoleContextChanged(roleContext)
+    console.log('DEBUG: Rollenkontext geändert?', hasChanged)
     
     // Speichere den neuen Rollenkontext
     saveRoleContext(roleContext)
     
     // Wenn sich der Rollenkontext geändert hat, lösche gespeicherte Fragen
     if (hasChanged) {
+      console.log('DEBUG: Lösche gespeicherte Fragen wegen Rollenkontext-Änderung')
       saveQuestions([])
+    } else {
+      console.log('DEBUG: Rollenkontext unverändert, behalte gespeicherte Fragen')
     }
 
     router.push('/questions')

@@ -59,13 +59,23 @@ export default function QuestionForm() {
 
   // Lade personalisierte Fragen beim ersten Laden
   const loadPersonalizedQuestions = async (isRetry = false, forceRegenerate = false) => {
+    console.log('DEBUG: loadPersonalizedQuestions aufgerufen', { isRetry, forceRegenerate, isLoadingQuestions, storedQuestionsLength: storedQuestions?.length, localQuestionsLength: questions.length })
+    
     // Verhindere mehrfaches Laden während der Generierung
     if (isLoadingQuestions && !isRetry) {
+      console.log('DEBUG: Fragen werden bereits geladen, überspringe')
+      return
+    }
+    
+    // Wenn bereits Fragen im lokalen State sind und nicht erzwungen wird, überspringe
+    if (questions.length > 0 && !forceRegenerate) {
+      console.log('DEBUG: Fragen bereits im lokalen State vorhanden, überspringe')
       return
     }
     
     // Wenn wir von der Zusammenfassung zurückkommen, verwende die gespeicherten Fragen
     if (questionParam && storedQuestions && storedQuestions.length > 0) {
+      console.log('DEBUG: Verwende gespeicherte Fragen von Zusammenfassung')
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
       return
@@ -73,11 +83,13 @@ export default function QuestionForm() {
     
     // Prüfe ob bereits Fragen im Store gespeichert sind (nur bei Retry oder Neugenerierung überspringen)
     if (storedQuestions && storedQuestions.length > 0 && !isRetry && !forceRegenerate) {
+      console.log('DEBUG: Verwende bereits gespeicherte Fragen')
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
       return
     }
     
+    console.log('DEBUG: Starte Generierung neuer Fragen')
     setIsLoadingQuestions(true)
     setHasError(false)
     setLoadingProgress(0)
@@ -166,14 +178,28 @@ export default function QuestionForm() {
   }
 
   useEffect(() => {
+    console.log('DEBUG: useEffect triggered', { 
+      roleContext: !!roleContext, 
+      questionsLength: questions.length, 
+      isLoadingQuestions, 
+      storedQuestionsLength: storedQuestions?.length 
+    })
+    
     // Wenn Rollenkontext vorhanden ist und keine Fragen geladen sind, lade sie
-    if (roleContext && questions.length === 0) {
+    if (roleContext && questions.length === 0 && !isLoadingQuestions) {
       if (storedQuestions && storedQuestions.length > 0) {
+        console.log('DEBUG: Lade gespeicherte Fragen aus dem Store')
         setQuestions(storedQuestions)
         setIsLoadingQuestions(false)
-      } else if (!isLoadingQuestions) {
+      } else {
+        console.log('DEBUG: Keine gespeicherten Fragen gefunden, generiere neue')
         loadPersonalizedQuestions()
       }
+    }
+    
+    // Zusätzliche Sicherheit: Wenn Fragen bereits im lokalen State sind, nicht überschreiben
+    if (questions.length > 0 && storedQuestions && storedQuestions.length === 0) {
+      console.log('DEBUG: Fragen bereits im lokalen State, nicht überschreiben')
     }
   }, [roleContext, questions.length, storedQuestions, isLoadingQuestions])
 
