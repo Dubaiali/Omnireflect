@@ -5,6 +5,45 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-17
+
+### ✅ Hinzugefügt
+- **Prompt-Optimierung v1.5**: Interessantere und tiefgründigere Reflexionsfragen
+- **Design-System v1.5**: Farbkodierte Kategorien und Gradient-Designs
+- **Fokus-Bereiche**: Neue Kategorien für persönliche Entwicklung
+- **Inspirierende Fragen**: "Was hat dich am meisten überrascht?", "Was würdest du deinem jüngeren Ich raten?"
+- **Verbesserte Follow-ups**: Vertiefende Fragen zu Wachstumserfahrungen
+- **PROMPT_OPTIMIZATION.md**: Neue Dokumentation für Prompt-Optimierungen
+
+### 🔧 Geändert
+- **Fragen-Prompt**: Fokus auf persönliche Entwicklung statt spezifische Arbeitsbereiche
+- **Follow-up-Prompt**: Erweiterte Fragetechniken und Fokus-Bereiche
+- **Follow-up-Logik**: Nur eine einzige Nachfrage statt mehrere
+- **Summary-Prompt**: Neue Fokus-Bereiche für Analyse
+- **Kategorien-Reihenfolge**: Summary und PDF stimmen jetzt mit Fragen-Reihenfolge überein
+- **Nicht beantwortete Fragen**: Zeigen "- nicht zu reflektieren -" statt Mockdaten
+- **Web-Anzeige**: Farbkodierte Kategorien mit verbesserter Lesbarkeit
+- **PDF-Design**: Konsistente Farbgebung und moderne Gradient-Designs
+- **Titel und Beschreibungen**: Betonung von persönlicher Entwicklung
+
+### 🎨 Design-Verbesserungen
+- **Farbpalette**: 11 verschiedene Farben für verschiedene Kategorien
+- **Gradient-Designs**: Moderne visuelle Hierarchie
+- **Konsistente Darstellung**: Web und PDF verwenden das gleiche Design-System
+- **Verbesserte Lesbarkeit**: Klare visuelle Trennung der Kategorien
+- **Systematische Analyse Header**: Visueller Separator zwischen Einleitung und Kategorien
+
+### 📚 Dokumentation
+- **TECHNICAL_DOCUMENTATION.md**: Aktualisiert mit neuen Prompt-Strategien
+- **README.md**: Neue Features und Dokumentation hinzugefügt
+- **PROMPT_OPTIMIZATION.md**: Neue detaillierte Dokumentation der Optimierungen
+
+### 🔧 Technische Verbesserungen
+- **Robustes Parsing**: Unterstützt alle neuen Kategorien
+- **Fallback-Mechanismus**: Zeigt rohen Text an, falls Parsing fehlschlägt
+- **Debug-Ausgaben**: Bessere Fehlerdiagnose
+- **Konsistente Farbkodierung**: Einheitliches Design-System
+
 ## [2.1.0] - 2025-01-17
 
 ### ✅ Hinzugefügt

@@ -249,71 +249,179 @@ interface PDFDocumentProps {
 }
 
 const formatSummarySections = (summary: string) => {
-  const sections = summary.split(/\n(?=\d+\.|KERNAUSSAGEN:|PRIORITÄTSANALYSE:|ENTWICKLUNGSBEREICHE:|HANDLUNGSEMPFEHLUNGEN:|Einleitung:|Systematische Analyse:|Empfehlungen für dein Mitarbeiterjahresgespräch:|FÜHRUNGSPERSPEKTIVE & VERBESSERUNGSVORSCHLÄGE:)/)
+  // Neue Struktur basierend auf dem optimierten Summary-Prompt
+  const sections = summary.split(/\n(?=Einleitung:|Systematische Analyse:|Stolz & persönliche Leistung:|Herausforderungen & Umgang mit Druck:|Verantwortung & Selbstorganisation:|Zusammenarbeit & Feedback:|Entwicklung & Lernen:|Energie & Belastung:|Kultur & Werte:|Entscheidungsspielräume & Freiheit:|Wertschätzung & Gesehenwerden:|Perspektive & Zukunft:|Verbesserungsvorschläge & Ideen:|Rollentausch & Führungsperspektive:|Empfehlungen für dein Mitarbeiterjahresgespräch:)/)
   
   return sections.map((section, index) => {
     const trimmedSection = section.trim()
     if (!trimmedSection) return null
     
-    if (trimmedSection.includes('KERNAUSSAGEN:') || trimmedSection.includes('Einleitung:')) {
+    // Einleitung
+    if (trimmedSection.includes('Einleitung:')) {
       return {
-        type: 'kernaussagen',
-        title: 'Kernaussagen',
-        content: trimmedSection.replace(/^(KERNAUSSAGEN:|Einleitung:)/, '').trim(),
+        type: 'einleitung',
+        title: 'Einleitung & Überblick',
+        content: trimmedSection.replace(/^Einleitung:/, '').trim(),
         color: 'blue'
       }
     }
     
-    if (trimmedSection.includes('FÜHRUNGSPERSPEKTIVE & VERBESSERUNGSVORSCHLÄGE:') || trimmedSection.includes('Führungsperspektive & Verbesserungsvorschläge:')) {
+    // Systematische Analyse - Überschrift
+    if (trimmedSection.includes('Systematische Analyse:')) {
       return {
-        type: 'fuehrungsperspektive',
-        title: 'Führungsperspektive & Verbesserungsvorschläge',
-        content: trimmedSection.replace(/^(FÜHRUNGSPERSPEKTIVE & VERBESSERUNGSVORSCHLÄGE:|Führungsperspektive & Verbesserungsvorschläge:)/, '').trim(),
+        type: 'analyse_header',
+        title: 'Systematische Analyse',
+        content: 'Detaillierte Betrachtung aller Reflexionsbereiche',
         color: 'indigo'
       }
     }
     
-    if (trimmedSection.includes('PRIORITÄTSANALYSE:') || trimmedSection.includes('Systematische Analyse:')) {
-      const items = trimmedSection
-        .replace(/^(PRIORITÄTSANALYSE:|Systematische Analyse:)/, '')
-        .split(/\n(?=\d+\.)/)
-        .filter(item => item.trim())
-        .map(item => {
-          const match = item.match(/^(\d+)\.\s*(.+)/)
-          return match ? { number: match[1], content: match[2].trim() } : null
-        })
-        .filter(Boolean)
-      
+    // Stolz & persönliche Leistung
+    if (trimmedSection.includes('Stolz & persönliche Leistung:')) {
+      const content = trimmedSection.replace(/^Stolz & persönliche Leistung:/, '').trim()
       return {
-        type: 'prioritaetsanalyse',
-        title: 'Prioritätsanalyse',
-        items,
+        type: 'stolz',
+        title: 'Stolz & persönliche Leistung',
+        content: content || '- nicht zu reflektieren -',
         color: 'green'
       }
     }
     
-    if (trimmedSection.includes('ENTWICKLUNGSBEREICHE:')) {
+    // Herausforderungen
+    if (trimmedSection.includes('Herausforderungen & Umgang mit Druck:')) {
+      const content = trimmedSection.replace(/^Herausforderungen & Umgang mit Druck:/, '').trim()
       return {
-        type: 'entwicklungsbereiche',
-        title: 'Entwicklungsbereiche',
-        content: trimmedSection.replace(/^ENTWICKLUNGSBEREICHE:/, '').trim(),
+        type: 'herausforderungen',
+        title: 'Herausforderungen & Umgang mit Druck',
+        content: content || '- nicht zu reflektieren -',
         color: 'orange'
       }
     }
     
-    if (trimmedSection.includes('HANDLUNGSEMPFEHLUNGEN:') || trimmedSection.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
+    // Verantwortung
+    if (trimmedSection.includes('Verantwortung & Selbstorganisation:')) {
+      const content = trimmedSection.replace(/^Verantwortung & Selbstorganisation:/, '').trim()
+      return {
+        type: 'verantwortung',
+        title: 'Verantwortung & Selbstorganisation',
+        content: content || '- nicht zu reflektieren -',
+        color: 'purple'
+      }
+    }
+    
+    // Zusammenarbeit
+    if (trimmedSection.includes('Zusammenarbeit & Feedback:')) {
+      const content = trimmedSection.replace(/^Zusammenarbeit & Feedback:/, '').trim()
+      return {
+        type: 'zusammenarbeit',
+        title: 'Zusammenarbeit & Feedback',
+        content: content || '- nicht zu reflektieren -',
+        color: 'blue'
+      }
+    }
+    
+    // Entwicklung
+    if (trimmedSection.includes('Entwicklung & Lernen:')) {
+      const content = trimmedSection.replace(/^Entwicklung & Lernen:/, '').trim()
+      return {
+        type: 'entwicklung',
+        title: 'Entwicklung & Lernen',
+        content: content || '- nicht zu reflektieren -',
+        color: 'green'
+      }
+    }
+    
+    // Energie
+    if (trimmedSection.includes('Energie & Belastung:')) {
+      const content = trimmedSection.replace(/^Energie & Belastung:/, '').trim()
+      return {
+        type: 'energie',
+        title: 'Energie & Belastung',
+        content: content || '- nicht zu reflektieren -',
+        color: 'orange'
+      }
+    }
+    
+    // Kultur & Werte
+    if (trimmedSection.includes('Kultur & Werte:')) {
+      const content = trimmedSection.replace(/^Kultur & Werte:/, '').trim()
+      return {
+        type: 'kultur',
+        title: 'Kultur & Werte',
+        content: content || '- nicht zu reflektieren -',
+        color: 'purple'
+      }
+    }
+    
+    // Entscheidungsspielräume
+    if (trimmedSection.includes('Entscheidungsspielräume & Freiheit:')) {
+      const content = trimmedSection.replace(/^Entscheidungsspielräume & Freiheit:/, '').trim()
+      return {
+        type: 'entscheidungen',
+        title: 'Entscheidungsspielräume & Freiheit',
+        content: content || '- nicht zu reflektieren -',
+        color: 'indigo'
+      }
+    }
+    
+    // Wertschätzung
+    if (trimmedSection.includes('Wertschätzung & Gesehenwerden:')) {
+      const content = trimmedSection.replace(/^Wertschätzung & Gesehenwerden:/, '').trim()
+      return {
+        type: 'wertschaetzung',
+        title: 'Wertschätzung & Gesehenwerden',
+        content: content || '- nicht zu reflektieren -',
+        color: 'green'
+      }
+    }
+    
+    // Perspektive & Zukunft
+    if (trimmedSection.includes('Perspektive & Zukunft:')) {
+      const content = trimmedSection.replace(/^Perspektive & Zukunft:/, '').trim()
+      return {
+        type: 'perspektive',
+        title: 'Perspektive & Zukunft',
+        content: content || '- nicht zu reflektieren -',
+        color: 'blue'
+      }
+    }
+    
+    // Verbesserungsvorschläge & Ideen
+    if (trimmedSection.includes('Verbesserungsvorschläge & Ideen:')) {
+      const content = trimmedSection.replace(/^Verbesserungsvorschläge & Ideen:/, '').trim()
+      return {
+        type: 'verbesserungen',
+        title: 'Verbesserungsvorschläge & Ideen',
+        content: content || '- nicht zu reflektieren -',
+        color: 'indigo'
+      }
+    }
+    
+    // Rollentausch
+    if (trimmedSection.includes('Rollentausch & Führungsperspektive:')) {
+      const content = trimmedSection.replace(/^Rollentausch & Führungsperspektive:/, '').trim()
+      return {
+        type: 'rollentausch',
+        title: 'Rollentausch & Führungsperspektive',
+        content: content || '- nicht zu reflektieren -',
+        color: 'purple'
+      }
+    }
+    
+    // Empfehlungen
+    if (trimmedSection.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
       const recommendations = trimmedSection
-        .replace(/^(HANDLUNGSEMPFEHLUNGEN:|Empfehlungen für dein Mitarbeiterjahresgespräch:)/, '')
+        .replace(/^Empfehlungen für dein Mitarbeiterjahresgespräch:/, '')
         .split(/\n(?=\d+\.|•)/)
         .filter(item => item.trim())
         .map(item => item.replace(/^(\d+\.|•)\s*/, '').trim())
         .filter(Boolean)
       
       return {
-        type: 'handlungsempfehlungen',
-        title: 'Handlungsempfehlungen',
+        type: 'empfehlungen',
+        title: 'Empfehlungen für dein Mitarbeiterjahresgespräch',
         items: recommendations,
-        color: 'purple'
+        color: 'green'
       }
     }
     
@@ -354,7 +462,7 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
         </View>
         
         <Text style={styles.title}>KI-Zusammenfassung</Text>
-        <Text style={styles.subtitle}>Strukturierte Selbstreflexion</Text>
+        <Text style={styles.subtitle}>Persönliche Entwicklung & Selbstreflexion</Text>
         
         {summarySections.map((section, index) => (
           section && (
@@ -363,40 +471,91 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
                 {section.title}
               </Text>
               
-              {section.type === 'kernaussagen' && (
+              {section.type === 'einleitung' && (
                 <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
                   {section.content}
                 </Text>
               )}
               
-              {section.type === 'fuehrungsperspektive' && (
+              {section.type === 'analyse_header' && (
                 <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
                   {section.content}
                 </Text>
               )}
               
-              {section.type === 'prioritaetsanalyse' && (
-                <View>
-                  {section.items.map((item, itemIndex) => (
-                    <View key={itemIndex} style={styles.numberedItem}>
-                      <View style={styles.number}>
-                        <Text>{item.number}</Text>
-                      </View>
-                      <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                        {item.content}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-              
-              {section.type === 'entwicklungsbereiche' && (
+              {section.type === 'stolz' && (
                 <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
                   {section.content}
                 </Text>
               )}
               
-              {section.type === 'handlungsempfehlungen' && (
+              {section.type === 'herausforderungen' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'verantwortung' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'zusammenarbeit' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'entwicklung' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'energie' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'kultur' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'entscheidungen' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'wertschaetzung' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'perspektive' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'verbesserungen' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'rollentausch' && (
+                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
+                  {section.content}
+                </Text>
+              )}
+              
+              {section.type === 'empfehlungen' && (
                 <View>
                   {section.items.map((item, itemIndex) => (
                     <View key={itemIndex} style={styles.bulletItem}>

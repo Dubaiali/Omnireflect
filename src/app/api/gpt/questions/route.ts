@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein empathischer Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Erstelle 12 personalisierte Reflexionsfragen basierend auf dem Rollenkontext.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Erstelle 12 inspirierende und tiefgründige Reflexionsfragen, die zur Selbstreflexion anregen.
 
 KONTEXT:
 - Name: ${roleContext.firstName} ${roleContext.lastName}
@@ -85,12 +85,14 @@ KONTEXT:
 ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
 
 ANFORDERUNGEN:
-- Verwende den Kontext natürlich und strategisch (nicht in jeder Frage)
-- Verschiedene Fragetypen: "Was", "Wie", "Wann", "Welche", "Inwiefern"
-- Konkrete Bezüge zum Arbeitsbereich und zur Erfahrung
+- Erstelle Fragen, die über den reinen Arbeitsalltag hinausgehen
+- Fokussiere auf persönliche Entwicklung, Werte und Erfahrungen
+- Verwende den Arbeitskontext nur als Hintergrund, nicht als Hauptthema
+- Verschiedene Fragetypen: "Was", "Wie", "Wann", "Welche", "Inwiefern", "Was wäre wenn"
 - Maximal 2 Sätze pro Frage
-- Professioneller, respektvoller Ton
+- Inspirierender, einladender Ton
 - Natürliche, flüssige Sprache
+- Vermeide zu spezifische Branchen- oder Arbeitsbereichsbezüge
 
 KATEGORIEN (je eine Frage):
 1. Stolz & persönliche Leistung  
@@ -106,11 +108,23 @@ KATEGORIEN (je eine Frage):
 11. Verbesserungsvorschläge & Ideen
 12. Rollentausch & Führungsperspektive
 
-BEISPIELE für natürliche Fragen:
-- "Was würdest du in deinem Arbeitsbereich oder Team anders machen, wenn du die Möglichkeit hättest?"
-- "Welche Situation hat dich zuletzt besonders gefordert?"
-- "Wie hat sich dein Verständnis deiner Rolle in den ${roleContext.experienceYears} entwickelt?"
-- "Was würdest du als Vorgesetzter anders machen?"
+BEISPIELE für inspirierende Fragen:
+- "Was hat dich in den letzten Monaten am meisten überrascht oder inspiriert?"
+- "Welche Erfahrung hat dein Verständnis von Zusammenarbeit am stärksten geprägt?"
+- "Was würdest du deinem jüngeren Ich mit deiner heutigen Erfahrung raten?"
+- "Wie hat sich deine Definition von Erfolg in den ${roleContext.experienceYears} verändert?"
+- "Was wäre, wenn du eine Sache in deinem Arbeitsumfeld sofort verändern könntest?"
+- "Welche Situation hat dich gelehrt, dass du stärker bist als du dachtest?"
+
+FOKUS-BEREICHE:
+- Persönliche Wachstumserfahrungen
+- Werte und Überzeugungen
+- Beziehungen und Zusammenarbeit
+- Lernen und Entwicklung
+- Motivation und Sinnhaftigkeit
+- Zukunftsvisionen und Träume
+- Herausforderungen als Wachstumschancen
+- Selbstreflexion und Bewusstsein
 
 Antworte nur mit JSON im Format:
 [

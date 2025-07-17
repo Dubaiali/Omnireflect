@@ -144,31 +144,57 @@ Omnireflect/
 ## 🤖 AI-Integration
 
 ### OpenAI API
-- **Model:** gpt-3.5-turbo
+- **Model:** gpt-3.5-turbo (Fragen, Summary), gpt-4 (Follow-ups)
 - **Endpoints:**
   - `/api/gpt/questions` - Fragengenerierung
   - `/api/gpt/followup` - Nachfragen
   - `/api/gpt/summary` - Zusammenfassung
 
-### Prompt-Engineering
-- **Kontext:** Rollenkontext des Benutzers
+### Prompt-Engineering (Optimiert v1.5)
+- **Fokus:** Persönliche Entwicklung und berufliche Reflexion
+- **Kontext:** Rollenkontext des Benutzers als Hintergrund
 - **Kategorien:** 12 spezifische Reflexionskategorien
-- **Personalisierung:** Name und Arbeitsbereich integriert
-- **Strukturierung:** Einleitung, Kategorien, Empfehlungen
+- **Personalisierung:** Name und Arbeitsbereich strategisch integriert
+- **Strukturierung:** Einleitung, Systematische Analyse, Empfehlungen
 
-### Reflexionskategorien
-1. Führungsperspektive & Verbesserungsvorschläge
-2. Stolz & persönliche Leistung
-3. Herausforderungen & Umgang mit Druck
-4. Verantwortung & Selbstorganisation
-5. Zusammenarbeit & Feedback
-6. Entwicklung & Lernen
-7. Energie & Belastung
-8. Kultur & Werte
-9. Entscheidungsspielräume & Freiheit
-10. Wertschätzung & Gesehenwerden
-11. Perspektive & Zukunft
-12. Rollentausch & Führungsperspektive
+#### Optimierte Prompt-Strategien
+- **Weniger spezifische Branchenbezüge**: Fokus auf allgemeine Entwicklung statt spezifische Arbeitsbereiche
+- **Inspirierendere Fragen**: "Was hat dich am meisten überrascht?", "Was würdest du deinem jüngeren Ich raten?"
+- **Persönliche Wachstumserfahrungen**: Betonung von Lernen und Entwicklung
+- **Werte und Überzeugungen**: Tiefgründigere Reflexion über persönliche Werte
+- **Zukunftsvisionen**: Fokus auf Entwicklungsziele und Perspektiven
+
+### Reflexionskategorien (Optimiert)
+1. **Führungsperspektive & Verbesserungsvorschläge** - Was würdest du als Chef anders machen?
+2. **Stolz & persönliche Leistung** - Worauf bist du stolz, was macht dich zufrieden?
+3. **Herausforderungen & Umgang mit Druck** - Welche Schwierigkeiten erlebst du und wie gehst du damit um?
+4. **Verantwortung & Selbstorganisation** - Wie organisierst du dich und übernimmst Verantwortung?
+5. **Zusammenarbeit & Feedback** - Wie arbeitest du mit anderen zusammen?
+6. **Entwicklung & Lernen** - Wo siehst du Entwicklungsmöglichkeiten?
+7. **Energie & Belastung** - Wie erlebst du deine Energie und Belastung?
+8. **Kultur & Werte** - Wie erlebst du die Unternehmenskultur?
+9. **Entscheidungsspielräume & Freiheit** - Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
+10. **Wertschätzung & Gesehenwerden** - Fühlst du dich wertgeschätzt und gesehen?
+11. **Perspektive & Zukunft** - Wie siehst du deine berufliche Zukunft?
+12. **Rollentausch & Führungsperspektive** - Was würdest du als Vorgesetzter anders machen?
+
+### Design-System (Optimiert v1.5)
+- **Farbkodierung:** 11 verschiedene Farben für verschiedene Kategorien
+- **Gradient-Designs:** Moderne visuelle Hierarchie
+- **Konsistente Darstellung:** Web und PDF verwenden das gleiche Design-System
+- **Verbesserte Lesbarkeit:** Klare visuelle Trennung der Kategorien
+
+#### Farbpalette
+- 🟦 **Indigo**: Führungsperspektive, Entscheidungsspielräume
+- 🟢 **Grün**: Stolz, Entwicklung, Wertschätzung  
+- 🟠 **Orange**: Herausforderungen, Energie
+- 🟣 **Lila**: Verantwortung, Kultur, Rollentausch
+- 🔵 **Blau**: Zusammenarbeit, Perspektive
+- 🟢 **Smaragd**: Entwicklung
+- 🟡 **Bernstein**: Energie
+- 🟣 **Violett**: Kultur
+- 🔵 **Türkis**: Wertschätzung
+- 🔵 **Himmel**: Perspektive
 
 ## 📊 State Management
 
@@ -208,17 +234,17 @@ Willkommensseite → Rollenkontext-Formular → Speicherung
 
 ### 3. Fragengenerierung
 ```
-Rollenkontext → OpenAI API → 12 personalisierte Fragen
+Rollenkontext → OpenAI API → 12 personalisierte Fragen (optimiert für persönliche Entwicklung)
 ```
 
 ### 4. Reflexion
 ```
-Fragen beantworten → Follow-up-Fragen → Strukturierte Zusammenfassung
+Fragen beantworten → Follow-up-Fragen (eine einzige vertiefende Frage) → Strukturierte Zusammenfassung (mit Fokus-Bereichen)
 ```
 
 ### 5. PDF-Export
 ```
-Zusammenfassung → PDF-Generierung → Download
+Zusammenfassung → PDF-Generierung (mit Farbkodierung) → Download
 ```
 
 ## 🛡️ Sicherheit

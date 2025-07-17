@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const questionTypes = getFollowUpQuestionTypes()
 
     const prompt = `
-      Als erfahrener Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche, analysiere die gegebene Antwort und entscheide, ob vertiefende Nachfragen hilfreich wären.
+      Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, analysiere die gegebene Antwort und entscheide, ob vertiefende Nachfragen hilfreich wären.
 
       URSPRUNGSFRAGE: ${question}
       ANTWORT: ${answer}${roleContextInfo}
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       - Entwicklungsmöglichkeiten oder Herausforderungen angedeutet werden
       - Die Antwort Fragen aufwirft oder unvollständig erscheint
       - Potenzial für Selbstreflexion erkennbar ist
+      - Persönliche Wachstumserfahrungen angesprochen werden
 
       ❌ KEINE Nachfragen, wenn:
       - Die Antwort bereits sehr detailliert und vollständig ist (> 100 Wörter)
@@ -92,6 +93,15 @@ export async function POST(request: NextRequest) {
       - "Vergleiche das mit..." (Vergleiche)
       - "Was bedeutet das für dich..." (Werte)
       - "Wie siehst du das in Zukunft..." (Zukunft)
+      - "Was hat dich dabei am meisten überrascht..." (Überraschung)
+      - "Wie hat sich deine Sicht darauf verändert..." (Entwicklung)
+
+      FOKUS-BEREICHE für Follow-ups:
+      - Persönliche Wachstumserfahrungen vertiefen
+      - Emotionale Aspekte und Werte erkunden
+      - Konkrete Beispiele und Situationen ausarbeiten
+      - Zukünftige Entwicklungsmöglichkeiten erkunden
+      - Selbstreflexion und Bewusstsein fördern
 
       QUALITÄTSKRITERIEN:
       - Genau 1 Nachfrage (nicht mehr, nicht weniger)
@@ -101,10 +111,13 @@ export async function POST(request: NextRequest) {
       - Empathisch und unterstützend
       - Keine Gendersprache (keine "Mitarbeiter:in", "Kolleg:innen")
       - Sprachlich dem Erfahrungskontext angepasst
+      - Fokussiere auf persönliche Entwicklung, nicht nur Arbeitsbereich
+
+      WICHTIG: Gib nur EINE einzige Nachfrage zurück, nicht mehrere!
 
       Antworte mit:
       - "KEINE_NACHFRAGEN" wenn keine Nachfragen angebracht sind
-      - Oder gib genau 1 Nachfrage zurück, ohne Nummerierung
+      - Oder gib genau 1 Nachfrage zurück, ohne Nummerierung oder Aufzählungszeichen
     `
 
     const completion = await openai.chat.completions.create({
@@ -112,14 +125,15 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein erfahrener Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Deine Aufgabe ist es, bei Bedarf vertiefende Nachfragen zu generieren, die zur Selbstreflexion anregen.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Deine Aufgabe ist es, bei Bedarf vertiefende Nachfragen zu generieren, die zur Selbstreflexion anregen.
 
 Berücksichtige dabei:
 - Den persönlichen Kontext und die Erfahrung der Person
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
-- Vielfalt in Fragetypen und Ansprache`
+- Vielfalt in Fragetypen und Ansprache
+- Fokus auf persönliche Entwicklung und Wachstum`
         },
         {
           role: 'user',
@@ -137,9 +151,15 @@ Berücksichtige dabei:
       return NextResponse.json({ questions: [] })
     }
     
-    const questions = response.split('\n').filter(q => q.trim().length > 0)
-
-    return NextResponse.json({ questions })
+    // Nimm nur die erste Zeile als einzige Nachfrage
+    const singleQuestion = response.split('\n')[0].trim()
+    
+    // Prüfe, ob die Frage gültig ist
+    if (singleQuestion && singleQuestion.length > 0) {
+      return NextResponse.json({ questions: [singleQuestion] })
+    } else {
+      return NextResponse.json({ questions: [] })
+    }
   } catch (error) {
     console.error('Fehler bei der GPT-Anfrage:', error)
     return NextResponse.json(

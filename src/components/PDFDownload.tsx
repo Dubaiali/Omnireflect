@@ -32,6 +32,11 @@ function parseSummary(summary: string) {
       continue
     }
     
+    // Systematische Analyse - Überschrift (überspringen)
+    if (line.includes('Systematische Analyse:')) {
+      continue
+    }
+    
     // Empfehlungen erkennen
     if (line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
       if (currentSection === 'category' && currentTitle && currentContent) {
@@ -42,10 +47,9 @@ function parseSummary(summary: string) {
       continue
     }
     
-    // Kategorien erkennen (flexibler)
+    // Alle Kategorien erkennen (erweiterte Liste in korrekter Reihenfolge)
     const categoryTitles = [
-      'Führungsperspektive & Verbesserungsvorschläge',
-      'Stolz & persönliche Leistung', 
+      'Stolz & persönliche Leistung',
       'Herausforderungen & Umgang mit Druck',
       'Verantwortung & Selbstorganisation',
       'Zusammenarbeit & Feedback',
@@ -55,6 +59,7 @@ function parseSummary(summary: string) {
       'Entscheidungsspielräume & Freiheit',
       'Wertschätzung & Gesehenwerden',
       'Perspektive & Zukunft',
+      'Verbesserungsvorschläge & Ideen',
       'Rollentausch & Führungsperspektive'
     ]
     
@@ -153,32 +158,118 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       )
     }
     
+    // Farben für verschiedene Kategorien
+    const getCategoryColor = (title: string) => {
+      const colorMap: { [key: string]: string } = {
+        'Stolz & persönliche Leistung': 'green',
+        'Herausforderungen & Umgang mit Druck': 'orange',
+        'Verantwortung & Selbstorganisation': 'purple',
+        'Zusammenarbeit & Feedback': 'blue',
+        'Entwicklung & Lernen': 'emerald',
+        'Energie & Belastung': 'amber',
+        'Kultur & Werte': 'violet',
+        'Entscheidungsspielräume & Freiheit': 'indigo',
+        'Wertschätzung & Gesehenwerden': 'teal',
+        'Perspektive & Zukunft': 'sky',
+        'Verbesserungsvorschläge & Ideen': 'indigo',
+        'Rollentausch & Führungsperspektive': 'purple'
+      }
+      return colorMap[title] || 'gray'
+    }
+    
     return (
       <div className="space-y-8">
         {/* Einleitung */}
         {intro && (
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-xl shadow-sm">
-            <div className="flex items-center mb-2">
-              <svg className="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span className="text-lg font-semibold text-blue-900">Einleitung</span>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-xl shadow-sm">
+            <div className="flex items-center mb-3">
+              <svg className="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-lg font-semibold text-blue-900">Einleitung & Überblick</span>
             </div>
             <div className="text-blue-900 leading-relaxed whitespace-pre-line">{intro}</div>
           </div>
         )}
+        
+        {/* Systematische Analyse Header */}
+        {categories.length > 0 && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+            <div className="flex items-center justify-center">
+              <svg className="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+            </div>
+          </div>
+        )}
+        
         {/* Kategorien */}
         <div className="grid md:grid-cols-2 gap-6">
-          {categories.map(cat => (
-            <div key={cat.title} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <div className="text-base font-bold text-indigo-700 mb-2">{cat.title}</div>
-              <div className="text-gray-800 whitespace-pre-line">{cat.content}</div>
-            </div>
-          ))}
+          {categories.map(cat => {
+            const color = getCategoryColor(cat.title)
+            const colorClasses = {
+              indigo: 'border-indigo-200 bg-indigo-50',
+              green: 'border-green-200 bg-green-50',
+              orange: 'border-orange-200 bg-orange-50',
+              purple: 'border-purple-200 bg-purple-50',
+              blue: 'border-blue-200 bg-blue-50',
+              emerald: 'border-emerald-200 bg-emerald-50',
+              amber: 'border-amber-200 bg-amber-50',
+              violet: 'border-violet-200 bg-violet-50',
+              teal: 'border-teal-200 bg-teal-50',
+              sky: 'border-sky-200 bg-sky-50',
+              gray: 'border-gray-200 bg-gray-50'
+            }
+            
+            const textColors = {
+              indigo: 'text-indigo-900',
+              green: 'text-green-900',
+              orange: 'text-orange-900',
+              purple: 'text-purple-900',
+              blue: 'text-blue-900',
+              emerald: 'text-emerald-900',
+              amber: 'text-amber-900',
+              violet: 'text-violet-900',
+              teal: 'text-teal-900',
+              sky: 'text-sky-900',
+              gray: 'text-gray-900'
+            }
+            
+            const titleColors = {
+              indigo: 'text-indigo-700',
+              green: 'text-green-700',
+              orange: 'text-orange-700',
+              purple: 'text-purple-700',
+              blue: 'text-blue-700',
+              emerald: 'text-emerald-700',
+              amber: 'text-amber-700',
+              violet: 'text-violet-700',
+              teal: 'text-teal-700',
+              sky: 'text-sky-700',
+              gray: 'text-gray-700'
+            }
+            
+            return (
+              <div key={cat.title} className={`border rounded-xl p-5 shadow-sm ${colorClasses[color as keyof typeof colorClasses]}`}>
+                <div className={`text-base font-bold mb-3 ${titleColors[color as keyof typeof titleColors]}`}>
+                  {cat.title}
+                </div>
+                <div className={`whitespace-pre-line leading-relaxed ${textColors[color as keyof typeof textColors]}`}>
+                  {cat.content}
+                </div>
+              </div>
+            )
+          })}
         </div>
+        
         {/* Empfehlungen */}
         {recommendations && (
-          <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-xl shadow-sm">
-            <div className="flex items-center mb-2">
-              <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" /></svg>
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-6 rounded-xl shadow-sm">
+            <div className="flex items-center mb-3">
+              <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               <span className="text-lg font-semibold text-green-900">Empfehlungen für dein Mitarbeiterjahresgespräch</span>
             </div>
             <div className="text-green-900 leading-relaxed whitespace-pre-line">{recommendations}</div>
@@ -234,7 +325,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
           🎉 Deine Reflexion ist bereit!
         </h1>
         <p className="text-lg text-gray-600 text-center">
-          Hier ist deine KI-gestützte Zusammenfassung für das Mitarbeiterjahresgespräch
+          Hier ist deine KI-gestützte Zusammenfassung für persönliche Entwicklung und das Mitarbeiterjahresgespräch
         </p>
       </div>
 

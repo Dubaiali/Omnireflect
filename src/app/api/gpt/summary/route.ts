@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const prompt = `
-      Als reflektierter Coach mit Feingefühl für Sprache, erstelle eine empathische und strukturierte Zusammenfassung der Mitarbeiterreflexion basierend auf den gegebenen Antworten.
+      Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, erstelle eine empathische und strukturierte Zusammenfassung der Selbstreflexion basierend auf den gegebenen Antworten.
       
       HAUPTANTWORTEN:
       ${answersText}
@@ -76,17 +76,17 @@ export async function POST(request: NextRequest) {
       
       Analysiere die Antworten systematisch nach den 12 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
       
-      1. **Führungsperspektive & Verbesserungsvorschläge**: Was würdest du als Chef anders machen oder verbessern?
-      2. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
-      3. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
-      4. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
-      5. **Zusammenarbeit & Feedback**: Wie arbeitest du mit anderen zusammen?
-      6. **Entwicklung & Lernen**: Wo siehst du Entwicklungsmöglichkeiten?
-      7. **Energie & Belastung**: Wie erlebst du deine Energie und Belastung?
-      8. **Kultur & Werte**: Wie erlebst du die Unternehmenskultur?
-      9. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
-      10. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
-      11. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
+      1. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
+      2. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
+      3. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
+      4. **Zusammenarbeit & Feedback**: Wie arbeitest du mit anderen zusammen?
+      5. **Entwicklung & Lernen**: Wo siehst du Entwicklungsmöglichkeiten?
+      6. **Energie & Belastung**: Wie erlebst du deine Energie und Belastung?
+      7. **Kultur & Werte**: Wie erlebst du die Unternehmenskultur?
+      8. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
+      9. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
+      10. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
+      11. **Verbesserungsvorschläge & Ideen**: Was würdest du verbessern oder anders machen?
       12. **Rollentausch & Führungsperspektive**: Was würdest du als Vorgesetzter anders machen?
       
       Die Zusammenfassung sollte:
@@ -98,6 +98,16 @@ export async function POST(request: NextRequest) {
       - den beruflichen Kontext der Person berücksichtigen
       - Follow-up-Antworten für tiefere Einblicke nutzen
       - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
+      - Fokus auf persönliche Entwicklung und Wachstum legen
+      
+      FOKUS-BEREICHE für die Analyse:
+      - Persönliche Wachstumserfahrungen und Lernerkenntnisse
+      - Werte und Überzeugungen der Person
+      - Beziehungen und Zusammenarbeit
+      - Motivation und Sinnhaftigkeit
+      - Zukunftsvisionen und Entwicklungsziele
+      - Herausforderungen als Wachstumschancen
+      - Selbstreflexion und Bewusstsein
       
       EINLEITUNG:
       - Die Einleitung sollte umfassend und detailliert sein (5-7 Sätze)
@@ -106,6 +116,7 @@ export async function POST(request: NextRequest) {
       - Zeige die Verbindung zwischen verschiedenen Aspekten der Reflexion
       - Mache die Kernaussagen für das Mitarbeiterjahresgespräch deutlich
       - Gehe auf die persönliche Situation und den beruflichen Kontext ein
+      - Betone persönliche Entwicklung und Wachstum
       
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
       - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
@@ -117,9 +128,6 @@ export async function POST(request: NextRequest) {
       [Umfassender Überblick über die Reflexion mit den wichtigsten Erkenntnissen, Kernaussagen und zentralen Themen. Diese Sektion sollte 3-4 Sätze enthalten und die wesentlichen Aspekte der Selbstreflexion zusammenfassen, einschließlich Stärken, Herausforderungen und Entwicklungsbereiche.]
       
       Systematische Analyse:
-      
-      Führungsperspektive & Verbesserungsvorschläge:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
       Stolz & persönliche Leistung:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
@@ -151,6 +159,9 @@ export async function POST(request: NextRequest) {
       Perspektive & Zukunft:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
+      Verbesserungsvorschläge & Ideen:
+      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      
       Rollentausch & Führungsperspektive:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
@@ -163,7 +174,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein reflektierter Coach mit Feingefühl für Sprache, berufliche Rollen und persönliche Entwicklung. Deine Aufgabe ist es, bei Mitarbeiterentwicklungsgesprächen empathische und hilfreiche Zusammenfassungen zu erstellen.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Deine Aufgabe ist es, empathische und hilfreiche Zusammenfassungen zu erstellen.
 
 Berücksichtige dabei:
 - Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
@@ -171,7 +182,8 @@ Berücksichtige dabei:
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
-- Konkrete, umsetzbare Handlungsempfehlungen`
+- Konkrete, umsetzbare Handlungsempfehlungen
+- Fokus auf persönliche Entwicklung und Wachstum`
         },
         {
           role: 'user',

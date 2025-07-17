@@ -5,6 +5,7 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mi
 ## 📚 Dokumentation
 
 - **[Technische Dokumentation](TECHNICAL_DOCUMENTATION.md)** - Vollständige technische Details
+- **[Prompt-Optimierung](PROMPT_OPTIMIZATION.md)** - AI-Prompt-Optimierungen v1.5
 - **[Debugging-Dokumentation](DEBUGGING.md)** - Bekannte Probleme und Lösungen
 - **[Deployment-Anleitung](DEPLOYMENT.md)** - Produktions-Deployment
 
@@ -29,6 +30,8 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mi
 - ✅ HashID-basiertes Login-System
 - ✅ Admin-Dashboard für HashID-Verwaltung
 - ✅ KI-gestützte Mitarbeiterjahresgespräche
+- ✅ **Optimierte AI-Prompts v1.5** - Interessantere und tiefgründigere Reflexionsfragen
+- ✅ **Verbessertes Design-System** - Farbkodierte Kategorien und Gradient-Designs
 - ✅ Personalisierte Zusammenfassungen mit strukturierter Darstellung
 - ✅ Anonymisierte Datenspeicherung
 - ✅ PDF-Export-Funktionalität
