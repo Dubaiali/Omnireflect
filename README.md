@@ -1,6 +1,6 @@
 # Omnireflect
 
-Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
+Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mit HashID-basiertem Login-System.
 
 ## 📚 Dokumentation
 
@@ -12,9 +12,10 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
 ### Bekannte Probleme & Lösungen
 - **Fragengenerierung funktioniert nicht:** Siehe [DEBUGGING.md](DEBUGGING.md) für die Lösung
-- **Rollenkontext wird übersprungen:** Bereits behoben in Version 1.4.1
+- **Rollenkontext wird übersprungen:** Bereits behoben in Version 2.1.0
 
 ### Sicherheit
+- HashID-basiertes Login-System für sichere Authentifizierung
 - Alle Benutzerdaten werden lokal im Browser gespeichert
 - Keine dauerhafte Server-Speicherung von Antworten
 - OpenAI API-Schlüssel muss in `.env.local` konfiguriert werden
@@ -25,10 +26,12 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
 ## 🚀 Features
 
+- ✅ HashID-basiertes Login-System
+- ✅ Admin-Dashboard für HashID-Verwaltung
 - ✅ KI-gestützte Mitarbeiterjahresgespräche
+- ✅ Personalisierte Zusammenfassungen mit strukturierter Darstellung
 - ✅ Anonymisierte Datenspeicherung
 - ✅ PDF-Export-Funktionalität
-- ✅ Admin-Dashboard
 - ✅ Responsive Design
 - ✅ DSGVO-konform
 - ✅ Sichere HTTPS-Verbindung
@@ -37,7 +40,8 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 
 - **Frontend:** Next.js 15.3.5, React, TypeScript
 - **Styling:** Tailwind CSS
-- **AI:** OpenAI GPT-4 API
+- **AI:** OpenAI GPT-3.5-turbo API
+- **Authentication:** HashID-basiert mit JWT
 - **Server:** Nginx, Let's Encrypt SSL
 - **Deployment:** SSH, PM2 (optional)
 
@@ -56,9 +60,6 @@ Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche.
 # Repository klonen
 git clone https://github.com/Dubaiali/Omnireflect.git
 cd Omnireflect
-
-# Branch wechseln
-git checkout Omni3
 
 # Dependencies installieren
 npm install
@@ -126,14 +127,26 @@ Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für detaillierte Anweisungen.
 
 ## 🔐 Zugangsdaten
 
-### Test-Mitarbeiter
-- **Hash-ID:** `abc123` | **Passwort:** `test123`
-- **Hash-ID:** `def456` | **Passwort:** `test456`
-- **Hash-ID:** `ghi789` | **Passwort:** `test789`
+### HashID-Login-System
 
-### Admin-Zugang
+Das System verwendet ein HashID-basiertes Login-System für maximale Sicherheit:
+
+#### Test-Mitarbeiter (HashIDs)
+- **Hash-ID:** `abc123` | **Passwort:** `test123` | **Name:** Max Mustermann (IT)
+- **Hash-ID:** `def456` | **Passwort:** `test456` | **Name:** Anna Schmidt (Marketing)
+
+#### Admin-Zugang
+- **URL:** `http://localhost:3000/admin`
 - **Benutzername:** `admin`
-- **Passwort:** `admin123`
+- **Passwort:** `OmniAdmin2024!`
+
+### HashID-Verwaltung
+
+Über den Admin-Bereich können neue HashIDs für echte Mitarbeiter erstellt werden:
+1. Admin-Login unter `/admin`
+2. HashID-Manager öffnen
+3. Neue HashIDs erstellen oder importieren
+4. CSV-Export für Mitarbeiter-Zugangsdaten
 
 ## 📁 Projektstruktur
 
@@ -141,14 +154,23 @@ Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für detaillierte Anweisungen.
 Omnireflect/
 ├── src/
 │   ├── app/                 # Next.js App Router
-│   │   ├── admin/          # Admin-Dashboard
+│   │   ├── admin/          # Admin-Dashboard mit HashID-Manager
 │   │   ├── api/            # API-Routes
-│   │   ├── login/          # Login-Seite
+│   │   │   ├── auth/       # HashID-Login & Admin-Login
+│   │   │   ├── gpt/        # OpenAI Integration
+│   │   │   └── hash-list/  # HashID-Verwaltung
+│   │   ├── login/          # HashID-Login-Seite
 │   │   ├── questions/      # Fragen-Seite
-│   │   ├── summary/        # Zusammenfassung
+│   │   ├── role-context/   # Rollenkontext-Formular
+│   │   ├── summary/        # Zusammenfassung mit PDF-Export
 │   │   └── welcome/        # Willkommensseite
 │   ├── components/         # React-Komponenten
+│   │   ├── HashIDManager.tsx  # HashID-Verwaltung
+│   │   ├── LoginForm.tsx      # HashID-Login
+│   │   └── PDFDownload.tsx    # PDF-Export
 │   ├── lib/               # Utilities und Services
+│   │   ├── hashList.ts    # HashID-Verwaltung
+│   │   └── session.ts     # Session-Management
 │   └── state/             # Zustandsverwaltung
 ├── public/                # Statische Dateien
 ├── deploy-production.sh   # Produktions-Deployment
@@ -181,38 +203,60 @@ Omnireflect/
 
 ## 🌟 Features im Detail
 
+### HashID-Login-System
+- Sichere HashID-basierte Authentifizierung
+- Admin-Dashboard für HashID-Verwaltung
+- CSV-Export für Mitarbeiter-Zugangsdaten
+- Automatische HashID-Generierung
+
 ### KI-gestützte Gesprächsvorbereitung
 - Automatische Generierung von Fragen basierend auf Rolle und Kontext
-- Personalisierte Zusammenfassungen
-- Intelligente Nachfragen
+- Personalisierte Zusammenfassungen mit strukturierter Darstellung
+- Intelligente Nachfragen für tiefere Einblicke
+- 12 spezifische Reflexionskategorien
 
 ### Datenschutz
 - Anonymisierte Datenspeicherung
 - DSGVO-konforme Verarbeitung
 - Sichere HTTPS-Verbindung
+- Keine dauerhafte Server-Speicherung
 
 ### Benutzerfreundlichkeit
 - Responsive Design für alle Geräte
 - Intuitive Benutzeroberfläche
 - PDF-Export-Funktionalität
+- Strukturierte Zusammenfassungsdarstellung
 
 ## 🚨 Troubleshooting
 
 ### Häufige Probleme
 
-1. **Anwendung startet nicht**
+1. **Admin-Login funktioniert nicht**
+   ```bash
+   # Prüfe .env.local Konfiguration
+   cat .env.local | grep ADMIN
+   # Sollte enthalten: ADMIN_PASSWORD=OmniAdmin2024!
+   ```
+
+2. **HashID-Login funktioniert nicht**
+   ```bash
+   # Prüfe Hash-Liste
+   curl http://localhost:3000/api/hash-list
+   ```
+
+3. **Anwendung startet nicht**
    ```bash
    ./monitor.sh --logs
    ssh root@188.68.48.168 "tail -f /var/www/omnireflect/logs/omnireflect.log"
    ```
 
-2. **SSL-Probleme**
+4. **SSL-Probleme**
    ```bash
    ssh root@188.68.48.168 "certbot certificates"
    ssh root@188.68.48.168 "certbot --nginx -d reflect.omni-scient.com"
    ```
 
-3. **Nginx-Fehler**
+5. **Nginx-Fehler**
    ```bash
    ssh root@188.68.48.168 "nginx -t"
    ssh root@188.68.48.168 "systemctl status nginx"
@@ -227,6 +271,9 @@ Bei Problemen:
 
 ## 📈 Roadmap
 
+- [x] HashID-Login-System ✅
+- [x] Admin-Dashboard ✅
+- [x] Strukturierte Zusammenfassungen ✅
 - [ ] Datenbank-Integration (Firebase/Supabase)
 - [ ] Erweiterte Analytics
 - [ ] Multi-Sprach-Support
@@ -248,7 +295,6 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert.
 ## 📞 Kontakt
 
 - **GitHub:** https://github.com/Dubaiali/Omnireflect
-- **Live-Anwendung:** https://reflect.omni-scient.com
 
 ---
 

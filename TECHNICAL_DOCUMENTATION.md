@@ -2,7 +2,7 @@
 
 ## 📋 Übersicht
 
-Omnireflect ist eine Next.js-Anwendung für personalisierte Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Die Anwendung generiert maßgeschneiderte Reflexionsfragen basierend auf dem Rollenkontext des Benutzers.
+Omnireflect ist eine Next.js-Anwendung für personalisierte Mitarbeiterentwicklungsgespräche mit HashID-basiertem Login-System. Die Anwendung generiert maßgeschneiderte Reflexionsfragen basierend auf dem Rollenkontext des Benutzers und bietet strukturierte Zusammenfassungen.
 
 ## 🏗️ Architektur
 
@@ -15,8 +15,8 @@ Omnireflect ist eine Next.js-Anwendung für personalisierte Mitarbeiterentwicklu
 ### Backend
 - **API Routes:** Next.js API Routes
 - **AI Integration:** OpenAI GPT-3.5-turbo
-- **Authentication:** Session-basiert mit JWT
-- **Database:** Lokale JSON-Datei (users.json)
+- **Authentication:** HashID-basiert mit JWT
+- **Admin System:** HashID-Verwaltung über Admin-Dashboard
 
 ## 🔧 Installation & Setup
 
@@ -53,10 +53,10 @@ JWT_SECRET=your-super-secure-jwt-secret
 
 # Admin Credentials
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your-super-secure-admin-password
+ADMIN_PASSWORD=OmniAdmin2024!
 
 # Hash List (JSON string)
-HASH_LIST=[{"hashId":"abc123","password":"test123","name":"Max Mustermann","department":"IT","status":"pending"}]
+HASH_LIST=[{"hashId":"abc123","password":"test123","name":"Max Mustermann","department":"IT","status":"pending"},{"hashId":"def456","password":"test456","name":"Anna Schmidt","department":"Marketing","status":"in_progress"}]
 
 # Environment
 NODE_ENV=development
@@ -96,33 +96,50 @@ docker run -p 3000:3000 omnireflect
 Omnireflect/
 ├── src/
 │   ├── app/                    # Next.js App Router
+│   │   ├── admin/             # Admin-Dashboard mit HashID-Manager
 │   │   ├── api/               # API Routes
-│   │   │   ├── auth/          # Authentifizierung
-│   │   │   └── gpt/           # OpenAI Integration
-│   │   ├── login/             # Login-Seite
+│   │   │   ├── auth/          # HashID-Login & Admin-Login
+│   │   │   ├── gpt/           # OpenAI Integration
+│   │   │   └── hash-list/     # HashID-Verwaltung
+│   │   ├── login/             # HashID-Login-Seite
 │   │   ├── welcome/           # Willkommensseite
 │   │   ├── role-context/      # Rollenkontext-Formular
 │   │   ├── questions/         # Fragen-Seite
-│   │   └── summary/           # Zusammenfassung
+│   │   └── summary/           # Zusammenfassung mit PDF-Export
 │   ├── components/            # React-Komponenten
+│   │   ├── HashIDManager.tsx  # HashID-Verwaltung
+│   │   ├── LoginForm.tsx      # HashID-Login
+│   │   ├── PDFDownload.tsx    # PDF-Export
+│   │   └── AdminTable.tsx     # Admin-Dashboard
 │   ├── lib/                   # Utility-Funktionen
+│   │   ├── hashList.ts        # HashID-Verwaltung
+│   │   ├── session.ts         # Session-Management
+│   │   └── gpt.ts             # OpenAI Integration
 │   └── state/                 # State Management
 ├── public/                    # Statische Dateien
 ├── .env.local                 # Umgebungsvariablen
-└── users.json                 # Benutzer-Daten
+└── users.json                 # Benutzer-Daten (Legacy)
 ```
 
 ## 🔐 Authentifizierung
 
-### Benutzer-Management
-- **Datei:** `users.json`
-- **Format:** JSON-Array mit Benutzer-Objekten
-- **Hash-Verfahren:** SHA-256 mit Salt
+### HashID-Login-System
+- **HashID-basiert:** Jeder Mitarbeiter erhält eine eindeutige HashID
+- **Admin-Verwaltung:** HashIDs werden über Admin-Dashboard verwaltet
+- **Sicherheit:** SHA-256 Hashing mit Salt
+- **Session-Management:** JWT-basiert mit sicheren Cookies
+
+### Admin-System
+- **Zugang:** `/admin` mit separaten Admin-Credentials
+- **HashID-Manager:** Erstellung und Verwaltung von HashIDs
+- **CSV-Export:** Export von Mitarbeiter-Zugangsdaten
+- **Bulk-Generierung:** Automatische Erstellung mehrerer HashIDs
 
 ### Session-Management
 - **JWT-basiert** mit sicheren Cookies
 - **Automatische Abmeldung** nach 24 Stunden
 - **Persistierung** im Browser-LocalStorage
+- **Rollen-basiert:** User vs. Admin Sessions
 
 ## 🤖 AI-Integration
 
@@ -137,6 +154,21 @@ Omnireflect/
 - **Kontext:** Rollenkontext des Benutzers
 - **Kategorien:** 12 spezifische Reflexionskategorien
 - **Personalisierung:** Name und Arbeitsbereich integriert
+- **Strukturierung:** Einleitung, Kategorien, Empfehlungen
+
+### Reflexionskategorien
+1. Führungsperspektive & Verbesserungsvorschläge
+2. Stolz & persönliche Leistung
+3. Herausforderungen & Umgang mit Druck
+4. Verantwortung & Selbstorganisation
+5. Zusammenarbeit & Feedback
+6. Entwicklung & Lernen
+7. Energie & Belastung
+8. Kultur & Werte
+9. Entscheidungsspielräume & Freiheit
+10. Wertschätzung & Gesehenwerden
+11. Perspektive & Zukunft
+12. Rollentausch & Führungsperspektive
 
 ## 📊 State Management
 
@@ -164,9 +196,9 @@ interface SessionState {
 
 ## 🔄 Workflow
 
-### 1. Authentifizierung
+### 1. HashID-Authentifizierung
 ```
-Login → Session-Token → Welcome-Seite
+HashID-Login → Session-Token → Welcome-Seite
 ```
 
 ### 2. Rollenkontext
@@ -181,7 +213,12 @@ Rollenkontext → OpenAI API → 12 personalisierte Fragen
 
 ### 4. Reflexion
 ```
-Fragen beantworten → Follow-up-Fragen → Zusammenfassung
+Fragen beantworten → Follow-up-Fragen → Strukturierte Zusammenfassung
+```
+
+### 5. PDF-Export
+```
+Zusammenfassung → PDF-Generierung → Download
 ```
 
 ## 🛡️ Sicherheit
@@ -190,90 +227,106 @@ Fragen beantworten → Follow-up-Fragen → Zusammenfassung
 - **Lokale Speicherung:** Alle Daten bleiben im Browser
 - **Keine Server-Speicherung:** Antworten werden nicht dauerhaft gespeichert
 - **Anonymisierung:** Keine personenbezogenen Daten in Logs
+- **HashID-System:** Sichere Authentifizierung ohne personenbezogene Daten
 
 ### API-Sicherheit
 - **Rate Limiting:** 50 Requests pro 15 Minuten
 - **Input Validation:** Sanitization aller Eingaben
 - **Session-Validierung:** JWT-basierte Authentifizierung
+- **Admin-Access:** Separate Admin-Sessions
 
 ## 🧪 Testing
 
 ### API-Tests
 ```bash
-# Login testen
+# HashID-Login testen
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"hashId": "mitarbeiter1", "password": "OmniReflect2024!"}'
+  -d '{"hashId":"abc123","password":"test123"}'
 
-# Fragengenerierung testen
-curl -X POST http://localhost:3000/api/gpt/questions \
+# Admin-Login testen
+curl -X POST http://localhost:3000/api/auth/admin-login \
   -H "Content-Type: application/json" \
-  -d '{"roleContext": {...}}'
+  -d '{"username":"admin","password":"OmniAdmin2024!"}'
+
+# Hash-Liste abrufen
+curl http://localhost:3000/api/hash-list
 ```
 
-### Frontend-Tests
-```bash
-# Entwicklungsserver starten
-npm run dev
+### Browser-Tests
+- HashID-Login mit verschiedenen HashIDs
+- Admin-Dashboard Funktionalität
+- PDF-Export Funktionalität
+- Responsive Design auf verschiedenen Geräten
 
-# Browser öffnen
-open http://localhost:3000
+## 🔧 Konfiguration
+
+### HashID-Verwaltung
+```typescript
+// Neue HashID erstellen
+const newHashId = {
+  hashId: "mitarbeiter_123",
+  password: "sicheres_passwort",
+  name: "Max Mustermann",
+  department: "IT",
+  status: "pending"
+}
 ```
+
+### Admin-Konfiguration
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=OmniAdmin2024!
+```
+
+## 🚨 Troubleshooting
+
+### Häufige Probleme
+
+1. **Admin-Login funktioniert nicht**
+   - Prüfe `.env.local` Konfiguration
+   - Stelle sicher, dass `ADMIN_PASSWORD=OmniAdmin2024!` gesetzt ist
+   - Starte den Server neu nach Änderungen
+
+2. **HashID-Login funktioniert nicht**
+   - Prüfe Hash-Liste: `curl http://localhost:3000/api/hash-list`
+   - Stelle sicher, dass HashID und Passwort korrekt sind
+   - Prüfe PASSWORD_SALT in `.env.local`
+
+3. **Zusammenfassung wird nicht generiert**
+   - Prüfe OpenAI API-Key
+   - Prüfe API-Logs: `./monitor.sh --logs`
+   - Stelle sicher, dass alle Fragen beantwortet wurden
 
 ## 📈 Performance
 
 ### Optimierungen
-- **Turbopack:** Schnelle Entwicklung
-- **Code Splitting:** Automatisch durch Next.js
-- **Image Optimization:** Next.js Image Component
-- **Caching:** Browser-Caching für statische Assets
+- **Turbopack:** Schnellere Build-Zeiten
+- **Lazy Loading:** Komponenten werden bei Bedarf geladen
+- **Caching:** API-Responses werden gecacht
+- **Compression:** Gzip-Kompression für statische Assets
 
 ### Monitoring
-- **Server-Logs:** Next.js Development Server
-- **API-Response-Times:** OpenAI API Monitoring
-- **Error Tracking:** Browser Console
-
-## 🐛 Bekannte Probleme & Lösungen
-
-### Problem: Fragengenerierung funktioniert nicht
-**Symptom:** API funktioniert, aber Frontend reagiert nicht
-**Lösung:** State-Initialisierung korrigieren (siehe DEBUGGING.md)
-
-### Problem: Rollenkontext wird übersprungen
-**Symptom:** Direkte Weiterleitung zu Fragen
-**Lösung:** useEffect-Logik in role-context/page.tsx anpassen
-
-## 🔄 Updates & Wartung
-
-### Regelmäßige Updates
-- **Dependencies:** `npm update`
-- **OpenAI API:** Neue Modelle evaluieren
-- **Security:** Regelmäßige Sicherheitsupdates
-
-### Backup-Strategie
-- **Code:** Git Repository
-- **Konfiguration:** .env.local (nicht im Git)
-- **Benutzer-Daten:** users.json
-
-## 📞 Support
-
-### Logs sammeln
 ```bash
-# Server-Logs
-npm run dev 2>&1 | tee server.log
+# Performance-Monitoring
+./monitor.sh --performance
 
-# Browser-Logs
-# F12 → Console → Export
+# API-Response-Zeiten
+./monitor.sh --api-stats
 ```
 
-### Debugging-Tools
-- **React DevTools:** Browser Extension
-- **Network Tab:** API-Aufrufe überwachen
-- **Console:** JavaScript-Fehler
+## 🔮 Zukunft
 
----
+### Geplante Features
+- [ ] Datenbank-Integration (Firebase/Supabase)
+- [ ] Erweiterte Analytics
+- [ ] Multi-Sprach-Support
+- [ ] Mobile App
+- [ ] API-Dokumentation
+- [ ] Erweiterte HashID-Features
 
-**Version:** 1.4.1  
-**Letzte Aktualisierung:** $(date)  
-**Entwickler:** Omnireflect Team  
-**Lizenz:** Proprietär 
+### Technische Verbesserungen
+- [ ] Redis-Caching
+- [ ] Microservices-Architektur
+- [ ] Kubernetes-Deployment
+- [ ] CI/CD-Pipeline 
