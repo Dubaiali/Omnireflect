@@ -99,6 +99,14 @@ export async function POST(request: NextRequest) {
       - Follow-up-Antworten für tiefere Einblicke nutzen
       - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
       
+      EINLEITUNG:
+      - Die Einleitung sollte umfassend und detailliert sein (5-7 Sätze)
+      - Fasse die wichtigsten Erkenntnisse aus allen Antworten zusammen
+      - Erwähne Stärken, Herausforderungen und Entwicklungsbereiche
+      - Zeige die Verbindung zwischen verschiedenen Aspekten der Reflexion
+      - Mache die Kernaussagen für das Mitarbeiterjahresgespräch deutlich
+      - Gehe auf die persönliche Situation und den beruflichen Kontext ein
+      
       Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
       - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
       - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
@@ -106,44 +114,44 @@ export async function POST(request: NextRequest) {
       Strukturiere die Zusammenfassung in folgendem Format:
       
       Einleitung:
-      [Überblick über die Reflexion mit den wichtigsten Erkenntnissen und Kernaussagen]
+      [Umfassender Überblick über die Reflexion mit den wichtigsten Erkenntnissen, Kernaussagen und zentralen Themen. Diese Sektion sollte 3-4 Sätze enthalten und die wesentlichen Aspekte der Selbstreflexion zusammenfassen, einschließlich Stärken, Herausforderungen und Entwicklungsbereiche.]
       
       Systematische Analyse:
       
-      1. Führungsperspektive & Verbesserungsvorschläge:
+      Führungsperspektive & Verbesserungsvorschläge:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      2. Stolz & persönliche Leistung:
+      Stolz & persönliche Leistung:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      3. Herausforderungen & Umgang mit Druck:
+      Herausforderungen & Umgang mit Druck:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      4. Verantwortung & Selbstorganisation:
+      Verantwortung & Selbstorganisation:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      5. Zusammenarbeit & Feedback:
+      Zusammenarbeit & Feedback:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      6. Entwicklung & Lernen:
+      Entwicklung & Lernen:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      7. Energie & Belastung:
+      Energie & Belastung:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      8. Kultur & Werte:
+      Kultur & Werte:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      9. Entscheidungsspielräume & Freiheit:
+      Entscheidungsspielräume & Freiheit:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      10. Wertschätzung & Gesehenwerden:
+      Wertschätzung & Gesehenwerden:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      11. Perspektive & Zukunft:
+      Perspektive & Zukunft:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
-      12. Rollentausch & Führungsperspektive:
+      Rollentausch & Führungsperspektive:
       [Analyse ohne Aufzählungszeichen, nur normaler Text]
       
       Empfehlungen für dein Mitarbeiterjahresgespräch:
