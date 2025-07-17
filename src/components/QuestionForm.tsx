@@ -36,7 +36,8 @@ export default function QuestionForm() {
     nextStep,
     isAuthenticated,
     hasRoleContextChanged,
-    saveToStorage
+    saveToStorage,
+    resetProgress
   } = useSessionStore()
 
   // Internetverbindungsprüfung
@@ -73,8 +74,19 @@ export default function QuestionForm() {
       return
     }
     
+    // Bei forceRegenerate: Reset lokale States
+    if (forceRegenerate) {
+      console.log('DEBUG: Force-Regenerate - Reset lokale States')
+      setQuestions([])
+      setCurrentQuestionIndex(0)
+      setCurrentAnswer('')
+      setFollowUpQuestions([])
+      setFollowUpAnswers({})
+      setShowFollowUp(false)
+    }
+    
     // Wenn wir von der Zusammenfassung zurückkommen, verwende die gespeicherten Fragen
-    if (questionParam && storedQuestions && storedQuestions.length > 0) {
+    if (questionParam && storedQuestions && storedQuestions.length > 0 && !forceRegenerate) {
       console.log('DEBUG: Verwende gespeicherte Fragen von Zusammenfassung')
       setQuestions(storedQuestions)
       setIsLoadingQuestions(false)
@@ -89,6 +101,7 @@ export default function QuestionForm() {
       return
     }
     
+    // Setze Loading-Status BEVOR wir mit der Generierung beginnen
     console.log('DEBUG: Starte Generierung neuer Fragen')
     setIsLoadingQuestions(true)
     setHasError(false)
@@ -147,6 +160,14 @@ export default function QuestionForm() {
       setFollowUpQuestions([])
       setFollowUpAnswers({})
       setShowFollowUp(false)
+      
+      // WICHTIG: Lösche auch alle gespeicherten Antworten, da sie zu neuen Fragen nicht passen
+      console.log('DEBUG: Lösche alle gespeicherten Antworten wegen neuer Fragen')
+      // Reset Progress (Antworten und Follow-up-Fragen)
+      resetProgress()
+      saveToStorage() // Speichere Änderungen im localStorage
+      
+      console.log('DEBUG: Fragen erfolgreich generiert und gespeichert:', personalizedQuestions.length)
     } catch (error) {
       console.error('Fehler beim Laden der personalisierten Fragen:', error)
       
@@ -185,23 +206,48 @@ export default function QuestionForm() {
       storedQuestionsLength: storedQuestions?.length 
     })
     
-    // Wenn Rollenkontext vorhanden ist und keine Fragen geladen sind, lade sie
-    if (roleContext && questions.length === 0 && !isLoadingQuestions) {
+    // Verhindere mehrfache Ausführung
+    if (isLoadingQuestions) {
+      console.log('DEBUG: Fragen werden bereits geladen, überspringe useEffect')
+      return
+    }
+    
+    // Wenn Rollenkontext vorhanden ist, lade Fragen
+    if (roleContext) {
+      // Prüfe ob neue Fragen erzwungen werden sollen
+      const forceRegenerate = localStorage.getItem('forceRegenerateQuestions') === 'true'
+      
+      if (forceRegenerate) {
+        console.log('DEBUG: Force-Regenerate Flag gesetzt - generiere neue Fragen')
+        localStorage.removeItem('forceRegenerateQuestions') // Flag entfernen
+        loadPersonalizedQuestions(false, true) // forceRegenerate = true
+        return
+      }
+      
+      // Wenn bereits Fragen im lokalen State sind, nichts tun
+      if (questions.length > 0) {
+        console.log('DEBUG: Fragen bereits im lokalen State vorhanden, überspringe')
+        return
+      }
+      
+      // Normale Logik: Lade gespeicherte Fragen oder generiere neue
       if (storedQuestions && storedQuestions.length > 0) {
         console.log('DEBUG: Lade gespeicherte Fragen aus dem Store')
         setQuestions(storedQuestions)
-        setIsLoadingQuestions(false)
       } else {
         console.log('DEBUG: Keine gespeicherten Fragen gefunden, generiere neue')
         loadPersonalizedQuestions()
       }
     }
-    
-    // Zusätzliche Sicherheit: Wenn Fragen bereits im lokalen State sind, nicht überschreiben
+  }, [roleContext, questions.length, isLoadingQuestions]) // storedQuestions entfernt aus Dependencies
+
+  // Zusätzliche Sicherheit: Verhindere Überschreibung von Fragen
+  useEffect(() => {
     if (questions.length > 0 && storedQuestions && storedQuestions.length === 0) {
-      console.log('DEBUG: Fragen bereits im lokalen State, nicht überschreiben')
+      console.log('DEBUG: WARNUNG: Versuche, vorhandene Fragen mit leerem Array zu überschreiben - verhindert')
+      return
     }
-  }, [roleContext, questions.length, storedQuestions, isLoadingQuestions])
+  }, [questions.length, storedQuestions])
 
   // Prüfe URL-Parameter für direkte Navigation zu einer spezifischen Frage
   // WICHTIG: Diese Logik wird NUR ausgeführt, wenn Fragen bereits geladen sind

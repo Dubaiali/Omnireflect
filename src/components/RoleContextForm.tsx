@@ -15,14 +15,11 @@ interface RoleContext {
 }
 
 const workAreaOptions = [
-  'Empfang',
-  'Kasse',
-  'Verkauf',
+  'Brillenberatung',
   'Werkstatt',
-  'Refraktion',
   'Büro',
   'Kontaktlinse',
-  'Hörakustik',
+  'Hörgeräteanpassung',
   'Anderes'
 ]
 
@@ -53,7 +50,7 @@ const customerContactOptions = [
 
 export default function RoleContextForm({ isEditing = false }: { isEditing?: boolean }) {
   const router = useRouter()
-  const { saveRoleContext, roleContext, hasRoleContextChanged, saveQuestions } = useSessionStore()
+  const { saveRoleContext, roleContext, hasRoleContextChanged, saveQuestions, resetProgress, saveToStorage } = useSessionStore()
   
   const [formData, setFormData] = useState<RoleContext>({
     firstName: roleContext?.firstName || '',
@@ -168,12 +165,21 @@ export default function RoleContextForm({ isEditing = false }: { isEditing?: boo
     // Speichere den neuen Rollenkontext
     saveRoleContext(roleContext)
     
-    // Wenn sich der Rollenkontext geändert hat, lösche gespeicherte Fragen
+    // Wenn sich der Rollenkontext geändert hat, lösche ALLES und setze Flag
     if (hasChanged) {
-      console.log('DEBUG: Lösche gespeicherte Fragen wegen Rollenkontext-Änderung')
+      console.log('DEBUG: Rollenkontext geändert - lösche Fragen und Antworten')
+      
+      // Lösche Fragen und Antworten SOFORT und synchron
       saveQuestions([])
+      resetProgress()
+      saveToStorage()
+      
+      // Setze Flag für QuestionForm, dass neue Fragen generiert werden müssen
+      localStorage.setItem('forceRegenerateQuestions', 'true')
     } else {
-      console.log('DEBUG: Rollenkontext unverändert, behalte gespeicherte Fragen')
+      console.log('DEBUG: Rollenkontext unverändert - behalte alles')
+      // Entferne Flag falls vorhanden
+      localStorage.removeItem('forceRegenerateQuestions')
     }
 
     router.push('/questions')

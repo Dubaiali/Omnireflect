@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein empathischer Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Erstelle 11 personalisierte Reflexionsfragen für ${roleContext.firstName}.
+          content: `Du bist ein empathischer Coach für Mitarbeiterentwicklungsgespräche in der Augenoptik-Branche. Erstelle 12 personalisierte Reflexionsfragen basierend auf dem Rollenkontext.
 
 KONTEXT:
 - Name: ${roleContext.firstName} ${roleContext.lastName}
@@ -85,36 +85,35 @@ KONTEXT:
 ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
 
 ANFORDERUNGEN:
-- Verwende ${roleContext.firstName}s spezifische Daten in den Fragen
+- Verwende den Kontext natürlich und strategisch (nicht in jeder Frage)
 - Verschiedene Fragetypen: "Was", "Wie", "Wann", "Welche", "Inwiefern"
-- Konkrete Beispiele aus ${roleContext.firstName}s Arbeitsbereich
+- Konkrete Bezüge zum Arbeitsbereich und zur Erfahrung
 - Maximal 2 Sätze pro Frage
-- Keine Gendersprache (keine "Mitarbeiter:in", "Kolleg:innen")
-- Persönliche Ansprache mit ${roleContext.firstName}s Namen
+- Professioneller, respektvoller Ton
+- Natürliche, flüssige Sprache
 
 KATEGORIEN (je eine Frage):
-1. Führungsperspektive & Verbesserungsvorschläge
-2. Stolz & persönliche Leistung  
-3. Herausforderungen & Umgang mit Druck
-4. Verantwortung & Selbstorganisation
-5. Zusammenarbeit & Feedback
-6. Entwicklung & Lernen
-7. Energie & Belastung
-8. Kultur & Werte
-9. Entscheidungsspielräume & Freiheit
-10. Wertschätzung & Gesehenwerden
-11. Perspektive & Zukunft
+1. Stolz & persönliche Leistung  
+2. Herausforderungen & Umgang mit Druck
+3. Verantwortung & Selbstorganisation
+4. Zusammenarbeit & Feedback
+5. Entwicklung & Lernen
+6. Energie & Belastung
+7. Kultur & Werte
+8. Entscheidungsspielräume & Freiheit
+9. Wertschätzung & Gesehenwerden
+10. Perspektive & Zukunft
+11. Verbesserungsvorschläge & Ideen
 12. Rollentausch & Führungsperspektive
 
-BEISPIELE für spezifische Fragen:
-- "Wenn du Chef wärst: Was würdest du in deinem Arbeitsbereich, Team oder Unternehmen anders machen oder verbessern, ${roleContext.firstName}?"
-- "Welche Situation mit ${roleContext.customerContact.includes('täglich') ? 'Kunden' : 'Kollegen'} hat dich zuletzt besonders gefordert?"
+BEISPIELE für natürliche Fragen:
+- "Was würdest du in deinem Arbeitsbereich oder Team anders machen, wenn du die Möglichkeit hättest?"
+- "Welche Situation hat dich zuletzt besonders gefordert?"
 - "Wie hat sich dein Verständnis deiner Rolle in den ${roleContext.experienceYears} entwickelt?"
-- "Was würdest du als Vorgesetzter anders machen, ${roleContext.firstName}?"
+- "Was würdest du als Vorgesetzter anders machen?"
 
 Antworte nur mit JSON im Format:
 [
-{"id": "leadership_improvements", "question": "...", "category": "Führungsperspektive & Verbesserungsvorschläge"},
 {"id": "stolz", "question": "...", "category": "Stolz & persönliche Leistung"},
 {"id": "challenges", "question": "...", "category": "Herausforderungen & Umgang mit Druck"},
 {"id": "responsibility", "question": "...", "category": "Verantwortung & Selbstorganisation"},
@@ -125,6 +124,7 @@ Antworte nur mit JSON im Format:
 {"id": "decisions", "question": "...", "category": "Entscheidungsspielräume & Freiheit"},
 {"id": "appreciation", "question": "...", "category": "Wertschätzung & Gesehenwerden"},
 {"id": "future", "question": "...", "category": "Perspektive & Zukunft"},
+{"id": "improvements_ideas", "question": "...", "category": "Verbesserungsvorschläge & Ideen"},
 {"id": "leadership", "question": "...", "category": "Rollentausch & Führungsperspektive"}
 ]`
         }
@@ -167,4 +167,4 @@ Antworte nur mit JSON im Format:
       { status: 500 }
     )
   }
-} 
+}

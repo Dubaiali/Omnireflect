@@ -135,8 +135,28 @@ export const useSessionStore = create<SessionState>()(
         })
       },
 
-      saveQuestions: (questions: any[]) =>
-        set({ questions }),
+      saveQuestions: (questions: any[]) => {
+        const state = get()
+        console.log('DEBUG: saveQuestions aufgerufen', { 
+          newQuestionsLength: questions.length, 
+          currentQuestionsLength: state.questions?.length 
+        })
+        
+        // Verhindere Überschreibung, wenn bereits Fragen vorhanden sind (außer bei explizitem Reset)
+        if (state.questions && state.questions.length > 0 && questions.length === 0) {
+          // Prüfe ob es ein expliziter Reset ist (forceRegenerate Flag)
+          const forceRegenerate = typeof window !== 'undefined' && localStorage.getItem('forceRegenerateQuestions') === 'true'
+          if (!forceRegenerate) {
+            console.log('DEBUG: Verhindere Überschreibung vorhandener Fragen mit leerem Array')
+            return
+          } else {
+            console.log('DEBUG: Force-Regenerate erlaubt - überschreibe Fragen')
+          }
+        }
+        
+        set({ questions })
+        console.log('DEBUG: Fragen erfolgreich im Store gespeichert')
+      },
 
       nextStep: () =>
         set((state) => ({
