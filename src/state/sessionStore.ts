@@ -24,6 +24,7 @@ interface SessionState {
   roleContext: RoleContext | null
   questions: any[] | null
   roleContextHash: string | null // Hash des Rollenkontexts für Änderungsprüfung
+  isGeneratingQuestions: boolean // Zentrale Flag für Fragengenerierung
   setHashId: (hashId: string) => void
   login: (hashId: string) => void
   logout: () => void
@@ -34,8 +35,9 @@ interface SessionState {
   saveQuestions: (questions: any[]) => void
   nextStep: () => void
   resetProgress: () => void
-  hasRoleContextChanged: (newRoleContext: RoleContext) => boolean
   saveToStorage: () => void
+  setGeneratingQuestions: (isGenerating: boolean) => void
+  clearQuestionsAndProgress: () => void
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -52,6 +54,7 @@ export const useSessionStore = create<SessionState>()(
       roleContext: null,
       questions: null,
       roleContextHash: null,
+      isGeneratingQuestions: false,
 
       setHashId: (hashId: string) => set({ hashId }),
       
@@ -124,15 +127,36 @@ export const useSessionStore = create<SessionState>()(
         
         console.log('DEBUG: Speichere Rollenkontext mit Hash:', newHash)
         
+        // Prüfe ob sich der Rollenkontext geändert hat
+        const hasChanged = state.roleContextHash !== newHash
+        
+        if (hasChanged) {
+          console.log('DEBUG: Rollenkontext geändert - lösche Fragen und Antworten automatisch')
+          // Lösche Fragen und Antworten automatisch bei Rollenkontext-Änderung
+          set({
+            roleContext,
+            roleContextHash: newHash,
+            questions: null, // Lösche Fragen
+            progress: {
+              currentStep: 0,
+              answers: {},
+              followUpQuestions: {},
+              summary: null,
+            }
+          })
+        } else {
+          console.log('DEBUG: Rollenkontext unverändert - behalte alles')
+          // Nur Rollenkontext aktualisieren, Rest bleibt unverändert
+          set({ 
+            roleContext,
+            roleContextHash: newHash
+          })
+        }
+        
         // Speichere auch in localStorage für Admin-Zugriff
         if (state.hashId) {
           LocalStorage.saveRoleContext(state.hashId, roleContext)
         }
-        
-        set({ 
-          roleContext,
-          roleContextHash: newHash
-        })
       },
 
       saveQuestions: (questions: any[]) => {
@@ -182,40 +206,6 @@ export const useSessionStore = create<SessionState>()(
           roleContextHash: state.roleContextHash
         })),
 
-      hasRoleContextChanged: (newRoleContext: RoleContext) => {
-        const state = get()
-        
-        // Erstelle eine normalisierte Version des neuen Rollenkontexts
-        const normalizedNewContext = {
-          ...newRoleContext,
-          workAreas: [...newRoleContext.workAreas].sort(),
-          functions: [...newRoleContext.functions].sort()
-        }
-        
-        // Erstelle eine normalisierte Version des aktuellen Rollenkontexts
-        const currentContext = state.roleContext
-        if (!currentContext) {
-          return true // Wenn kein aktueller Kontext vorhanden ist, hat sich etwas geändert
-        }
-        
-        const normalizedCurrentContext = {
-          ...currentContext,
-          workAreas: [...currentContext.workAreas].sort(),
-          functions: [...currentContext.functions].sort()
-        }
-        
-        const newHash = JSON.stringify(normalizedNewContext)
-        const currentHash = JSON.stringify(normalizedCurrentContext)
-        
-        console.log('DEBUG: Rollenkontext-Vergleich:', {
-          newHash,
-          currentHash,
-          changed: newHash !== currentHash
-        })
-        
-        return newHash !== currentHash
-      },
-
       saveToStorage: () => {
         const state = get()
         if (state.hashId) {
@@ -231,6 +221,19 @@ export const useSessionStore = create<SessionState>()(
           LocalStorage.saveData(data)
         }
       },
+
+      setGeneratingQuestions: (isGenerating: boolean) => set({ isGeneratingQuestions: isGenerating }),
+      clearQuestionsAndProgress: () => set({
+        progress: {
+          currentStep: 0,
+          answers: {},
+          followUpQuestions: {},
+          summary: null,
+        },
+        questions: null,
+        roleContext: null,
+        roleContextHash: null,
+      }),
     }),
     {
       name: 'session-storage',
@@ -241,6 +244,7 @@ export const useSessionStore = create<SessionState>()(
         roleContext: state.roleContext,
         questions: state.questions,
         roleContextHash: state.roleContextHash,
+        isGeneratingQuestions: state.isGeneratingQuestions,
       }),
     }
   )

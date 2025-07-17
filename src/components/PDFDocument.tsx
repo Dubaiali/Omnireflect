@@ -1,18 +1,16 @@
 import React from 'react'
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 
-// Registriere eine moderne Schriftart
-Font.register({
-  family: 'Inter',
-  src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2'
-})
+// Verwende Standard-Schriftarten für bessere Kompatibilität
+// @react-pdf/renderer unterstützt standardmäßig Helvetica, Times-Roman und Courier
+// Wir verwenden Helvetica als primäre Schriftart
 
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
     padding: 40,
-    fontFamily: 'Inter'
+    fontFamily: 'Helvetica'
   },
   header: {
     flexDirection: 'row',

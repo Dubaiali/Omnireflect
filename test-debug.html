@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniReflect Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        #log { background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 OmniReflect Debug Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test-Anweisungen:</h3>
+        <ol>
+            <li>Öffne die Browser-Entwicklertools (F12)</li>
+            <li>Gehe zu <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+            <li>Führe den kompletten Workflow durch: Login → Rollenkontext → Fragen</li>
+            <li>Überprüfe die Console-Logs auf doppelte API-Aufrufe</li>
+            <li>Ändere den Rollenkontext und teste erneut</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>Erwartetes Verhalten:</h3>
+        <ul>
+            <li>✅ Nur EIN API-Aufruf an `/api/gpt/questions` pro Fragengenerierung</li>
+            <li>✅ Keine doppelten `loadPersonalizedQuestions` Aufrufe</li>
+            <li>✅ Automatisches Löschen der Fragen bei Rollenkontext-Änderung</li>
+            <li>✅ Korrekte Debug-Ausgaben in der Console</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>Debug-Logs überprüfen:</h3>
+        <div id="log">
+            <p>Öffne die Browser-Console und suche nach:</p>
+            <ul>
+                <li><code>DEBUG: ZENTRALE useEffect triggered</code></li>
+                <li><code>DEBUG: loadPersonalizedQuestions aufgerufen</code></li>
+                <li><code>DEBUG: Starte API-Aufruf an /api/gpt/questions</code></li>
+                <li><code>DEBUG: API-Aufruf erfolgreich</code></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Problem-Indikatoren:</h3>
+        <ul>
+            <li>❌ Mehrere <code>loadPersonalizedQuestions aufgerufen</code> Logs</li>
+            <li>❌ Mehrere <code>Starte API-Aufruf</code> Logs</li>
+            <li>❌ Mehrere <code>POST /api/gpt/questions</code> in Server-Logs</li>
+        </ul>
+    </div>
+    
+    <script>
+        // Einfacher Log-Viewer
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logEntry.className = type;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Test-Buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('Debug-Test gestartet', 'info');
+            
+            // Test: Öffne die Anwendung
+            const testButton = document.createElement('button');
+            testButton.textContent = '🚀 Anwendung öffnen';
+            testButton.onclick = () => {
+                window.open('http://localhost:3000', '_blank');
+                addLog('Anwendung geöffnet', 'success');
+            };
+            document.body.appendChild(testButton);
+        });
+    </script>
+</body>
+</html> 
