@@ -59,51 +59,6 @@ export default function LoginForm() {
     setShowPassword(!showPassword)
   }
 
-  const handleTestLogin = async (testUser: 'max' | 'anna') => {
-    setError('')
-    setIsLoading(true)
-
-    const testCredentials = {
-      max: {
-        hashId: 'emp_md87yj1f_904c447c80694dc5',
-        password: 'Tvr39RN%Jg$7'
-      },
-      anna: {
-        hashId: 'emp_md87yj1i_495fdbe7c5212ef9',
-        password: 'A#7^So8gUV03'
-      }
-    }
-
-    const credentials = testCredentials[testUser]
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        // Alle vorherigen Daten zurücksetzen
-        resetProgress()
-        // Login durchführen
-        login(credentials.hashId)
-        // Zur Welcome-Seite navigieren
-        router.push('/welcome')
-      } else {
-        setError(data.error || 'Test-Login fehlgeschlagen')
-      }
-    } catch (err) {
-      setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <div className="max-w-md mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -169,32 +124,6 @@ export default function LoginForm() {
           {isLoading ? 'Anmelden...' : 'Anmelden'}
         </button>
       </form>
-
-      {/* Test-Login-Buttons */}
-      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h3 className="font-semibold text-yellow-800 mb-3 text-sm">🧪 Test-Login (Entwicklung)</h3>
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => handleTestLogin('max')}
-            disabled={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-2 px-4 rounded-md transition duration-200 text-sm"
-          >
-            {isLoading ? 'Anmelden...' : '👨‍💻 Max Mustermann (IT) - Test-Login'}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTestLogin('anna')}
-            disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-2 px-4 rounded-md transition duration-200 text-sm"
-          >
-            {isLoading ? 'Anmelden...' : '👩‍💼 Anna Schmidt (Marketing) - Test-Login'}
-          </button>
-        </div>
-        <p className="text-xs text-yellow-700 mt-2">
-          Diese Buttons sind nur für Entwicklungs- und Testzwecke gedacht.
-        </p>
-      </div>
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <h3 className="font-semibold text-gray-800 mb-2">Datenschutz & Sicherheit</h3>
