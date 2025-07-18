@@ -1,31 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 import QuestionForm from '@/components/QuestionForm'
-import Link from 'next/link'
 
-export default function QuestionsPage() {
-  const { isAuthenticated, logout, roleContext } = useSessionStore()
+function QuestionsContent() {
+  const { logout } = useSessionStore()
   const router = useRouter()
-
-  useEffect(() => {
-    // Temporär: Erlaube Zugriff ohne Authentifizierung für Testzwecke
-    // if (!isAuthenticated) {
-    //   router.push('/login')
-    // }
-  }, [isAuthenticated, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
-
-  // Temporär: Erlaube Zugriff ohne Authentifizierung für Testzwecke
-  // if (!isAuthenticated) {
-  //   return null
-  // }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,5 +51,13 @@ export default function QuestionsPage() {
         <QuestionForm />
       </main>
     </div>
+  )
+}
+
+export default function QuestionsPage() {
+  return (
+    <Suspense fallback={<div>Lade...</div>}>
+      <QuestionsContent />
+    </Suspense>
   )
 } 
