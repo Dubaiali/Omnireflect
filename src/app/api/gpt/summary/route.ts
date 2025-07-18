@@ -22,6 +22,17 @@ export async function POST(request: NextRequest) {
     answers = answersData
     roleContext = roleContextData
 
+    console.log('DEBUG: API /summary - Empfangene Daten:', {
+      hasAnswers: !!answers && Object.keys(answers).length > 0,
+      answersCount: answers ? Object.keys(answers).length : 0,
+      hasFollowUpQuestions: !!followUpQuestions,
+      hasRoleContext: !!roleContext,
+      roleContextType: typeof roleContext,
+      roleContextKeys: roleContext ? Object.keys(roleContext) : null,
+      hasQuestions: !!questions,
+      questionsCount: questions ? questions.length : 0
+    })
+
     if (!answers || Object.keys(answers).length === 0) {
       return NextResponse.json(
         { error: 'Antworten sind erforderlich' },
@@ -69,7 +80,13 @@ export async function POST(request: NextRequest) {
       - Kundenkontakt: ${roleContext.customerContact}
       ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
       `
+      
+      console.log('DEBUG: Rollenkontext für Summary:', roleContextInfo)
+    } else {
+      console.log('DEBUG: Kein Rollenkontext für Summary verfügbar')
     }
+
+    console.log('DEBUG: Sende Summary-Prompt an GPT')
 
     const prompt = `
       Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, erstelle eine empathische und strukturierte Zusammenfassung der Selbstreflexion basierend auf den gegebenen Antworten.
@@ -200,10 +217,11 @@ Berücksichtige dabei:
     })
 
     const summary = completion.choices[0]?.message?.content || 'Zusammenfassung konnte nicht generiert werden.'
+    console.log('DEBUG: Summary generiert, Länge:', summary.length)
 
     return NextResponse.json({ summary })
   } catch (error) {
-    console.error('Fehler bei der Zusammenfassungsgenerierung:', error)
+    console.error('DEBUG: Fehler bei der Zusammenfassungsgenerierung:', error)
     
     // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(

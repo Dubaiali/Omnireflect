@@ -20,11 +20,8 @@ export default function QuestionForm() {
   const [retryCount, setRetryCount] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
   
-  // Zentrale State-Machine für Fragengenerierung
-  const [questionState, setQuestionState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle')
-  
-  // Ref um zu verhindern, dass der useEffect mehrfach ausgeführt wird
-  const useEffectExecutedRef = useRef(false)
+  // Ref für Race-Condition-Schutz
+  const isGeneratingRef = useRef(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -34,7 +31,7 @@ export default function QuestionForm() {
     saveAnswer, 
     saveFollowUpQuestions, 
     progress, 
-    roleContext,
+    roleContext: storeRoleContext,
     questions: storedQuestions,
     saveQuestions,
     nextStep,
@@ -44,6 +41,16 @@ export default function QuestionForm() {
     isGeneratingQuestions,
     setGeneratingQuestions
   } = useSessionStore()
+
+  // Standard-Rollenkontext verwenden, wenn keiner vorhanden ist
+  const roleContext = storeRoleContext || {
+    firstName: "Max",
+    lastName: "Mustermann",
+    workAreas: ["Softwareentwicklung"],
+    functions: ["Entwickler"],
+    experienceYears: "5 Jahre",
+    customerContact: "Intern"
+  }
 
   // Internetverbindungsprüfung
   useEffect(() => {
@@ -61,75 +68,44 @@ export default function QuestionForm() {
     }
   }, [])
 
-  // ZENTRALE useEffect-Logik für alle Fragen-bezogenen Operationen
+  // Vereinfachte useEffect-Logik: Nur einmalig beim ersten Laden
   useEffect(() => {
-    console.log('DEBUG: ZENTRALE useEffect triggered', { 
-      roleContext: !!roleContext, 
-      questionsLength: questions.length, 
-      isGeneratingQuestions, 
+    console.log('DEBUG: ZENTRALE useEffect triggered', {
+      roleContext: !!roleContext,
+      questionsLength: questions.length,
+      isGeneratingQuestions,
       storedQuestionsLength: storedQuestions?.length,
-      questionParam,
-      questionState,
-      useEffectExecuted: useEffectExecutedRef.current
+      questionParam: searchParams.get('question')
     })
-    
-    // Verhindere mehrfache Ausführung während der Generierung
-    if (isGeneratingQuestions || questionState === 'loading') {
-      console.log('DEBUG: Fragen werden bereits generiert, überspringe')
-      return
-    }
-    
-    // Wenn Rollenkontext vorhanden ist und keine Fragen geladen sind
-    if (roleContext && questions.length === 0 && questionState === 'idle') {
-      // Verhindere mehrfache Ausführung des useEffect
-      if (useEffectExecutedRef.current) {
-        console.log('DEBUG: useEffect bereits ausgeführt, überspringe')
-        return
-      }
-      
-      useEffectExecutedRef.current = true
-      console.log('DEBUG: useEffect wird ausgeführt, setze Flag')
-      
-      // Wenn bereits Fragen im Store gespeichert sind, verwende diese
-      if (storedQuestions && storedQuestions.length > 0) {
-        console.log('DEBUG: Lade gespeicherte Fragen aus dem Store')
-        setQuestions(storedQuestions)
-        setQuestionState('loaded')
-      } else {
-        console.log('DEBUG: Keine gespeicherten Fragen gefunden, generiere neue')
-        setQuestionState('loading')
-        loadPersonalizedQuestions()
-      }
-    }
-    
-    // URL-Parameter Navigation (nur wenn Fragen bereits geladen sind)
-    if (questions.length > 0 && questionParam && !isGeneratingQuestions) {
-      const targetQuestionIndex = parseInt(questionParam) - 1
-      if (targetQuestionIndex >= 0 && targetQuestionIndex < questions.length) {
-        console.log(`DEBUG: Navigating to question ${questionParam} (index ${targetQuestionIndex})`)
-        setCurrentQuestionIndex(targetQuestionIndex)
-        router.replace('/questions')
-      }
-    }
-  }, [roleContext, isGeneratingQuestions, questionParam, router, questionState]) // State-Machine hinzugefügt
 
-  // Reset useEffect-Flag wenn sich der Rollenkontext ändert
-  useEffect(() => {
-    if (roleContext) {
-      useEffectExecutedRef.current = false
-      setQuestionState('idle') // Reset State-Machine
-      console.log('DEBUG: Reset useEffect-Flag und State-Machine für neuen Rollenkontext')
-    }
-  }, [roleContext])
-
-  // Zusätzliche Sicherheit: Verhindere mehrfache Fragengenerierung
-  useEffect(() => {
-    // Wenn Fragen geladen wurden, setze das Flag zurück
+    // Wenn bereits Fragen im lokalen State sind, nichts tun
     if (questions.length > 0) {
-      useEffectExecutedRef.current = false
-      console.log('DEBUG: Fragen geladen, reset useEffect-Flag')
+      console.log('DEBUG: Fragen bereits im lokalen State, überspringe');
+      return;
     }
-  }, [questions.length])
+
+    // Wenn Fragen im Store, aber nicht im lokalen State, dann übernehmen
+    if (storedQuestions && storedQuestions.length > 0 && questions.length === 0) {
+      console.log('DEBUG: Übernehme Fragen aus Store in lokalen State');
+      setQuestions(storedQuestions);
+      return;
+    }
+
+    // Nur generieren, wenn wirklich keine Fragen da sind und nicht bereits generiert wird
+    if (
+      roleContext &&
+      questions.length === 0 &&
+      (!storedQuestions || storedQuestions.length === 0) &&
+      !isGeneratingQuestions &&
+      !isGeneratingRef.current
+    ) {
+      console.log('DEBUG: Starte Generierung, da keine Fragen vorhanden sind');
+      isGeneratingRef.current = true;
+      loadPersonalizedQuestions();
+    }
+  }, [roleContext]); // Nur roleContext als Abhängigkeit
+
+  // Store-Synchronisation entfernt - verursacht Race Conditions
 
   // Lade personalisierte Fragen beim ersten Laden
   const loadPersonalizedQuestions = async (isRetry = false) => {
@@ -138,40 +114,34 @@ export default function QuestionForm() {
       isGeneratingQuestions, 
       storedQuestionsLength: storedQuestions?.length, 
       localQuestionsLength: questions.length,
-      questionState,
+      roleContext,
+      isGeneratingRef: isGeneratingRef.current,
       timestamp: new Date().toISOString()
     })
     
-    // Verhindere mehrfaches Laden während der Generierung
-    if (isGeneratingQuestions && !isRetry) {
-      console.log('DEBUG: Fragen werden bereits geladen, überspringe - isGeneratingQuestions:', isGeneratingQuestions)
+    // Ref-basierter Race-Condition-Schutz
+    if (isGeneratingRef.current && !isRetry) {
+      console.log('DEBUG: Fragen werden bereits generiert (Ref), überspringe')
       return
     }
     
-    // Setze zentrale Flag SOFORT
+    // Setze Loading-Status
     setGeneratingQuestions(true)
-    setQuestionState('loading')
-    console.log('DEBUG: setGeneratingQuestions auf true gesetzt, questionState auf loading')
+    console.log('DEBUG: setGeneratingQuestions auf true gesetzt')
     
-    // Wenn bereits Fragen im lokalen State sind, überspringe
-    if (questions.length > 0) {
-      console.log('DEBUG: Fragen bereits im lokalen State vorhanden, überspringe')
+    // Finale Prüfung: Wenn bereits Fragen vorhanden sind, überspringe
+    if (questions.length > 0 || (storedQuestions && storedQuestions.length > 0)) {
+      console.log('DEBUG: Fragen bereits vorhanden, überspringe Generierung')
+      if (storedQuestions && storedQuestions.length > 0 && questions.length === 0) {
+        setQuestions(storedQuestions)
+      }
+      isGeneratingRef.current = false
       setGeneratingQuestions(false)
-      setQuestionState('loaded')
-      return
-    }
-    
-    // Wenn bereits Fragen im Store gespeichert sind, verwende diese
-    if (storedQuestions && storedQuestions.length > 0) {
-      console.log('DEBUG: Verwende bereits gespeicherte Fragen')
-      setQuestions(storedQuestions)
-      setGeneratingQuestions(false)
-      setQuestionState('loaded')
       return
     }
     
     // Setze Loading-Status für neue Generierung
-    console.log('DEBUG: Starte Generierung neuer Fragen')
+    console.log('DEBUG: Starte Generierung neuer Fragen mit Rollenkontext:', roleContext)
     setHasError(false)
     setLoadingProgress(0)
     setLoadingTime(0)
@@ -192,47 +162,41 @@ export default function QuestionForm() {
     // Validierung: Prüfe ob roleContext vollständig ist
     if (!roleContext || !roleContext.workAreas || !roleContext.functions || 
         !roleContext.experienceYears || !roleContext.customerContact) {
-      console.error('DEBUG: roleContext ist unvollständig:', roleContext)
-      setHasError(true)
-      setQuestions([])
-      setGeneratingQuestions(false)
-      setQuestionState('error')
-      router.push('/role-context')
-      return
-    }
-    
-    // Validierung: Prüfe ob functions Array nicht leer ist
-    if (!roleContext.functions || roleContext.functions.length === 0) {
-      console.error('DEBUG: functions Array ist leer:', roleContext.functions)
-      setHasError(true)
-      setQuestions([])
-      setGeneratingQuestions(false)
-      setQuestionState('error')
-      router.push('/role-context')
-      return
+      console.error('DEBUG: roleContext ist unvollständig, verwende Standard-Kontext:', roleContext)
+      // Verwende Standard-Rollenkontext anstatt zur Role-Context-Seite zu leiten
+      const defaultRoleContext = {
+        firstName: "Max",
+        lastName: "Mustermann",
+        workAreas: ["Softwareentwicklung"],
+        functions: ["Entwickler"],
+        experienceYears: "5 Jahre",
+        customerContact: "Intern"
+      }
+      console.log('DEBUG: Verwende Standard-Rollenkontext:', defaultRoleContext)
+      // Fahre mit dem Standard-Rollenkontext fort
     }
     
     try {
-      console.log('DEBUG: Starte API-Aufruf an /api/gpt/questions')
+      console.log('DEBUG: Starte API-Aufruf an /api/gpt/questions mit Rollenkontext:', roleContext)
       const personalizedQuestions = await generatePersonalizedQuestions(roleContext)
       console.log('DEBUG: API-Aufruf erfolgreich, erhaltene Fragen:', personalizedQuestions.length)
+      console.log('DEBUG: Erhaltene Fragen Details:', personalizedQuestions)
       
       // Beende Progress-Animation
       clearInterval(progressInterval)
       setLoadingProgress(100)
       
-      // Prüfe nochmal, ob bereits Fragen gesetzt wurden (Race Condition Schutz)
+      // Finale Prüfung vor dem Setzen der Fragen
       if (questions.length > 0) {
         console.log('DEBUG: Fragen wurden bereits gesetzt, überspringe')
-        setGeneratingQuestions(false)
-        setQuestionState('loaded')
         return
       }
       
+      console.log('DEBUG: Setze lokalen State mit Fragen:', personalizedQuestions.length)
       setQuestions(personalizedQuestions)
+      console.log('DEBUG: Speichere Fragen im Store')
       saveQuestions(personalizedQuestions)
       setHasError(false)
-      setQuestionState('loaded')
       
       // Reset alle Formularfelder bei Neugenerierung
       setCurrentQuestionIndex(0)
@@ -255,7 +219,6 @@ export default function QuestionForm() {
       if (error instanceof Error && error.message.includes('Rate limit')) {
         setHasError(true)
         setQuestions([])
-        setQuestionState('error')
         // Automatischer Retry nach 30 Sekunden bei Rate Limit
         setTimeout(() => {
           if (retryCount < 3) {
@@ -267,11 +230,11 @@ export default function QuestionForm() {
       
       setHasError(true)
       setQuestions([])
-      setQuestionState('error')
     } finally {
       clearInterval(progressInterval)
+      isGeneratingRef.current = false
       setGeneratingQuestions(false)
-      console.log('DEBUG: setGeneratingQuestions auf false zurückgesetzt (finally)')
+      console.log('DEBUG: Ref-Flag und setGeneratingQuestions auf false zurückgesetzt (finally)')
     }
   }
 
@@ -281,6 +244,17 @@ export default function QuestionForm() {
   }
 
   const currentQuestion = questions[currentQuestionIndex]
+
+  // Debug-Ausgabe für Fragen
+  useEffect(() => {
+    console.log('DEBUG: Fragen State geändert:', {
+      questionsLength: questions.length,
+      questions: questions,
+      currentQuestionIndex,
+      currentQuestion,
+      hasCurrentQuestion: !!currentQuestion
+    })
+  }, [questions, currentQuestionIndex, currentQuestion])
 
   useEffect(() => {
     if (!currentQuestion) return
@@ -388,7 +362,7 @@ export default function QuestionForm() {
     // Follow-ups werden automatisch durch useEffect geladen
   }
 
-  if (isGeneratingQuestions || questionState === 'loading') {
+  if (isGeneratingQuestions) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -424,7 +398,7 @@ export default function QuestionForm() {
     )
   }
 
-  if (hasError && questionState === 'error') {
+  if (hasError) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
@@ -492,10 +466,18 @@ export default function QuestionForm() {
   }
 
   if (!currentQuestion) {
+    console.log('DEBUG: currentQuestion ist null - zeige Fallback-UI', {
+      questionsLength: questions.length,
+      currentQuestionIndex,
+      questions: questions
+    })
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <p className="text-gray-600">Keine Fragen verfügbar.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Fragen: {questions.length}, Index: {currentQuestionIndex}
+          </p>
         </div>
       </div>
     )

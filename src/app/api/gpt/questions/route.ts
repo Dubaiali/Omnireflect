@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
     // }
 
     const body = await request.json()
+    console.log('DEBUG: API /questions - Empfangene Daten:', {
+      hasRoleContext: !!body.roleContext,
+      roleContextType: typeof body.roleContext,
+      roleContextKeys: body.roleContext ? Object.keys(body.roleContext) : null
+    })
     
     // Input validieren
     if (body.roleContext) {
@@ -39,13 +44,23 @@ export async function POST(request: NextRequest) {
         try {
           rc = JSON.parse(rc)
         } catch (e) {
+          console.error('DEBUG: Fehler beim Parsen des Rollenkontexts:', e)
           return NextResponse.json({ error: 'Rollenkontext konnte nicht geparst werden.' }, { status: 400 })
         }
       }
       try {
         roleContext = validateAndSanitize(roleContextSchema, rc) as RoleContext
+        console.log('DEBUG: Rollenkontext validiert:', {
+          firstName: roleContext.firstName,
+          lastName: roleContext.lastName,
+          workAreas: roleContext.workAreas,
+          functions: roleContext.functions,
+          experienceYears: roleContext.experienceYears,
+          customerContact: roleContext.customerContact,
+          hasDailyTasks: !!roleContext.dailyTasks
+        })
       } catch (error) {
-        console.error('Validierungsfehler:', error)
+        console.error('DEBUG: Validierungsfehler:', error)
         return NextResponse.json(
           { error: 'Ungültige Rollenkontext-Daten. Bitte fülle alle Pflichtfelder aus.' },
           { status: 400 }
@@ -54,6 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!roleContext) {
+      console.error('DEBUG: Kein Rollenkontext vorhanden')
       return NextResponse.json(
         { error: 'Rollenkontext ist erforderlich für die Generierung personalisierter Fragen. Bitte fülle zuerst dein Profil aus.' },
         { status: 400 }
@@ -69,6 +85,8 @@ export async function POST(request: NextRequest) {
     - Kundenkontakt: ${roleContext.customerContact}
     ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
     `
+
+    console.log('DEBUG: Sende Rollenkontext an GPT:', roleContextInfo)
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -149,18 +167,22 @@ Antworte nur mit JSON im Format:
     })
 
     const response = completion.choices[0]?.message?.content || ''
+    console.log('DEBUG: GPT-Antwort erhalten, Länge:', response.length)
     
     try {
       // Versuche JSON zu parsen
       const jsonMatch = response.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         const parsedQuestions = JSON.parse(jsonMatch[0])
+        console.log('DEBUG: JSON erfolgreich geparst, Fragen:', parsedQuestions.length)
         
         // Prüfe ob wir gültige personalisierte Fragen haben
         if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
           const validQuestions = parsedQuestions.filter((q: any) => 
             q && q.id && q.question && q.category
           )
+          
+          console.log('DEBUG: Gültige Fragen gefunden:', validQuestions.length)
           
           if (validQuestions.length >= 11) { // Mindestens 11 von 12 Fragen sollten vorhanden sein
             return NextResponse.json({ questions: validQuestions })
@@ -169,14 +191,16 @@ Antworte nur mit JSON im Format:
       }
       
       // Wenn keine gültigen Fragen generiert wurden, Fehler zurückgeben
+      console.error('DEBUG: Keine gültigen Fragen von GPT erhalten, Antwort:', response.substring(0, 200))
       throw new Error('Keine gültigen Fragen von GPT erhalten')
       
     } catch (parseError) {
-      console.error('Fehler beim Parsen der GPT-Antwort:', parseError)
+      console.error('DEBUG: Fehler beim Parsen der GPT-Antwort:', parseError)
+      console.error('DEBUG: GPT-Antwort war:', response)
       throw new Error('Fehler bei der Fragen-Generierung')
     }
   } catch (error) {
-    console.error('Fehler bei der Fragen-Generierung:', error)
+    console.error('DEBUG: Fehler bei der Fragen-Generierung:', error)
     
     // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(

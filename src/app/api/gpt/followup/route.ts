@@ -37,6 +37,14 @@ export async function POST(request: NextRequest) {
     const { question, answer: answerData, roleContext } = await request.json()
     answer = answerData
 
+    console.log('DEBUG: API /followup - Empfangene Daten:', {
+      hasQuestion: !!question,
+      hasAnswer: !!answer,
+      hasRoleContext: !!roleContext,
+      roleContextType: typeof roleContext,
+      roleContextKeys: roleContext ? Object.keys(roleContext) : null
+    })
+
     if (!question || !answer) {
       return NextResponse.json(
         { error: 'Frage und Antwort sind erforderlich' },
@@ -56,6 +64,10 @@ export async function POST(request: NextRequest) {
       - Kundenkontakt: ${roleContext.customerContact}
       ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
       `
+      
+      console.log('DEBUG: Rollenkontext für Follow-up:', roleContextInfo)
+    } else {
+      console.log('DEBUG: Kein Rollenkontext für Follow-up verfügbar')
     }
 
     const questionTypes = getFollowUpQuestionTypes()
@@ -123,6 +135,8 @@ export async function POST(request: NextRequest) {
       - Oder gib genau 1 Nachfrage zurück, ohne Nummerierung oder Aufzählungszeichen
     `
 
+    console.log('DEBUG: Sende Follow-up-Prompt an GPT')
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
@@ -148,9 +162,11 @@ Berücksichtige dabei:
     })
 
     const response = completion.choices[0]?.message?.content || ''
+    console.log('DEBUG: GPT Follow-up-Antwort erhalten:', response.trim())
     
     // Prüfe, ob keine Nachfragen gewünscht sind
     if (response.trim().toUpperCase() === 'KEINE_NACHFRAGEN') {
+      console.log('DEBUG: Keine Nachfragen gewünscht')
       return NextResponse.json({ questions: [] })
     }
     
@@ -159,12 +175,14 @@ Berücksichtige dabei:
     
     // Prüfe, ob die Frage gültig ist
     if (singleQuestion && singleQuestion.length > 0) {
+      console.log('DEBUG: Nachfrage generiert:', singleQuestion)
       return NextResponse.json({ questions: [singleQuestion] })
     } else {
+      console.log('DEBUG: Keine gültige Nachfrage generiert')
       return NextResponse.json({ questions: [] })
     }
   } catch (error) {
-    console.error('Fehler bei der GPT-Anfrage:', error)
+    console.error('DEBUG: Fehler bei der GPT-Anfrage:', error)
     
     // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(

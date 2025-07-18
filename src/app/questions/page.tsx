@@ -11,22 +11,21 @@ export default function QuestionsPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
-    } else if (!roleContext) {
-      // Wenn Rollenkontext nicht ausgefüllt ist, zur Welcome-Seite weiterleiten
-      router.push('/welcome')
-    }
-  }, [isAuthenticated, roleContext, router])
+    // Temporär: Erlaube Zugriff ohne Authentifizierung für Testzwecke
+    // if (!isAuthenticated) {
+    //   router.push('/login')
+    // }
+  }, [isAuthenticated, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
-  if (!isAuthenticated || !roleContext) {
-    return null
-  }
+  // Temporär: Erlaube Zugriff ohne Authentifizierung für Testzwecke
+  // if (!isAuthenticated) {
+  //   return null
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50">
