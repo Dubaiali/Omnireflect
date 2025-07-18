@@ -44,8 +44,19 @@ export async function POST(request: NextRequest) {
     let answersText = ''
     let followUpText = ''
     
+    let answeredQuestions: any[] = []
+    
     if (questions && Array.isArray(questions)) {
-      questions.forEach((question, index) => {
+      // Filtere nur Fragen, die tatsächlich beantwortet wurden
+      answeredQuestions = questions.filter(question => answers[question.id])
+      
+      console.log('DEBUG: Fragen für Zusammenfassung:', {
+        totalQuestions: questions.length,
+        answeredQuestions: answeredQuestions.length,
+        answeredQuestionIds: answeredQuestions.map(q => q.id)
+      })
+      
+      answeredQuestions.forEach((question, index) => {
         const answer = answers[question.id]
         const followUps = followUpQuestions[question.id] || []
         
@@ -88,7 +99,41 @@ export async function POST(request: NextRequest) {
 
     console.log('DEBUG: Sende Summary-Prompt an GPT')
 
+    // Dynamische Anpassungen basierend auf Erfahrungslevel
+    const getExperienceLevel = (experienceYears: string) => {
+      if (experienceYears.includes('Monate') || experienceYears.includes('1 Jahr')) {
+        return 'EINLADEND, LERNORIENTIERT, UNTERSTÜTZEND'
+      } else if (experienceYears.includes('15 Jahre')) {
+        return 'WÜRDEVOLL, ERFAHRUNGSBASIERT, REFLEKTIEREND'
+      }
+      return 'AUSGEWOGEN, ENTWICKLUNGSORIENTIERT'
+    }
+
+    const getIndustryContext = (workAreas: string[]) => {
+      const contexts = {
+        'Brillenberatung': 'Kundenorientierung, Beratungskompetenz, Produktwissen',
+        'Softwareentwicklung': 'Technische Expertise, Teamarbeit, Innovation',
+        'Büro': 'Organisation, Kommunikation, Prozessoptimierung',
+        'Werkstatt': 'Handwerk, Präzision, Qualitätsbewusstsein',
+        'Kontaktlinse': 'Spezialisierung, Beratung, Kundenbetreuung'
+      }
+      return workAreas.map(area => contexts[area] || area).join(', ')
+    }
+
+    const experienceLevel = roleContext ? getExperienceLevel(roleContext.experienceYears) : 'AUSGEWOGEN'
+    const industryContext = roleContext ? getIndustryContext(roleContext.workAreas) : ''
+    const answeredQuestionsCount = questions ? questions.filter(q => answers[q.id]).length : 0
+
     const prompt = `
+      ${answeredQuestionsCount < 3 ? 'WICHTIG: Nur wenige Fragen wurden beantwortet. Erstelle eine kürzere, fokussierte Zusammenfassung basierend auf den verfügbaren Antworten.' : ''}
+      
+      WICHTIG: Die "Empfehlungen für das Mitarbeiterjahresgespräch" müssen als SEPARATE SEKTION erscheinen, NICHT als Teil von "Rollentausch & Führungsperspektive".
+      
+      STRUKTUR-REGLEN:
+      - "Rollentausch & Führungsperspektive" = Was würdest du als Vorgesetzter anders machen?
+      - "Empfehlungen für das Mitarbeiterjahresgespräch" = SEPARATE SEKTION mit konkreten Handlungsimpulsen
+      - Diese beiden Sektionen müssen getrennt sein!
+      
       Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, erstelle eine empathische und strukturierte Zusammenfassung der Selbstreflexion basierend auf den gegebenen Antworten.
       
       HAUPTANTWORTEN:
@@ -96,31 +141,57 @@ export async function POST(request: NextRequest) {
       
       ${followUpText ? `VERTIEFENDE NACHFRAGEN:\n${followUpText}` : ''}${roleContextInfo}
       
-      Analysiere die Antworten systematisch nach den 12 Reflexionskategorien und erstelle eine umfassende Zusammenfassung:
+      PERSONALISIERTER KONTEXT:
+      - Erfahrungslevel: ${experienceLevel}
+      - Arbeitsbereich: ${industryContext}
       
-      1. **Stolz & persönliche Leistung**: Worauf bist du stolz, was macht dich zufrieden?
-      2. **Herausforderungen & Umgang mit Druck**: Welche Schwierigkeiten erlebst du und wie gehst du damit um?
-      3. **Verantwortung & Selbstorganisation**: Wie organisierst du dich und übernimmst Verantwortung?
-      4. **Zusammenarbeit & Feedback**: Wie arbeitest du mit anderen zusammen?
-      5. **Entwicklung & Lernen**: Wo siehst du Entwicklungsmöglichkeiten?
-      6. **Energie & Belastung**: Wie erlebst du deine Energie und Belastung?
-      7. **Kultur & Werte**: Wie erlebst du die Unternehmenskultur?
-      8. **Entscheidungsspielräume & Freiheit**: Welche Freiheiten und Entscheidungsmöglichkeiten hast du?
-      9. **Wertschätzung & Gesehenwerden**: Fühlst du dich wertgeschätzt und gesehen?
-      10. **Perspektive & Zukunft**: Wie siehst du deine berufliche Zukunft?
-      11. **Verbesserungsvorschläge & Ideen**: Was würdest du verbessern oder anders machen?
-      12. **Rollentausch & Führungsperspektive**: Was würdest du als Vorgesetzter anders machen?
+      STRUKTURIERTE ANALYSE mit Priorisierung:
+      Analysiere die Antworten nach Priorität:
+      1. KRITISCHE THEMEN: Herausforderungen, Entwicklungsbedarf
+      2. STÄRKEN: Stolz, Erfolge, positive Erfahrungen
+      3. ZUKUNFT: Perspektiven, Ziele, Wünsche
+      4. KONTEXT: Arbeitsumfeld, Kultur, Zusammenarbeit
       
-      Die Zusammenfassung sollte:
-      - in Du-Form verfasst sein (klar, menschlich, ohne Floskeln)
-      - ABSOLUT NICHT gendern (keine geschlechtsspezifischen Formulierungen wie "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" etc. - verwende stattdessen "Mitarbeiter", "Kollegen", "Kunden")
-      - sprachlich dem Erfahrungs- und Alterskontext angepasst sein
-      - kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung berücksichtigen
+      Systematische Analyse basierend auf den beantworteten Fragen:
+      
+      ${(() => {
+        const categoryMap = {
+          'pride': 'Stolz & persönliche Leistung',
+          'challenges': 'Herausforderungen & Umgang mit Druck',
+          'responsibility': 'Verantwortung & Selbstorganisation',
+          'collaboration': 'Zusammenarbeit & Feedback',
+          'development': 'Entwicklung & Lernen',
+          'energy': 'Energie & Belastung',
+          'culture': 'Kultur & Werte',
+          'freedom': 'Entscheidungsspielräume & Freiheit',
+          'appreciation': 'Wertschätzung & Gesehenwerden',
+          'perspective': 'Perspektive & Zukunft',
+          'improvements': 'Verbesserungsvorschläge & Ideen',
+          'leadership': 'Rollentausch & Führungsperspektive'
+        }
+        
+        const answeredCategories = answeredQuestions.map(q => {
+          const category = categoryMap[q.category] || q.category
+          return `**${category}**: ${q.question}`
+        }).join('\n\n')
+        
+        return answeredCategories || 'Keine Fragen beantwortet'
+      })()}
+      
+      EMPFEHLUNGEN FÜR DAS MITARBEITERJAHRESGESPRÄCH (SEPARATE SEKTION):
+      **Empfehlungen für das Mitarbeiterjahresgespräch**: Konkrete Handlungsimpulse für das Gespräch (SEPARATE SEKTION)
+      
+      QUALITÄTSKRITERIEN:
+      - ABSOLUT in Du-Form verfasst (klar, menschlich, ohne Floskeln) - ALLE Teile der Zusammenfassung
+      - ABSOLUT NICHT gendern (keine "Mitarbeiter:in", "Kolleg:innen", "Mitarbeitende" - verwende "Mitarbeiter", "Kollegen", "Kunden")
+      - sprachlich dem Erfahrungs- und Alterskontext angepasst
+      - kulturelle Werte berücksichtigen (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
       - empathisch und unterstützend wirken
-      - den beruflichen Kontext der Person berücksichtigen
       - Follow-up-Antworten für tiefere Einblicke nutzen
-      - konkrete Handlungsimpulse und Entwicklungsmöglichkeiten identifizieren
-      - Fokus auf persönliche Entwicklung und Wachstum legen
+      - konkrete Handlungsimpulse identifizieren
+      - Fokus auf persönliche Entwicklung und Wachstum
+      - KRITISCHE ÄUSSERUNGEN AUTHENTISCH WIEDERGEBEN: Wenn der Mitarbeiter negative oder kritische Aussagen macht, diese nicht "schönreden" oder mildern
+      - ECHTE REFLEXION: Die tatsächlichen Gefühle und Meinungen des Mitarbeiters respektieren und wiedergeben
       
       FOKUS-BEREICHE für die Analyse:
       - Persönliche Wachstumserfahrungen und Lernerkenntnisse
@@ -128,67 +199,55 @@ export async function POST(request: NextRequest) {
       - Beziehungen und Zusammenarbeit
       - Motivation und Sinnhaftigkeit
       - Zukunftsvisionen und Entwicklungsziele
-      - Herausforderungen als Wachstumschancen
+      - Herausforderungen und deren Ursachen
       - Selbstreflexion und Bewusstsein
+      - ECHTE GEFÜHLE UND MEINUNGEN: Auch negative oder kritische Äußerungen authentisch wiedergeben
       
       EINLEITUNG:
-      - Die Einleitung sollte umfassend und detailliert sein (5-7 Sätze)
-      - Fasse die wichtigsten Erkenntnisse aus allen Antworten zusammen
-      - Erwähne Stärken, Herausforderungen und Entwicklungsbereiche
-      - Zeige die Verbindung zwischen verschiedenen Aspekten der Reflexion
-      - Mache die Kernaussagen für das Mitarbeiterjahresgespräch deutlich
-      - Gehe auf die persönliche Situation und den beruflichen Kontext ein
-      - Betone persönliche Entwicklung und Wachstum
+      - Umfassend und detailliert (5-7 Sätze)
+      - Wichtigste Erkenntnisse aus allen Antworten zusammenfassen
+      - Stärken, Herausforderungen und Entwicklungsbereiche erwähnen
+      - Verbindung zwischen verschiedenen Aspekten der Reflexion zeigen
+      - Kernaussagen für das Mitarbeiterjahresgespräch deutlich machen
+      - Persönliche Situation und beruflichen Kontext berücksichtigen
+      - Persönliche Entwicklung und Wachstum betonen
       
-      Passe deine Sprache so an, dass sie für die jeweilige Zielgruppe leicht verständlich ist:
-      - Für junge oder neue Mitarbeiter: eher klar, freundlich, einladend
-      - Für erfahrene oder langjährige Mitarbeiter: eher würdevoll, respektvoll, anerkennend
+      SPRACHLICHE ANPASSUNG:
+      - Für junge/neue Mitarbeiter: klar, freundlich, einladend
+      - Für erfahrene/langjährige Mitarbeiter: würdevoll, respektvoll, anerkennend
       
       Strukturiere die Zusammenfassung in folgendem Format:
       
       Einleitung:
       [Umfassender Überblick über die Reflexion mit den wichtigsten Erkenntnissen, Kernaussagen und zentralen Themen. Diese Sektion sollte 3-4 Sätze enthalten und die wesentlichen Aspekte der Selbstreflexion zusammenfassen, einschließlich Stärken, Herausforderungen und Entwicklungsbereiche.]
       
-      Systematische Analyse:
+      Systematische Analyse (nur beantwortete Kategorien):
       
-      Stolz & persönliche Leistung:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
+      ${(() => {
+        const categoryMap = {
+          'pride': 'Stolz & persönliche Leistung',
+          'challenges': 'Herausforderungen & Umgang mit Druck',
+          'responsibility': 'Verantwortung & Selbstorganisation',
+          'collaboration': 'Zusammenarbeit & Feedback',
+          'development': 'Entwicklung & Lernen',
+          'energy': 'Energie & Belastung',
+          'culture': 'Kultur & Werte',
+          'freedom': 'Entscheidungsspielräume & Freiheit',
+          'appreciation': 'Wertschätzung & Gesehenwerden',
+          'perspective': 'Perspektive & Zukunft',
+          'improvements': 'Verbesserungsvorschläge & Ideen',
+          'leadership': 'Rollentausch & Führungsperspektive'
+        }
+        
+        return answeredQuestions.map(q => {
+          const category = categoryMap[q.category] || q.category
+          const isLeadership = q.category === 'leadership'
+          return `${category}:\n[Analyse ohne Aufzählungszeichen, nur normaler Text${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch' : ''}]`
+        }).join('\n\n')
+      })()}
       
-      Herausforderungen & Umgang mit Druck:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Verantwortung & Selbstorganisation:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Zusammenarbeit & Feedback:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Entwicklung & Lernen:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Energie & Belastung:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Kultur & Werte:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Entscheidungsspielräume & Freiheit:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Wertschätzung & Gesehenwerden:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Perspektive & Zukunft:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Verbesserungsvorschläge & Ideen:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Rollentausch & Führungsperspektive:
-      [Analyse ohne Aufzählungszeichen, nur normaler Text]
-      
-      Empfehlungen für dein Mitarbeiterjahresgespräch:
-      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate)]
+      EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:
+      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) - SEPARATE SEKTION - NICHT Teil von Rollentausch & Führungsperspektive]
     `
 
     const completion = await openai.chat.completions.create({
@@ -196,7 +255,26 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Deine Aufgabe ist es, empathische und hilfreiche Zusammenfassungen zu erstellen.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion.
+
+DEINE KERNKOMPETENZEN:
+- Empathische Gesprächsführung ohne Suggestion
+- Kontextuelle Anpassung an Erfahrungslevel und Arbeitsbereich
+- Fokus auf persönliche Entwicklung über Arbeitsalltag hinaus
+- Kulturelle Sensibilität (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
+- AUTHENTISCHE WIEDERGABE: Kritische oder negative Äußerungen des Mitarbeiters nicht mildern oder "schönreden"
+
+DEINE AUFGABE: Empathische und hilfreiche Zusammenfassungen erstellen.
+
+WICHTIGE STRUKTUR-REGLEN:
+- "Rollentausch & Führungsperspektive" und "Empfehlungen für das Mitarbeiterjahresgespräch" sind SEPARATE SEKTIONEN
+- "Rollentausch & Führungsperspektive" = Was würdest du als Vorgesetzter anders machen?
+- "Empfehlungen für das Mitarbeiterjahresgespräch" = Konkrete Handlungsimpulse für das Gespräch
+- Diese beiden Sektionen müssen getrennt sein!
+
+SPRACHLICHE REGELN:
+- ABSOLUT ALLE Teile der Zusammenfassung in Du-Form verfassen
+- Einleitung, systematische Analyse und Empfehlungen - alles in Du-Form
 
 Berücksichtige dabei:
 - Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
@@ -205,7 +283,9 @@ Berücksichtige dabei:
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
 - Konkrete, umsetzbare Handlungsempfehlungen
-- Fokus auf persönliche Entwicklung und Wachstum`
+- Fokus auf persönliche Entwicklung und Wachstum
+- Strukturierte Analyse mit Priorisierung (kritisch → positiv → zukunftsorientiert)
+- AUTHENTISCHE WIEDERGABE: Wenn der Mitarbeiter kritische oder negative Aussagen macht, diese nicht mildern oder umdeuten`
         },
         {
           role: 'user',

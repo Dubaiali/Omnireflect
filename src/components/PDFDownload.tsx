@@ -37,13 +37,21 @@ function parseSummary(summary: string) {
       continue
     }
     
-    // Empfehlungen erkennen
-    if (line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
+    // Empfehlungen erkennen (verbesserte Erkennung)
+    if (line.includes('EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:') || 
+        line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:') || 
+        line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch') ||
+        line.includes('Empfehlungen für Ihr Mitarbeiterjahresgespräch:') ||
+        line.includes('Empfehlungen für das Mitarbeiterjahresgespräch:')) {
       if (currentSection === 'category' && currentTitle && currentContent) {
         categories.push({ title: currentTitle, content: currentContent.trim() })
       }
       currentSection = 'recommendations'
-      currentContent = line.replace('Empfehlungen für dein Mitarbeiterjahresgespräch:', '').trim()
+      currentContent = line.replace('EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:', '')
+                           .replace('Empfehlungen für dein Mitarbeiterjahresgespräch:', '')
+                           .replace('Empfehlungen für dein Mitarbeiterjahresgespräch', '')
+                           .replace('Empfehlungen für Ihr Mitarbeiterjahresgespräch:', '')
+                           .replace('Empfehlungen für das Mitarbeiterjahresgespräch:', '').trim()
       continue
     }
     
@@ -348,7 +356,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                 if (summary && summary.trim().length > 0) {
                   setShowResetWarning(true)
                 } else {
-                  router.push('/questions?question=12')
+                  router.push('/questions')
                 }
               }}
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
@@ -430,13 +438,42 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
             </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-white font-semibold text-sm">
-                {storedQuestions?.length || 0} Fragen beantwortet
+                {storedQuestions?.filter(q => progress.answers[q.id])?.length || 0} von {storedQuestions?.length || 0} Fragen beantwortet
               </span>
             </div>
           </div>
         </div>
 
         <div className="p-8">
+          {/* Warnung bei wenigen beantworteten Fragen */}
+          {summary && storedQuestions && progress.answers && (
+            (() => {
+              const answeredCount = storedQuestions.filter(q => progress.answers[q.id]).length
+              const totalCount = storedQuestions.length
+              if (answeredCount < 3 && answeredCount < totalCount) {
+                return (
+                  <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-700">
+                          <strong>Hinweis:</strong> Nur {answeredCount} von {totalCount} Fragen wurden beantwortet. 
+                          Die Zusammenfassung basiert auf den verfügbaren Antworten. 
+                          Für eine vollständigere Analyse empfehlen wir, alle Fragen zu beantworten.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return null
+            })()
+          )}
+          
           {!summary && (
             <div className="text-center py-12">
               <div className="bg-blue-50 rounded-full p-6 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
@@ -539,7 +576,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                 <button
                   onClick={() => {
                     setShowResetWarning(false)
-                    router.push('/questions?question=12')
+                    router.push('/questions')
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-lg transition duration-200"
                 >

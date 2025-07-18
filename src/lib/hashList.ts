@@ -10,11 +10,11 @@ function hashPassword(password: string): string {
 function loadHashListFromEnv(): HashEntry[] {
   // Direkte Definition der Hash-Liste um JSON-Parsing-Probleme zu vermeiden
   const hashList = [
-    {
+      {
       hashId: 'emp_md87yj1f_904c447c80694dc5',
       password: hashPassword('Tvr39RN%Jg$7'),
-      name: 'Max Mustermann',
-      department: 'IT',
+        name: 'Max Mustermann',
+        department: 'IT',
       status: 'pending' as const,
     },
     {

@@ -88,19 +88,59 @@ export async function POST(request: NextRequest) {
 
     console.log('DEBUG: Sende Rollenkontext an GPT:', roleContextInfo)
 
+    // Dynamische Anpassungen basierend auf Erfahrungslevel und Arbeitsbereich
+    const getExperienceLevel = (experienceYears: string) => {
+      if (experienceYears.includes('Monate') || experienceYears.includes('1 Jahr')) {
+        return 'EINLADEND, LERNORIENTIERT, UNTERSTÜTZEND'
+      } else if (experienceYears.includes('15 Jahre')) {
+        return 'WÜRDEVOLL, ERFAHRUNGSBASIERT, REFLEKTIEREND'
+      }
+      return 'AUSGEWOGEN, ENTWICKLUNGSORIENTIERT'
+    }
+
+    const getIndustryContext = (workAreas: string[]) => {
+      const contexts = {
+        'Brillenberatung': 'Kundenorientierung, Beratungskompetenz, Produktwissen',
+        'Softwareentwicklung': 'Technische Expertise, Teamarbeit, Innovation',
+        'Büro': 'Organisation, Kommunikation, Prozessoptimierung',
+        'Werkstatt': 'Handwerk, Präzision, Qualitätsbewusstsein',
+        'Kontaktlinse': 'Spezialisierung, Beratung, Kundenbetreuung'
+      }
+      return workAreas.map(area => contexts[area] || area).join(', ')
+    }
+
+    const getCustomerContext = (customerContact: string) => {
+      const contexts = {
+        'Intern': 'Teamarbeit, interne Prozesse, Zusammenarbeit',
+        'Extern': 'Kundenbeziehungen, Service, Außendarstellung',
+        'Teilweise / abhängig von Kundenfrequenz': 'Flexibilität, Anpassungsfähigkeit, Serviceorientierung'
+      }
+      return contexts[customerContact] || customerContact
+    }
+
+    const experienceLevel = getExperienceLevel(roleContext.experienceYears)
+    const industryContext = getIndustryContext(roleContext.workAreas)
+    const customerContext = getCustomerContext(roleContext.customerContact)
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Erstelle 12 inspirierende und tiefgründige Reflexionsfragen, die zur Selbstreflexion anregen.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion.
 
-KONTEXT:
+DEINE KERNKOMPETENZEN:
+- Empathische Gesprächsführung ohne Suggestion
+- Kontextuelle Anpassung an Erfahrungslevel und Arbeitsbereich
+- Fokus auf persönliche Entwicklung über Arbeitsalltag hinaus
+- Kulturelle Sensibilität (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
+
+PERSONALISIERTER KONTEXT:
 - Name: ${roleContext.firstName} ${roleContext.lastName}
-- Arbeitsbereiche: ${roleContext.workAreas.join(', ')}
+- Arbeitsbereiche: ${roleContext.workAreas.join(', ')} → ${industryContext}
 - Funktion: ${roleContext.functions.join(', ')}
-- Erfahrung: ${roleContext.experienceYears}
-- Kundenkontakt: ${roleContext.customerContact}
+- Erfahrung: ${roleContext.experienceYears} → ${experienceLevel}
+- Kundenkontakt: ${roleContext.customerContact} → ${customerContext}
 ${roleContext.dailyTasks ? `- Tägliche Aufgaben: ${roleContext.dailyTasks}` : ''}
 
 ANFORDERUNGEN:
@@ -108,7 +148,7 @@ ANFORDERUNGEN:
 - Fokussiere auf persönliche Entwicklung, Werte und Erfahrungen
 - Verwende den Arbeitskontext nur als Hintergrund, nicht als Hauptthema
 - Verschiedene Fragetypen: "Was", "Wie", "Wann", "Welche", "Inwiefern", "Was wäre wenn"
-- Maximal 2 Sätze pro Frage
+- GENAU 1 SATZ pro Frage (nicht mehr, nicht weniger)
 - Inspirierender, einladender Ton
 - Natürliche, flüssige Sprache
 - Vermeide zu spezifische Branchen- oder Arbeitsbereichsbezüge
@@ -127,7 +167,7 @@ KATEGORIEN (je eine Frage):
 11. Verbesserungsvorschläge & Ideen
 12. Rollentausch & Führungsperspektive
 
-BEISPIELE für inspirierende Fragen:
+BEISPIELE für inspirierende Fragen (1 Satz):
 - "Was hat dich in den letzten Monaten am meisten überrascht oder inspiriert?"
 - "Welche Erfahrung hat dein Verständnis von Zusammenarbeit am stärksten geprägt?"
 - "Was würdest du deinem jüngeren Ich mit deiner heutigen Erfahrung raten?"
@@ -144,6 +184,13 @@ FOKUS-BEREICHE:
 - Zukunftsvisionen und Träume
 - Herausforderungen als Wachstumschancen
 - Selbstreflexion und Bewusstsein
+
+QUALITÄTSKRITERIEN:
+- Jede Frage genau 1 Satz (nicht mehr, nicht weniger)
+- Spezifität (nicht zu generisch)
+- Relevanz für den Kontext
+- Inspirationspotenzial
+- Angemessenheit für Erfahrungslevel
 
 Antworte nur mit JSON im Format:
 [
@@ -192,19 +239,26 @@ Antworte nur mit JSON im Format:
       
       // Wenn keine gültigen Fragen generiert wurden, Fehler zurückgeben
       console.error('DEBUG: Keine gültigen Fragen von GPT erhalten, Antwort:', response.substring(0, 200))
-      throw new Error('Keine gültigen Fragen von GPT erhalten')
+      return NextResponse.json(
+        { error: 'Keine gültigen Fragen von GPT erhalten. Bitte versuche es erneut.' },
+        { status: 500 }
+      )
       
     } catch (parseError) {
       console.error('DEBUG: Fehler beim Parsen der GPT-Antwort:', parseError)
       console.error('DEBUG: GPT-Antwort war:', response)
-      throw new Error('Fehler bei der Fragen-Generierung')
+      return NextResponse.json(
+        { error: 'Fehler beim Verarbeiten der KI-Antwort. Bitte versuche es erneut.' },
+        { status: 500 }
+      )
     }
   } catch (error) {
-    console.error('DEBUG: Fehler bei der Fragen-Generierung:', error)
-    
-    // Keine Fallbacks mehr - nur echte KI-Antworten
+      console.error('DEBUG: Fehler bei der Fragen-Generierung:', error)
+      
+      // Konsistente Fehlerstruktur für das Frontend
+      const errorMessage = error instanceof Error ? error.message : 'Fehler bei der Generierung der Fragen. Bitte versuche es später erneut.'
     return NextResponse.json(
-      { error: 'Fehler bei der Generierung der Fragen. Bitte versuche es später erneut.' },
+        { error: errorMessage },
       { status: 500 }
     )
   }

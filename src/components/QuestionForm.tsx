@@ -20,8 +20,8 @@ export default function QuestionForm() {
   const [retryCount, setRetryCount] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
   
-  // Ref für Race-Condition-Schutz
-  const isGeneratingRef = useRef(false)
+  // Einfacher State für Race-Condition-Schutz
+  const [isGenerating, setIsGenerating] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -68,22 +68,30 @@ export default function QuestionForm() {
     }
   }, [])
 
-  // Vereinfachte useEffect-Logik: Nur einmalig beim ersten Laden
+  // Reset State beim Komponenten-Mount
   useEffect(() => {
-    console.log('DEBUG: ZENTRALE useEffect triggered', {
-      roleContext: !!roleContext,
-      questionsLength: questions.length,
-      isGeneratingQuestions,
-      storedQuestionsLength: storedQuestions?.length,
-      questionParam: searchParams.get('question')
-    })
+    console.log('DEBUG: Komponente gemountet - Reset State')
+    setIsGenerating(false)
+  }, [])
 
+  // Verbesserte useEffect-Logik mit mehr Debug-Ausgaben
+  useEffect(() => {
+    console.log('DEBUG: ZENTRALE useEffect triggered', { 
+      roleContext: !!roleContext, 
+      questionsLength: questions.length, 
+      isGeneratingQuestions, 
+      storedQuestionsLength: storedQuestions?.length,
+      questionParam: searchParams.get('question'),
+      isGenerating,
+      timestamp: new Date().toISOString()
+    })
+    
     // Wenn bereits Fragen im lokalen State sind, nichts tun
     if (questions.length > 0) {
       console.log('DEBUG: Fragen bereits im lokalen State, überspringe');
       return;
     }
-
+    
     // Wenn Fragen im Store, aber nicht im lokalen State, dann übernehmen
     if (storedQuestions && storedQuestions.length > 0 && questions.length === 0) {
       console.log('DEBUG: Übernehme Fragen aus Store in lokalen State');
@@ -97,13 +105,22 @@ export default function QuestionForm() {
       questions.length === 0 &&
       (!storedQuestions || storedQuestions.length === 0) &&
       !isGeneratingQuestions &&
-      !isGeneratingRef.current
+      !isGenerating
     ) {
       console.log('DEBUG: Starte Generierung, da keine Fragen vorhanden sind');
-      isGeneratingRef.current = true;
       loadPersonalizedQuestions();
+    } else if (isGeneratingQuestions || isGenerating) {
+      console.log('DEBUG: Generierung läuft bereits, warte...');
+      } else {
+      console.log('DEBUG: Generierung übersprungen:', {
+        hasRoleContext: !!roleContext,
+        questionsLength: questions.length,
+        storedQuestionsLength: storedQuestions?.length,
+        isGeneratingQuestions,
+        isGenerating
+      });
     }
-  }, [roleContext]); // Nur roleContext als Abhängigkeit
+  }, [roleContext, isGeneratingQuestions]); // roleContext und isGeneratingQuestions als Abhängigkeiten
 
   // Store-Synchronisation entfernt - verursacht Race Conditions
 
@@ -115,27 +132,29 @@ export default function QuestionForm() {
       storedQuestionsLength: storedQuestions?.length, 
       localQuestionsLength: questions.length,
       roleContext,
-      isGeneratingRef: isGeneratingRef.current,
+      isGenerating,
       timestamp: new Date().toISOString()
     })
     
-    // Ref-basierter Race-Condition-Schutz
-    if (isGeneratingRef.current && !isRetry) {
-      console.log('DEBUG: Fragen werden bereits generiert (Ref), überspringe')
+    // State-basierter Race-Condition-Schutz
+    if (isGenerating && !isRetry) {
+      console.log('DEBUG: Fragen werden bereits generiert (State), überspringe')
       return
     }
     
-    // Setze Loading-Status
+    // Setze State und Loading-Status
+    setIsGenerating(true)
     setGeneratingQuestions(true)
-    console.log('DEBUG: setGeneratingQuestions auf true gesetzt')
+    console.log('DEBUG: State und setGeneratingQuestions auf true gesetzt')
     
     // Finale Prüfung: Wenn bereits Fragen vorhanden sind, überspringe
     if (questions.length > 0 || (storedQuestions && storedQuestions.length > 0)) {
       console.log('DEBUG: Fragen bereits vorhanden, überspringe Generierung')
       if (storedQuestions && storedQuestions.length > 0 && questions.length === 0) {
-        setQuestions(storedQuestions)
+        console.log('DEBUG: Setze Fragen aus Store in lokalen State')
+      setQuestions(storedQuestions)
       }
-      isGeneratingRef.current = false
+      setIsGenerating(false)
       setGeneratingQuestions(false)
       return
     }
@@ -232,9 +251,9 @@ export default function QuestionForm() {
       setQuestions([])
     } finally {
       clearInterval(progressInterval)
-      isGeneratingRef.current = false
+      setIsGenerating(false)
       setGeneratingQuestions(false)
-      console.log('DEBUG: Ref-Flag und setGeneratingQuestions auf false zurückgesetzt (finally)')
+      console.log('DEBUG: State und setGeneratingQuestions auf false zurückgesetzt (finally)')
     }
   }
 

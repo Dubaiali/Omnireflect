@@ -72,27 +72,59 @@ export async function POST(request: NextRequest) {
 
     const questionTypes = getFollowUpQuestionTypes()
 
+    // Dynamische Anpassungen basierend auf Erfahrungslevel
+    const getExperienceLevel = (experienceYears: string) => {
+      if (experienceYears.includes('Monate') || experienceYears.includes('1 Jahr')) {
+        return 'EINLADEND, LERNORIENTIERT, UNTERSTÜTZEND'
+      } else if (experienceYears.includes('15 Jahre')) {
+        return 'WÜRDEVOLL, ERFAHRUNGSBASIERT, REFLEKTIEREND'
+      }
+      return 'AUSGEWOGEN, ENTWICKLUNGSORIENTIERT'
+    }
+
+    const getIndustryContext = (workAreas: string[]) => {
+      const contexts = {
+        'Brillenberatung': 'Kundenorientierung, Beratungskompetenz',
+        'Softwareentwicklung': 'Technische Expertise, Teamarbeit',
+        'Büro': 'Organisation, Kommunikation',
+        'Werkstatt': 'Handwerk, Präzision',
+        'Kontaktlinse': 'Spezialisierung, Beratung'
+      }
+      return workAreas.map(area => contexts[area] || area).join(', ')
+    }
+
+    const experienceLevel = roleContext ? getExperienceLevel(roleContext.experienceYears) : 'AUSGEWOGEN'
+    const industryContext = roleContext ? getIndustryContext(roleContext.workAreas) : ''
+
     const prompt = `
       Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, analysiere die gegebene Antwort und entscheide, ob vertiefende Nachfragen hilfreich wären.
 
       URSPRUNGSFRAGE: ${question}
       ANTWORT: ${answer}${roleContextInfo}
 
-      ANALYSE-KRITERIEN für Nachfragen:
-      ✅ GENERIERE Nachfragen, wenn:
-      - Die Antwort oberflächlich oder kurz ist (< 50 Wörter)
-      - Emotionale Aspekte angesprochen werden, die vertieft werden könnten
-      - Konkrete Beispiele erwähnt werden, die ausführlicher besprochen werden könnten
-      - Entwicklungsmöglichkeiten oder Herausforderungen angedeutet werden
-      - Die Antwort Fragen aufwirft oder unvollständig erscheint
-      - Potenzial für Selbstreflexion erkennbar ist
-      - Persönliche Wachstumserfahrungen angesprochen werden
+      PERSONALISIERTER KONTEXT:
+      - Erfahrungslevel: ${experienceLevel}
+      - Arbeitsbereich: ${industryContext}
 
-      ❌ KEINE Nachfragen, wenn:
-      - Die Antwort bereits sehr detailliert und vollständig ist (> 100 Wörter)
-      - Die Antwort eine klare, abschließende Position vertritt
-      - Keine weiteren Reflexionsmöglichkeiten erkennbar sind
-      - Die Person bereits sehr offen und reflektiert geantwortet hat
+      INTELLIGENTE NACHFRAGEN-LOGIK:
+      ANALYSIERE die Antwort nach:
+      1. Tiefe (oberflächlich vs. reflektiert)
+      2. Emotionale Aspekte (Angst, Freude, Unsicherheit)
+      3. Konkretheit (Beispiele vs. Allgemeinplätze)
+      4. Entwicklungsbereiche (Lücken, Widersprüche)
+
+      GENERIERE nur wenn:
+      - Antwort < 50 Wörter ODER
+      - Emotionale Aspekte unausgesprochen ODER
+      - Konkrete Beispiele erwähnt aber nicht vertieft ODER
+      - Entwicklungsmöglichkeiten angedeutet ODER
+      - Potenzial für Selbstreflexion erkennbar
+
+      KEINE Nachfragen wenn:
+      - Antwort > 100 Wörter und vollständig
+      - Klare, abschließende Position
+      - Keine weiteren Reflexionsmöglichkeiten
+      - Bereits sehr offen und reflektiert geantwortet
 
       VIELFALT & VARIATION:
       - Verwende verschiedene Fragetypen: ${questionTypes.join(', ')}
@@ -100,7 +132,7 @@ export async function POST(request: NextRequest) {
       - Nutze verschiedene Perspektiven: Vergangenheit, Gegenwart, Zukunft
       - Verwende unterschiedliche Techniken: Beispiele, Hypothesen, Vergleiche
 
-      FRAGETECHNIKEN für Follow-ups:
+      FRAGETECHNIKEN für Follow-ups (1 Satz):
       - "Kannst du mir ein konkretes Beispiel geben..." (Beispiele)
       - "Wie hat sich das auf dich ausgewirkt..." (Emotionen)
       - "Was würdest du anders machen..." (Lernen)
@@ -120,7 +152,7 @@ export async function POST(request: NextRequest) {
 
       QUALITÄTSKRITERIEN:
       - Genau 1 Nachfrage (nicht mehr, nicht weniger)
-      - Jede Frage maximal 2 Sätze
+      - GENAU 1 SATZ pro Nachfrage (nicht mehr, nicht weniger)
       - Persönlich und einladend
       - Konkret und relevant
       - Empathisch und unterstützend
@@ -142,7 +174,15 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion. Deine Aufgabe ist es, bei Bedarf vertiefende Nachfragen zu generieren, die zur Selbstreflexion anregen.
+          content: `Du bist ein einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion.
+
+DEINE KERNKOMPETENZEN:
+- Empathische Gesprächsführung ohne Suggestion
+- Kontextuelle Anpassung an Erfahrungslevel und Arbeitsbereich
+- Fokus auf persönliche Entwicklung über Arbeitsalltag hinaus
+- Kulturelle Sensibilität (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
+
+DEINE AUFGABE: Bei Bedarf vertiefende Nachfragen generieren, die zur Selbstreflexion anregen.
 
 Berücksichtige dabei:
 - Den persönlichen Kontext und die Erfahrung der Person
@@ -150,7 +190,8 @@ Berücksichtige dabei:
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
 - Vielfalt in Fragetypen und Ansprache
-- Fokus auf persönliche Entwicklung und Wachstum`
+- Fokus auf persönliche Entwicklung und Wachstum
+- GENAU 1 SATZ pro Nachfrage`
         },
         {
           role: 'user',
