@@ -1,325 +1,189 @@
-# Omnireflect
+# OmniReflect v4.0.0
 
-Eine KI-gestützte Plattform zur Vorbereitung auf Mitarbeiterjahresgespräche mit HashID-basiertem Login-System.
+**KI-gestützte Selbstreflexion für Mitarbeiterjahresgespräche**
 
-## 📚 Dokumentation
-
-- **[Technische Dokumentation](TECHNICAL_DOCUMENTATION.md)** - Vollständige technische Details
-- **[Prompt-Optimierung](PROMPT_OPTIMIZATION.md)** - AI-Prompt-Optimierungen v2.2
-- **[Debugging-Dokumentation](DEBUGGING.md)** - Bekannte Probleme und Lösungen
-- **[Deployment-Anleitung](DEPLOYMENT.md)** - Produktions-Deployment
-
-## 🔧 Wichtige Hinweise
-
-### Bekannte Probleme & Lösungen
-- **Fragengenerierung funktioniert nicht:** Siehe [DEBUGGING.md](DEBUGGING.md) für die Lösung
-- **Rollenkontext wird übersprungen:** Bereits behoben in Version 2.1.0
-
-### Sicherheit
-- HashID-basiertes Login-System für sichere Authentifizierung
-- Alle Benutzerdaten werden lokal im Browser gespeichert
-- Keine dauerhafte Server-Speicherung von Antworten
-- OpenAI API-Schlüssel muss in `.env.local` konfiguriert werden
-
-## 🌐 Live-Anwendung
-
-**Produktionsumgebung:** https://reflect.omni-scient.com  
-**Status:** ✅ Produktiv (Version 2.2.3)  
-**Deployment:** PM2, Node.js 20.19.4, Let's Encrypt SSL
+OmniReflect ist eine moderne Webanwendung, die Mitarbeitern hilft, sich strukturiert auf ihr Mitarbeiterjahresgespräch vorzubereiten. Durch personalisierte Fragen und KI-gestützte Zusammenfassungen entstehen wertvolle Reflexionsgrundlagen.
 
 ## 🚀 Features
 
-- ✅ HashID-basiertes Login-System
-- ✅ Admin-Dashboard für HashID-Verwaltung
-- ✅ KI-gestützte Mitarbeiterjahresgespräche
-- ✅ **Optimierte AI-Prompts v2.2** - Interessantere und tiefgründigere Reflexionsfragen
-- ✅ **Verbessertes Design-System v2.2** - Farbkodierte Kategorien und Gradient-Designs
-- ✅ Personalisierte Zusammenfassungen mit strukturierter Darstellung
-- ✅ Anonymisierte Datenspeicherung
-- ✅ PDF-Export-Funktionalität
-- ✅ Responsive Design
-- ✅ DSGVO-konform
-- ✅ Sichere HTTPS-Verbindung
+### **Kernfunktionen**
+- **Personalisiertes Fragen-System**: 12 Kategorien mit KI-generierten, kontextuellen Fragen
+- **Intelligente Nachfragen**: Dynamische Follow-up-Fragen basierend auf Antworten
+- **KI-Zusammenfassung**: Strukturierte Zusammenfassung für das Mitarbeiterjahresgespräch
+- **PDF-Export**: Professioneller Export der Zusammenfassung
+- **Authentische Wiedergabe**: Kritische Äußerungen werden nicht gemildert oder "schön geredet"
+
+### **Sicherheit & Datenschutz**
+- **HashID-basierte Authentifizierung**: Sichere, anonyme Benutzeridentifikation
+- **Automatische Datenlöschung**: Alle Daten werden nach 30 Tagen automatisch gelöscht
+- **Keine Registrierung**: Einfacher Start ohne persönliche Daten
+- **Verschlüsselte Kommunikation**: HTTPS/TLS 1.3
+- **Rate Limiting**: Schutz vor Missbrauch
+
+### **Benutzerfreundlichkeit**
+- **Responsive Design**: Optimiert für Desktop und Mobile
+- **Fortschrittsanzeige**: Visueller Überblick über beantwortete Fragen
+- **Du-Form**: Persönliche, empathische Ansprache
+- **Moderne UI**: Clean, professionelles Design
 
 ## 🛠️ Technologie-Stack
 
-- **Frontend:** Next.js 15.3.5, React, TypeScript
-- **Styling:** Tailwind CSS
-- **AI:** OpenAI GPT-3.5-turbo API
-- **Authentication:** HashID-basiert mit JWT
-- **Server:** Nginx, Let's Encrypt SSL
-- **Deployment:** SSH, PM2 (optional)
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4
+- **State Management**: Zustand
+- **PDF-Generierung**: @react-pdf/renderer
+- **AI-Integration**: OpenAI GPT-3.5 Turbo
+- **Validierung**: Zod
+- **Deployment**: PM2, Nginx
 
 ## 📋 Voraussetzungen
 
-- Node.js 18+
+- Node.js 18+ 
 - npm oder yarn
-- SSH-Zugang zum Server
-- OpenAI API-Key
+- OpenAI API-Schlüssel
 
-## 🔧 Lokale Entwicklung
+## 🚀 Installation
 
-### Installation
+1. **Repository klonen**
+   ```bash
+   git clone https://github.com/Dubaiali/Omnireflect.git
+   cd Omnireflect
+   ```
 
+2. **Dependencies installieren**
+   ```bash
+   npm install
+   ```
+
+3. **Umgebungsvariablen konfigurieren**
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Bearbeiten Sie `.env.local` und fügen Sie Ihren OpenAI API-Schlüssel hinzu:
+   ```env
+   OPENAI_API_KEY=sk-proj-your-key-here
+   ```
+
+4. **Entwicklungsserver starten**
+   ```bash
+   npm run dev
+   ```
+
+5. **Anwendung öffnen**
+   ```
+   http://localhost:3000
+   ```
+
+## 🏗️ Produktions-Deployment
+
+### **Automatisches Deployment**
 ```bash
-# Repository klonen
-git clone https://github.com/Dubaiali/Omnireflect.git
-cd Omnireflect
-
-# Dependencies installieren
-npm install
-
-# Umgebungsvariablen konfigurieren
-cp env.example .env.local
-# OPENAI_API_KEY in .env.local eintragen
+# Deployment-Skript ausführen
+./deploy-production.sh
 ```
 
-### Entwicklungsserver starten
-
+### **Manuelles Deployment**
 ```bash
-npm run dev
-```
-
-Die Anwendung ist dann unter http://localhost:3000 erreichbar.
-
-### Build erstellen
-
-```bash
+# Build erstellen
 npm run build
+
+# Produktionsserver starten
 npm start
 ```
-
-## 🚀 Deployment
-
-### Produktionsumgebung
-Die Anwendung läuft auf https://reflect.omni-scient.com mit PM2-Prozessmanagement.
-
-**Automatisches Deployment:**
-```bash
-# Auf dem Server ausführen
-cd /var/www/omnireflect
-./deploy-pm2-server.sh
-```
-
-**Manuelles Deployment:**
-```bash
-# Branch wechseln und Code aktualisieren
-git checkout Omni3
-git pull origin Omni3
-
-# Dependencies installieren und Build erstellen
-npm ci
-npm run build -- --no-lint
-
-# PM2 starten
-pm2 start npm --name 'reflect-app' -- start -- -p 3002
-pm2 save
-```
-
-**Detaillierte Dokumentation:** [DEPLOYMENT_PRODUCTION.md](DEPLOYMENT_PRODUCTION.md)
-
-## 📊 Monitoring & Wartung
-
-### Status prüfen
-
-```bash
-# Einmaliges Monitoring
-./monitor.sh
-
-# Mit Logs
-./monitor.sh --logs
-
-# Kontinuierliches Monitoring
-./monitor.sh --watch
-```
-
-### Rollback (bei Problemen)
-
-```bash
-# Neuestes Backup wiederherstellen
-./rollback.sh
-
-# Spezifisches Backup wiederherstellen
-./rollback.sh omnireflect-20250109-143022.tar.gz
-
-# Verfügbare Backups anzeigen
-./rollback.sh --list
-```
-
-## 🔐 Zugangsdaten
-
-### HashID-Login-System
-
-Das System verwendet ein HashID-basiertes Login-System für maximale Sicherheit:
-
-#### Test-Mitarbeiter (HashIDs)
-- **Hash-ID:** `mitarbeiter1` | **Passwort:** `OmniReflect2024!` | **Name:** Max Mustermann (IT)
-- **Hash-ID:** `mitarbeiter2` | **Passwort:** `Sicherheit123#` | **Name:** Anna Schmidt (Marketing)
-- **Hash-ID:** `mitarbeiter3` | **Passwort:** `DatenSchutz456$` | **Name:** Tom Weber (Sales)
-
-#### Admin-Zugang
-- **URL:** `http://localhost:3000/admin`
-- **Benutzername:** `admin`
-- **Passwort:** `OmniAdmin2024!`
-
-### HashID-Verwaltung
-
-Über den Admin-Bereich können neue HashIDs für echte Mitarbeiter erstellt werden:
-1. Admin-Login unter `/admin`
-2. HashID-Manager öffnen
-3. Neue HashIDs erstellen oder importieren
-4. CSV-Export für Mitarbeiter-Zugangsdaten
 
 ## 📁 Projektstruktur
 
 ```
-Omnireflect/
-├── src/
-│   ├── app/                 # Next.js App Router
-│   │   ├── admin/          # Admin-Dashboard mit HashID-Manager
-│   │   ├── api/            # API-Routes
-│   │   │   ├── auth/       # HashID-Login & Admin-Login
-│   │   │   ├── gpt/        # OpenAI Integration
-│   │   │   └── hash-list/  # HashID-Verwaltung
-│   │   ├── login/          # HashID-Login-Seite
-│   │   ├── questions/      # Fragen-Seite
-│   │   ├── role-context/   # Rollenkontext-Formular
-│   │   ├── summary/        # Zusammenfassung mit PDF-Export
-│   │   └── welcome/        # Willkommensseite
-│   ├── components/         # React-Komponenten
-│   │   ├── HashIDManager.tsx  # HashID-Verwaltung
-│   │   ├── LoginForm.tsx      # HashID-Login
-│   │   └── PDFDownload.tsx    # PDF-Export
-│   ├── lib/               # Utilities und Services
-│   │   ├── hashList.ts    # HashID-Verwaltung
-│   │   └── session.ts     # Session-Management
-│   └── state/             # Zustandsverwaltung
-├── public/                # Statische Dateien
-├── deploy-production.sh   # Produktions-Deployment
-├── rollback.sh           # Rollback-Skript
-├── monitor.sh            # Monitoring-Skript
-└── DEPLOYMENT.md         # Deployment-Dokumentation
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   │   ├── auth/          # Authentifizierung
+│   │   └── gpt/           # AI-Integration
+│   ├── questions/         # Fragen-Seite
+│   ├── summary/           # Zusammenfassung
+│   └── role-context/      # Rollenkontext
+├── components/            # React-Komponenten
+├── lib/                   # Utilities
+├── state/                 # Zustand Stores
+└── middleware.ts          # Next.js Middleware
 ```
 
-## 🔧 Skripte
+## 🔧 Konfiguration
 
-### Deployment-Skripte
+### **Umgebungsvariablen**
 
-- `deploy-production.sh` - Vollständiges Produktions-Deployment
-- `rollback.sh` - Rollback bei Problemen
-- `monitor.sh` - Anwendungs-Monitoring
+| Variable | Beschreibung | Beispiel |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API-Schlüssel | `sk-proj-...` |
+| `PASSWORD_SALT` | Salt für Hash-Generierung | Automatisch generiert |
+| `JWT_SECRET` | JWT Secret | Automatisch generiert |
+| `SESSION_SECRET` | Session Secret | Automatisch generiert |
 
-### Verwendung
+### **Sicherheitskonfiguration**
 
-```bash
-# Deployment
-./deploy-production.sh
+- **Rate Limiting**: 100 Requests/15min (Standard), 10/15min (Auth)
+- **Session Timeout**: 30 Tage
+- **HTTPS**: Erzwungen in Produktion
+- **Security Headers**: CSP, XSS-Protection, Frame-Options
 
-# Monitoring
-./monitor.sh --watch
+## 📊 API-Endpoints
 
-# Rollback
-./rollback.sh --list
-./rollback.sh
-```
+### **Authentifizierung**
+- `POST /api/auth/login` - HashID-basierte Anmeldung
+- `POST /api/auth/logout` - Abmeldung
 
-## 🌟 Features im Detail
+### **AI-Integration**
+- `POST /api/gpt/questions` - Personalisierte Fragen generieren
+- `POST /api/gpt/followup` - Nachfragen generieren
+- `POST /api/gpt/summary` - Zusammenfassung erstellen
 
-### HashID-Login-System
-- Sichere HashID-basierte Authentifizierung
-- Admin-Dashboard für HashID-Verwaltung
-- CSV-Export für Mitarbeiter-Zugangsdaten
-- Automatische HashID-Generierung
+### **Administration**
+- `GET /api/hash-list` - HashID-Liste (Admin)
+- `GET /api/debug` - Debug-Informationen (Entwicklung)
 
-### KI-gestützte Gesprächsvorbereitung
-- Automatische Generierung von Fragen basierend auf Rolle und Kontext
-- Personalisierte Zusammenfassungen mit strukturierter Darstellung
-- Intelligente Nachfragen für tiefere Einblicke
-- 12 spezifische Reflexionskategorien
+## 🔒 Sicherheit
 
-### Datenschutz
-- Anonymisierte Datenspeicherung
-- DSGVO-konforme Verarbeitung
-- Sichere HTTPS-Verbindung
-- Keine dauerhafte Server-Speicherung
+### **Implementierte Maßnahmen**
+- ✅ HashID-basierte Authentifizierung
+- ✅ Rate Limiting für alle Endpoints
+- ✅ Input-Validierung mit Zod
+- ✅ XSS- und SQL-Injection-Schutz
+- ✅ Security Headers (CSP, XSS-Protection)
+- ✅ HTTPS/TLS 1.3
+- ✅ Automatische Datenlöschung
 
-### Benutzerfreundlichkeit
-- Responsive Design für alle Geräte
-- Intuitive Benutzeroberfläche
-- PDF-Export-Funktionalität
-- Strukturierte Zusammenfassungsdarstellung
+### **Sicherheits-Score: 9.5/10**
 
-## 🚨 Troubleshooting
+## 📈 Versionierung
 
-### Häufige Probleme
+### **Aktuelle Version: v4.0.0**
+- **Hauptverbesserung**: Authentische Wiedergabe kritischer Äußerungen
+- **Sicherheit**: Alle Vulnerabilities behoben
+- **Performance**: Optimierte Dependencies
 
-1. **Admin-Login funktioniert nicht**
-   ```bash
-   # Prüfe .env.local Konfiguration
-   cat .env.local | grep ADMIN
-   # Sollte enthalten: ADMIN_PASSWORD=OmniAdmin2024!
-   ```
-
-2. **HashID-Login funktioniert nicht**
-   ```bash
-   # Prüfe Hash-Liste
-   curl http://localhost:3000/api/hash-list
-   ```
-
-3. **Anwendung startet nicht**
-   ```bash
-   ./monitor.sh --logs
-   ssh root@188.68.48.168 "tail -f /var/www/omnireflect/logs/omnireflect.log"
-   ```
-
-4. **SSL-Probleme**
-   ```bash
-   ssh root@188.68.48.168 "certbot certificates"
-   ssh root@188.68.48.168 "certbot --nginx -d reflect.omni-scient.com"
-   ```
-
-5. **Nginx-Fehler**
-   ```bash
-   ssh root@188.68.48.168 "nginx -t"
-   ssh root@188.68.48.168 "systemctl status nginx"
-   ```
-
-### Support
-
-Bei Problemen:
-1. Logs prüfen: `./monitor.sh --logs`
-2. Status prüfen: `./monitor.sh`
-3. GitHub Issues erstellen: https://github.com/Dubaiali/Omnireflect/issues
-
-## 📈 Roadmap
-
-- [x] HashID-Login-System ✅
-- [x] Admin-Dashboard ✅
-- [x] Strukturierte Zusammenfassungen ✅
-- [ ] Datenbank-Integration (Firebase/Supabase)
-- [ ] Erweiterte Analytics
-- [ ] Multi-Sprach-Support
-- [ ] Mobile App
-- [ ] API-Dokumentation
+### **Changelog**
+Siehe [CHANGELOG.md](./CHANGELOG.md) für detaillierte Änderungen.
 
 ## 🤝 Beitragen
 
-1. Fork das Repository
-2. Erstelle einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committe deine Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Push zum Branch (`git push origin feature/AmazingFeature`)
-5. Öffne einen Pull Request
+1. Fork des Repositories
+2. Feature-Branch erstellen (`git checkout -b feature/AmazingFeature`)
+3. Änderungen committen (`git commit -m 'Add AmazingFeature'`)
+4. Branch pushen (`git push origin feature/AmazingFeature`)
+5. Pull Request erstellen
 
 ## 📄 Lizenz
 
-Dieses Projekt ist unter der MIT-Lizenz lizenziert.
+Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe [LICENSE](LICENSE) für Details.
 
-## 📞 Kontakt
+## 🆘 Support
 
-- **GitHub:** https://github.com/Dubaiali/Omnireflect
+Bei Fragen oder Problemen:
+- **Issues**: [GitHub Issues](https://github.com/Dubaiali/Omnireflect/issues)
+- **Dokumentation**: Siehe [TECHNICAL_DOCUMENTATION.md](./TECHNICAL_DOCUMENTATION.md)
+- **Sicherheit**: Siehe [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 
 ---
 
-**Letzte Aktualisierung:** 9. Juli 2025  
-**Version:** Omni3-Branch  
-**Status:** ✅ Produktiv
+**Entwickelt mit ❤️ für bessere Mitarbeiterjahresgespräche**

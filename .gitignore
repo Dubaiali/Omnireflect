@@ -42,3 +42,54 @@ next-env.d.ts
 
 # security - access credentials
 ZUGANGSDATEN.md
+
+# logs
+*.log
+logs/
+
+# temporary files
+*.tmp
+*.temp
+temp_*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# backup files
+*.bak
+*.backup
+
+# test files
+test-*.html
+test_*.txt
+test_*.md
+
+# deployment artifacts
+*.zip
+deploy-*.sh
+monitor-*.sh
+rollback.sh
+
+# security reports (contain sensitive data)
+security-reports/
+zap-reports/
+
+# data files
+data/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.ts
+!eslint.config.mjs
+!postcss.config.mjs
+
+# nginx config (server specific)
+nginx-*.conf

@@ -1,7 +1,0 @@
-=== SQL Injection Tests ===
-Testing SQL injection: ' OR '1'='1
-Internal Server Error
-Testing SQL injection: '; DROP TABLE users; --
-Internal Server Error
-Testing SQL injection: 1' UNION SELECT * FROM users --
-Internal Server Error

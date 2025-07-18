@@ -1,2 +1,0 @@
-=== CSRF Tests ===
-{"error":"Ein Fehler ist aufgetreten. Bitte versuche es erneut."}
