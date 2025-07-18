@@ -1,0 +1,2 @@
+=== CSRF Tests ===
+Internal Server Error

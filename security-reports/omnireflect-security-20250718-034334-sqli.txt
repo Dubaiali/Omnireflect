@@ -1,0 +1,7 @@
+=== SQL Injection Tests ===
+Testing SQL injection: ' OR '1'='1
+{"error":"Ein Fehler ist aufgetreten. Bitte versuche es erneut."}
+Testing SQL injection: '; DROP TABLE users; --
+{"error":"Ein Fehler ist aufgetreten. Bitte versuche es erneut."}
+Testing SQL injection: 1' UNION SELECT * FROM users --
+{"error":"Ein Fehler ist aufgetreten. Bitte versuche es erneut."}
