@@ -8,28 +8,25 @@ function hashPassword(password: string): string {
 
 // Hash-Liste aus Umgebungsvariablen laden (Fallback)
 function loadHashListFromEnv(): HashEntry[] {
-  const hashListEnv = process.env.HASH_LIST
-  if (!hashListEnv) {
-    // Fallback für Entwicklung
-    return [
-      {
-        hashId: 'mitarbeiter1',
-        password: hashPassword('OmniReflect2024!'),
-        name: 'Max Mustermann',
-        department: 'IT',
-        status: 'pending',
-      }
-    ]
-  }
-  try {
-    return JSON.parse(hashListEnv).map((entry: any) => ({
-      ...entry,
-      password: hashPassword(entry.password)
-    }))
-  } catch (err) {
-    console.error('Fehler beim Parsen der HASH_LIST:', err, 'HASH_LIST:', hashListEnv)
-    return []
-  }
+  // Direkte Definition der Hash-Liste um JSON-Parsing-Probleme zu vermeiden
+  const hashList = [
+    {
+      hashId: 'emp_md87yj1f_904c447c80694dc5',
+      password: hashPassword('Tvr39RN%Jg$7'),
+      name: 'Max Mustermann',
+      department: 'IT',
+      status: 'pending' as const,
+    },
+    {
+      hashId: 'emp_md87yj1i_495fdbe7c5212ef9',
+      password: hashPassword('A#7^So8gUV03'),
+      name: 'Anna Schmidt',
+      department: 'Marketing',
+      status: 'pending' as const,
+    }
+  ]
+  
+  return hashList
 }
 
 // Hash-Liste dynamisch laden (nur für Server-seitige Verwendung)

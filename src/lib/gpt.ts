@@ -26,6 +26,8 @@ export interface Question {
   category: string
 }
 
+// Keine Fallbacks mehr - nur echte KI-Antworten
+
 export async function generatePersonalizedQuestions(
   roleContext?: RoleContext
 ): Promise<Question[]> {
@@ -45,6 +47,9 @@ export async function generatePersonalizedQuestions(
       if (errorData.error && errorData.error.includes('Rate limit')) {
         throw new Error('Rate limit überschritten. Bitte warte einen Moment und versuche es erneut.')
       }
+      
+      // Keine Fallbacks mehr - nur echte KI-Antworten
+      throw new Error(errorData.error || 'API-Anfrage fehlgeschlagen')
       
       throw new Error(errorData.error || 'API-Anfrage fehlgeschlagen')
     }

@@ -13,7 +13,7 @@ export const roleContextSchema = z.object({
 
 // Login Schema
 export const loginSchema = z.object({
-  hashId: z.string().min(3).max(50).regex(/^[a-zA-Z0-9]+$/),
+  hashId: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_-]+$/),
   password: z.string().min(6).max(100),
 })
 

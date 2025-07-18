@@ -14,8 +14,13 @@ interface RoleContext {
 }
 
 export async function POST(request: NextRequest) {
+  let answers: Record<string, string> = {}
+  let roleContext: any = undefined
+  
   try {
-    const { answers, followUpQuestions, roleContext, questions } = await request.json()
+    const { answers: answersData, followUpQuestions, roleContext: roleContextData, questions } = await request.json()
+    answers = answersData
+    roleContext = roleContextData
 
     if (!answers || Object.keys(answers).length === 0) {
       return NextResponse.json(
@@ -199,6 +204,8 @@ Berücksichtige dabei:
     return NextResponse.json({ summary })
   } catch (error) {
     console.error('Fehler bei der Zusammenfassungsgenerierung:', error)
+    
+    // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(
       { 
         summary: 'Es gab einen Fehler bei der Generierung der Zusammenfassung. Bitte versuche es später erneut.'

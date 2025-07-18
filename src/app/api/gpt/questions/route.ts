@@ -18,6 +18,8 @@ interface RoleContext {
 }
 
 export async function POST(request: NextRequest) {
+  let roleContext: RoleContext | undefined
+  
   try {
     // Session-Validierung entfernt - Frontend ist bereits über Zustand-Store authentifiziert
     // const session = getSessionFromRequest(request)
@@ -31,7 +33,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Input validieren
-    let roleContext: RoleContext | undefined
     if (body.roleContext) {
       let rc = body.roleContext
       if (typeof rc === 'string') {
@@ -176,6 +177,8 @@ Antworte nur mit JSON im Format:
     }
   } catch (error) {
     console.error('Fehler bei der Fragen-Generierung:', error)
+    
+    // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(
       { error: 'Fehler bei der Generierung der Fragen. Bitte versuche es später erneut.' },
       { status: 500 }

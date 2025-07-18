@@ -31,8 +31,11 @@ const getFollowUpQuestionTypes = () => {
 }
 
 export async function POST(request: NextRequest) {
+  let answer: string = ''
+  
   try {
-    const { question, answer, roleContext } = await request.json()
+    const { question, answer: answerData, roleContext } = await request.json()
+    answer = answerData
 
     if (!question || !answer) {
       return NextResponse.json(
@@ -162,6 +165,8 @@ Berücksichtige dabei:
     }
   } catch (error) {
     console.error('Fehler bei der GPT-Anfrage:', error)
+    
+    // Keine Fallbacks mehr - nur echte KI-Antworten
     return NextResponse.json(
       { error: 'Fehler bei der Generierung der Nachfragen. Bitte versuche es später erneut.' },
       { status: 500 }
