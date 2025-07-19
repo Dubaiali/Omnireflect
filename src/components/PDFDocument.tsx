@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 // Verwende Standard-Schriftarten für bessere Kompatibilität
 // @react-pdf/renderer unterstützt standardmäßig Helvetica, Times-Roman und Courier
@@ -240,10 +240,18 @@ const styles = StyleSheet.create({
 
 interface PDFDocumentProps {
   summary: string
-  questions: any[]
+  questions: Array<{
+    id: string
+    text: string
+    category: string
+  }>
   answers: Record<string, string>
   followUpQuestions: Record<string, string[]>
-  roleContext: any
+  roleContext: {
+    firstName: string
+    lastName: string
+    workAreas: string[]
+  } | null
   userName: string
   department: string
 }
@@ -429,15 +437,14 @@ const formatSummarySections = (summary: string) => {
   }).filter(Boolean)
 }
 
-const PDFDocument: React.FC<PDFDocumentProps> = ({ 
-  summary, 
-  questions, 
-  answers, 
-  followUpQuestions, 
-  roleContext, 
-  userName, 
-  department 
-}) => {
+  const PDFDocument: React.FC<PDFDocumentProps> = ({ 
+    summary, 
+    questions, 
+    answers, 
+    followUpQuestions, 
+    userName, 
+    department 
+  }) => {
   const summarySections = formatSummarySections(summary)
   const currentDate = new Date().toLocaleDateString('de-DE')
   
@@ -605,7 +612,7 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
                     </Text>
                   </View>
                   
-                  <Text style={styles.questionText}>{question.question}</Text>
+                  <Text style={styles.questionText}>{question.text}</Text>
                   
                   {answer ? (
                     <View>

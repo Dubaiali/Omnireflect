@@ -119,7 +119,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
   const [showResetWarning, setShowResetWarning] = useState(false)
-  const { progress, hashId, roleContext, questions: storedQuestions } = useSessionStore()
+  const { progress, roleContext, questions: storedQuestions } = useSessionStore()
   const router = useRouter()
 
   // Verwende initialSummary wenn verfügbar
@@ -127,7 +127,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     if (initialSummary && !summary) {
       setSummary(initialSummary)
     }
-  }, [initialSummary])
+  }, [initialSummary, summary])
 
   const handleGenerateSummary = async () => {
     setIsGenerating(true)
@@ -289,32 +289,124 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
   const handleDownloadPDF = async () => {
     try {
-      const { pdf } = await import('@react-pdf/renderer')
-      const PDFDocument = (await import('./PDFDocument')).default
+      console.log('Starting PDF generation...')
+      console.log('Summary length:', summary?.length)
+      console.log('Stored questions:', storedQuestions?.length)
+      console.log('Progress answers:', Object.keys(progress.answers || {}).length)
+      console.log('Role context:', roleContext)
       
-      const blob = await pdf(
-        <PDFDocument
-          summary={summary || ''}
-          questions={storedQuestions || []}
-          answers={progress.answers}
-          followUpQuestions={progress.followUpQuestions}
-          roleContext={roleContext}
-          userName={roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
-          department={roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
-        />
-      ).toBlob()
+      // Versuche zuerst @react-pdf/renderer
+      try {
+        const { pdf } = await import('@react-pdf/renderer')
+        const PDFDocument = (await import('./PDFDocument')).default
+        
+        console.log('PDF components loaded successfully')
+        
+        // Prüfe ob alle notwendigen Daten vorhanden sind
+        if (!summary || summary.trim().length === 0) {
+          alert('Keine Zusammenfassung verfügbar. Bitte generiere zuerst eine Zusammenfassung.')
+          return
+        }
+        
+        if (!storedQuestions || storedQuestions.length === 0) {
+          alert('Keine Fragen verfügbar. Bitte starte den Prozess neu.')
+          return
+        }
+        
+        console.log('Generating PDF blob...')
+        
+        const blob = await pdf(
+          <PDFDocument
+            summary={summary || ''}
+            questions={storedQuestions || []}
+            answers={progress.answers || {}}
+            followUpQuestions={progress.followUpQuestions || {}}
+            roleContext={roleContext}
+            userName={roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
+            department={roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
+          />
+        ).toBlob()
+        
+        console.log('PDF blob generated, size:', blob.size)
+        
+        if (blob.size === 0) {
+          throw new Error('Generated PDF is empty')
+        }
+        
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`
+        
+        // Füge Link zum DOM hinzu und klicke ihn
+        document.body.appendChild(link)
+        link.click()
+        
+        // Cleanup
+        setTimeout(() => {
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        }, 100)
+        
+        console.log('PDF download initiated successfully')
+        return
+        
+      } catch (pdfError) {
+        console.warn('@react-pdf/renderer failed, trying alternative method:', pdfError)
+        
+        // Fallback: Erstelle eine einfache Text-Datei
+        const textContent = `OmniReflect - Zusammenfassung
+Generiert am: ${new Date().toLocaleDateString('de-DE')}
+Name: ${roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
+Abteilung: ${roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
+
+ZUSAMMENFASSUNG:
+${summary}
+
+BEANTWORTETE FRAGEN:
+${storedQuestions?.map(q => {
+  const answer = progress.answers?.[q.id]
+  return answer ? `\n${q.text}\nAntwort: ${answer}` : null
+}).filter(Boolean).join('\n') || 'Keine Fragen beantwortet'}
+
+---
+Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.`
+        
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.txt`
+        
+        document.body.appendChild(link)
+        link.click()
+        
+        setTimeout(() => {
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        }, 100)
+        
+        alert('PDF-Generierung fehlgeschlagen. Eine Text-Datei wurde stattdessen heruntergeladen.')
+        return
+      }
       
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Fehler beim PDF-Download:', error)
-      alert('Fehler beim PDF-Download. Bitte versuche es erneut.')
+      
+      // Detaillierte Fehlermeldung für verschiedene Szenarien
+      let errorMessage = 'Fehler beim PDF-Download. '
+      
+      if (error instanceof Error) {
+        if (error.message.includes('@react-pdf/renderer')) {
+          errorMessage += 'PDF-Bibliothek konnte nicht geladen werden. Bitte lade die Seite neu und versuche es erneut.'
+        } else if (error.message.includes('blob')) {
+          errorMessage += 'PDF konnte nicht erstellt werden. Bitte stelle sicher, dass alle Daten verfügbar sind.'
+        } else {
+          errorMessage += error.message
+        }
+      }
+      
+      alert(errorMessage)
     }
   }
 
