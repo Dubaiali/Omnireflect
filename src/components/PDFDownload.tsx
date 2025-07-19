@@ -295,24 +295,24 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       console.log('Progress answers:', Object.keys(progress.answers || {}).length)
       console.log('Role context:', roleContext)
       
+      // Prüfe ob alle notwendigen Daten vorhanden sind
+      if (!summary || summary.trim().length === 0) {
+        alert('Keine Zusammenfassung verfügbar. Bitte generiere zuerst eine Zusammenfassung.')
+        return
+      }
+      
+      if (!storedQuestions || storedQuestions.length === 0) {
+        alert('Keine Fragen verfügbar. Bitte starte den Prozess neu.')
+        return
+      }
+      
       // Versuche zuerst @react-pdf/renderer
       try {
+        console.log('Loading @react-pdf/renderer...')
         const { pdf } = await import('@react-pdf/renderer')
         const PDFDocument = (await import('./PDFDocument')).default
         
         console.log('PDF components loaded successfully')
-        
-        // Prüfe ob alle notwendigen Daten vorhanden sind
-        if (!summary || summary.trim().length === 0) {
-          alert('Keine Zusammenfassung verfügbar. Bitte generiere zuerst eine Zusammenfassung.')
-          return
-        }
-        
-        if (!storedQuestions || storedQuestions.length === 0) {
-          alert('Keine Fragen verfügbar. Bitte starte den Prozess neu.')
-          return
-        }
-        
         console.log('Generating PDF blob...')
         
         const blob = await pdf(
@@ -354,8 +354,95 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       } catch (pdfError) {
         console.warn('@react-pdf/renderer failed, trying alternative method:', pdfError)
         
-        // Fallback: Erstelle eine einfache Text-Datei
-        const textContent = `OmniReflect - Zusammenfassung
+        // Versuche alternative PDF-Generierung mit jsPDF
+        try {
+          console.log('Trying jsPDF alternative...')
+          const { jsPDF } = await import('jspdf')
+          
+          const doc = new jsPDF()
+          
+          // Titel
+          doc.setFontSize(20)
+          doc.text('OmniReflect - Zusammenfassung', 20, 20)
+          
+          // Metadaten
+          doc.setFontSize(12)
+          doc.text(`Generiert am: ${new Date().toLocaleDateString('de-DE')}`, 20, 35)
+          doc.text(`Name: ${roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}`, 20, 45)
+          doc.text(`Abteilung: ${roleContext?.workAreas.join(', ') || 'Nicht angegeben'}`, 20, 55)
+          
+          // Zusammenfassung
+          doc.setFontSize(14)
+          doc.text('ZUSAMMENFASSUNG:', 20, 75)
+          
+          doc.setFontSize(10)
+          const summaryLines = doc.splitTextToSize(summary, 170)
+          let yPosition = 85
+          
+          for (let i = 0; i < summaryLines.length; i++) {
+            if (yPosition > 270) {
+              doc.addPage()
+              yPosition = 20
+            }
+            doc.text(summaryLines[i], 20, yPosition)
+            yPosition += 5
+          }
+          
+          // Fragen und Antworten
+          if (storedQuestions && storedQuestions.length > 0) {
+            yPosition += 10
+            if (yPosition > 270) {
+              doc.addPage()
+              yPosition = 20
+            }
+            
+            doc.setFontSize(14)
+            doc.text('BEANTWORTETE FRAGEN:', 20, yPosition)
+            yPosition += 10
+            
+            doc.setFontSize(10)
+            storedQuestions.forEach((q, index) => {
+              const answer = progress.answers?.[q.id]
+              if (answer) {
+                if (yPosition > 270) {
+                  doc.addPage()
+                  yPosition = 20
+                }
+                
+                doc.setFontSize(11)
+                doc.text(`Frage ${index + 1}: ${q.text}`, 20, yPosition)
+                yPosition += 8
+                
+                doc.setFontSize(10)
+                const answerLines = doc.splitTextToSize(`Antwort: ${answer}`, 170)
+                for (const line of answerLines) {
+                  if (yPosition > 270) {
+                    doc.addPage()
+                    yPosition = 20
+                  }
+                  doc.text(line, 25, yPosition)
+                  yPosition += 5
+                }
+                yPosition += 5
+              }
+            })
+          }
+          
+          // Footer
+          doc.setFontSize(8)
+          doc.text('Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.', 20, 280)
+          
+          // PDF herunterladen
+          doc.save(`OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`)
+          
+          console.log('PDF generated successfully with jsPDF')
+          return
+          
+        } catch (jsPDFError) {
+          console.warn('jsPDF also failed, using text fallback:', jsPDFError)
+          
+          // Fallback: Erstelle eine einfache Text-Datei
+          const textContent = `OmniReflect - Zusammenfassung
 Generiert am: ${new Date().toLocaleDateString('de-DE')}
 Name: ${roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
 Abteilung: ${roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
@@ -371,23 +458,24 @@ ${storedQuestions?.map(q => {
 
 ---
 Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.`
-        
-        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.txt`
-        
-        document.body.appendChild(link)
-        link.click()
-        
-        setTimeout(() => {
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-        }, 100)
-        
-        alert('PDF-Generierung fehlgeschlagen. Eine Text-Datei wurde stattdessen heruntergeladen.')
-        return
+          
+          const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.txt`
+          
+          document.body.appendChild(link)
+          link.click()
+          
+          setTimeout(() => {
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+          }, 100)
+          
+          alert('PDF-Generierung fehlgeschlagen. Eine Text-Datei wurde stattdessen heruntergeladen.')
+          return
+        }
       }
       
     } catch (error) {
