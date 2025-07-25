@@ -19,6 +19,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [bulkCount, setBulkCount] = useState(10)
   const [showBulkGenerator, setShowBulkGenerator] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -26,23 +27,50 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     }
   }, [isOpen])
 
-  const loadHashEntries = () => {
-    // Lade aktuelle Hash-Liste aus localStorage oder API
-    const stored = localStorage.getItem('hash-list')
-    if (stored) {
-      setHashEntries(JSON.parse(stored))
+  const loadHashEntries = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/hash-list')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.hashList) {
+          setHashEntries(data.hashList)
+        } else {
+          console.error('Ungültiges Format der Hash-Liste')
+        }
+      } else {
+        console.error('Fehler beim Laden der Hash-Liste')
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Hash-Liste:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const saveHashEntries = (entries: HashEntry[]) => {
-    localStorage.setItem('hash-list', JSON.stringify(entries))
-    setHashEntries(entries)
+  const saveHashEntries = async (entries: HashEntry[]) => {
+    try {
+      // Speichere lokal als Backup
+      localStorage.setItem('hash-list', JSON.stringify(entries))
+      setHashEntries(entries)
+      
+      // Aktualisiere die Server-seitige Hash-Liste
+      await fetch('/api/hash-list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entries),
+      })
+    } catch (error) {
+      console.error('Fehler beim Speichern:', error)
+    }
   }
 
   const generateHashId = () => {
     const timestamp = Date.now().toString(36)
     const random = Math.random().toString(36).substring(2, 8)
-    return `mitarbeiter_${timestamp}_${random}`
+    return `emp_${timestamp}_${random}`
   }
 
   const generatePassword = () => {
@@ -54,37 +82,61 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     return password
   }
 
-  const handleAddEntry = () => {
+  const handleAddEntry = async () => {
     if (!newEntry.hashId || !newEntry.password) {
       alert('Hash-ID und Passwort sind erforderlich!')
       return
     }
 
-    const entry: HashEntry = {
-      hashId: newEntry.hashId,
-      password: newEntry.password, // In Produktion würde hier gehasht werden
-      name: newEntry.name || undefined,
-      department: newEntry.department || undefined,
-      status: 'pending',
-      lastAccess: undefined
+    // Prüfe ob Hash-ID bereits existiert
+    if (hashEntries.find(entry => entry.hashId === newEntry.hashId)) {
+      alert('Diese Hash-ID existiert bereits!')
+      return
     }
 
-    const updatedEntries = [...hashEntries, entry]
-    saveHashEntries(updatedEntries)
+    try {
+      // Erstelle Hash-ID über die API
+      const response = await fetch('/api/hash-list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hashId: newEntry.hashId,
+          plainPassword: newEntry.password,
+          name: newEntry.name || undefined,
+          department: newEntry.department || undefined,
+          status: 'pending'
+        }),
+      })
 
-    // Reset form
-    setNewEntry({
-      hashId: '',
-      password: '',
-      name: '',
-      department: ''
-    })
+      if (response.ok) {
+        // Lade die aktualisierte Liste
+        await loadHashEntries()
+        
+        // Reset form
+        setNewEntry({
+          hashId: '',
+          password: '',
+          name: '',
+          department: ''
+        })
+
+        alert('Hash-ID erfolgreich erstellt!')
+      } else {
+        const error = await response.json()
+        alert(`Fehler: ${error.error || 'Unbekannter Fehler'}`)
+      }
+    } catch (error) {
+      console.error('Fehler beim Erstellen der Hash-ID:', error)
+      alert('Fehler beim Erstellen der Hash-ID')
+    }
   }
 
-  const handleDeleteEntry = (hashId: string) => {
+  const handleDeleteEntry = async (hashId: string) => {
     if (confirm(`Möchtest du die Hash-ID "${hashId}" wirklich löschen?`)) {
       const updatedEntries = hashEntries.filter(entry => entry.hashId !== hashId)
-      saveHashEntries(updatedEntries)
+      await saveHashEntries(updatedEntries)
     }
   }
 
@@ -97,30 +149,46 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     })
   }
 
-  const handleBulkGenerate = () => {
+  const handleBulkGenerate = async () => {
     if (bulkCount < 1 || bulkCount > 100) {
       alert('Bitte wähle eine Anzahl zwischen 1 und 100')
       return
     }
 
-    const newEntries: HashEntry[] = []
-    
-    for (let i = 0; i < bulkCount; i++) {
-      const entry: HashEntry = {
-        hashId: generateHashId(),
-        password: generatePassword(),
-        name: undefined,
-        department: undefined,
-        status: 'pending',
-        lastAccess: undefined
-      }
-      newEntries.push(entry)
-    }
+    try {
+      let successCount = 0
+      
+      for (let i = 0; i < bulkCount; i++) {
+        const hashId = generateHashId()
+        const password = generatePassword()
+        
+        const response = await fetch('/api/hash-list', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hashId,
+            plainPassword: password,
+            name: undefined,
+            department: undefined,
+            status: 'pending'
+          }),
+        })
 
-    const updatedEntries = [...hashEntries, ...newEntries]
-    saveHashEntries(updatedEntries)
-    
-    alert(`${bulkCount} Hash-IDs wurden erfolgreich erstellt!`)
+        if (response.ok) {
+          successCount++
+        }
+      }
+
+      // Lade die aktualisierte Liste
+      await loadHashEntries()
+      
+      alert(`${successCount} von ${bulkCount} Hash-IDs wurden erfolgreich erstellt!`)
+    } catch (error) {
+      console.error('Fehler bei der Bulk-Generierung:', error)
+      alert('Fehler bei der Bulk-Generierung')
+    }
   }
 
   const exportHashList = () => {
@@ -153,6 +221,26 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     URL.revokeObjectURL(url)
   }
 
+  const testLogin = async (hashId: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hashId, password }),
+      })
+      
+      if (response.ok) {
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      return false
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -160,7 +248,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
       <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900">
-            Hash-IDs verwalten
+            Mitarbeiter-Zugänge verwalten
           </h3>
           <button
             onClick={onClose}
@@ -174,7 +262,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
         {/* Neue Hash-ID hinzufügen */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h4 className="font-semibold text-gray-800 mb-4">Neue Hash-ID erstellen</h4>
+          <h4 className="font-semibold text-gray-800 mb-4">Neuen Mitarbeiter-Zugang erstellen</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -185,7 +273,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 type="text"
                 value={newEntry.hashId}
                 onChange={(e) => setNewEntry(prev => ({ ...prev, hashId: e.target.value }))}
-                placeholder="z.B. mitarbeiter1"
+                placeholder="z.B. emp_mitarbeiter1"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -273,8 +361,14 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
         {/* Hash-Liste anzeigen */}
         <div className="bg-white rounded-lg border">
           <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h4 className="font-semibold text-gray-800">Aktuelle Hash-IDs</h4>
+            <h4 className="font-semibold text-gray-800">Aktuelle Mitarbeiter-Zugänge</h4>
             <div className="flex space-x-2">
+              <button
+                onClick={loadHashEntries}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+              >
+                Aktualisieren
+              </button>
               <button
                 onClick={exportCSV}
                 className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
@@ -290,52 +384,59 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
             </div>
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hash-ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Abteilung</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {hashEntries.map((entry) => (
-                  <tr key={entry.hashId} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {entry.hashId}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {entry.name || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {entry.department || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        entry.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        entry.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {entry.status === 'completed' ? 'Abgeschlossen' :
-                         entry.status === 'in_progress' ? 'In Bearbeitung' : 'Ausstehend'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <button
-                        onClick={() => handleDeleteEntry(entry.hashId)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Löschen
-                      </button>
-                    </td>
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Lade Zugänge...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hash-ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Abteilung</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktionen</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {hashEntries.map((entry) => (
+                    <tr key={entry.hashId} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {entry.hashId}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {entry.name || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {entry.department || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          entry.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          entry.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {entry.status === 'completed' ? 'Abgeschlossen' :
+                           entry.status === 'in_progress' ? 'In Bearbeitung' : 'Ausstehend'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm space-x-2">
+                        <button
+                          onClick={() => handleDeleteEntry(entry.hashId)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Löschen
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -354,7 +455,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Bulk Hash-IDs generieren
+                Bulk Mitarbeiter-Zugänge generieren
               </h3>
               <button
                 onClick={() => setShowBulkGenerator(false)}
@@ -368,12 +469,12 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
             <div className="mb-6">
               <p className="text-gray-600 mb-4">
-                Generiere mehrere Hash-IDs auf einmal für deine Mitarbeiter.
+                Generiere mehrere Mitarbeiter-Zugänge auf einmal.
               </p>
               
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Anzahl zu generierender Hash-IDs
+                  Anzahl zu generierender Zugänge
                 </label>
                 <input
                   type="number"
@@ -385,7 +486,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                   placeholder="z.B. 70"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Maximal 100 Hash-IDs auf einmal
+                  Maximal 100 Zugänge auf einmal
                 </p>
               </div>
 
@@ -402,7 +503,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                     </h3>
                     <div className="mt-2 text-sm text-yellow-700">
                       <p>
-                        Nach der Generierung solltest du die Hash-Liste exportieren und die Zugangsdaten sicher an deine Mitarbeiter weitergeben.
+                        Nach der Generierung solltest du die Zugangsdaten exportieren und sicher an deine Mitarbeiter weitergeben.
                       </p>
                     </div>
                   </div>
@@ -421,7 +522,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 onClick={handleBulkGenerate}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium"
               >
-                {bulkCount} Hash-IDs generieren
+                {bulkCount} Zugänge generieren
               </button>
             </div>
           </div>
