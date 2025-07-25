@@ -297,11 +297,12 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       console.log('Progress answers:', Object.keys(progress.answers || {}).length)
       console.log('Role context:', roleContext)
       
-      // Status auf "completed" setzen, wenn PDF heruntergeladen wird
+      // Status auf "completed" setzen und Zusammenfassung speichern, wenn PDF heruntergeladen wird
       try {
         const { hashId } = useSessionStore.getState()
         if (hashId) {
-          const response = await fetch('/api/hash-list/update-status', {
+          // Status auf "completed" setzen
+          const statusResponse = await fetch('/api/hash-list/update-status', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -309,14 +310,33 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
             body: JSON.stringify({ hashId, status: 'completed' }),
           })
           
-          if (response.ok) {
+          if (statusResponse.ok) {
             console.log('Status erfolgreich auf "completed" gesetzt')
           } else {
             console.warn('Fehler beim Setzen des Status auf "completed"')
           }
+          
+          // Zusammenfassung auf Server speichern
+          const summaryResponse = await fetch('/api/hash-list/save-summary', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              hashId, 
+              summary,
+              roleContext 
+            }),
+          })
+          
+          if (summaryResponse.ok) {
+            console.log('Zusammenfassung erfolgreich auf Server gespeichert')
+          } else {
+            console.warn('Fehler beim Speichern der Zusammenfassung auf Server')
+          }
         }
       } catch (error) {
-        console.error('Fehler beim Status-Update:', error)
+        console.error('Fehler beim Status-Update oder Zusammenfassung-Speicherung:', error)
         // Fehler beim Status-Update sollte den PDF-Download nicht verhindern
       }
       

@@ -38,10 +38,32 @@ export default function AdminTable() {
       if (hashResponse.ok) {
         const hashData = await hashResponse.json()
         if (hashData.success && hashData.hashList) {
-          setData(hashData.hashList.map((entry: HashEntry) => ({
-            ...entry,
-            data: undefined // Für jetzt keine echten Reflexionsdaten
-          })))
+          // Lade auch die gespeicherten Zusammenfassungen
+          const summariesResponse = await fetch('/api/hash-list/save-summary')
+          let summaries: Record<string, any> = {}
+          
+          if (summariesResponse.ok) {
+            const summariesData = await summariesResponse.json()
+            if (summariesData.success && summariesData.summaries) {
+              summaries = summariesData.summaries
+            }
+          }
+          
+          setData(hashData.hashList.map((entry: HashEntry) => {
+            const summaryData = summaries[entry.hashId]
+            return {
+              ...entry,
+              data: summaryData ? {
+                hashId: entry.hashId,
+                answers: {},
+                followUpQuestions: {},
+                summary: summaryData.summary,
+                completedAt: summaryData.completedAt,
+                lastUpdated: summaryData.completedAt,
+                roleContext: summaryData.roleContext
+              } : undefined
+            }
+          }))
         }
       }
     } catch (error) {
