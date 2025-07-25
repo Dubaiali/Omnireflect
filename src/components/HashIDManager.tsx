@@ -20,6 +20,8 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
   const [bulkCount, setBulkCount] = useState(10)
   const [showBulkGenerator, setShowBulkGenerator] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [generatedCredentials, setGeneratedCredentials] = useState<Array<{hashId: string, password: string}>>([])
+  const [showGeneratedCredentials, setShowGeneratedCredentials] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -157,6 +159,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
     try {
       let successCount = 0
+      const newCredentials: Array<{hashId: string, password: string}> = []
       
       for (let i = 0; i < bulkCount; i++) {
         const hashId = generateHashId()
@@ -178,13 +181,18 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
         if (response.ok) {
           successCount++
+          newCredentials.push({ hashId, password })
         }
       }
 
       // Lade die aktualisierte Liste
       await loadHashEntries()
       
-      alert(`${successCount} von ${bulkCount} Hash-IDs wurden erfolgreich erstellt!`)
+      // Zeige die generierten Zugangsdaten an
+      setGeneratedCredentials(newCredentials)
+      setShowGeneratedCredentials(true)
+      
+      alert(`${successCount} von ${bulkCount} Hash-IDs wurden erfolgreich erstellt! Die Zugangsdaten werden angezeigt.`)
     } catch (error) {
       console.error('Fehler bei der Bulk-Generierung:', error)
       alert('Fehler bei der Bulk-Generierung')
@@ -217,6 +225,27 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     const link = document.createElement('a')
     link.href = url
     link.download = 'mitarbeiter-zugangsdaten.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportGeneratedCredentials = () => {
+    if (generatedCredentials.length === 0) return
+    
+    // CSV-Header
+    const csvHeader = 'Hash-ID,Passwort\n'
+    
+    // CSV-Daten
+    const csvData = generatedCredentials.map(cred => 
+      `"${cred.hashId}","${cred.password}"`
+    ).join('\n')
+    
+    const csvContent = csvHeader + csvData
+    const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `generierte-zugangsdaten-${new Date().toISOString().split('T')[0]}.csv`
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -523,6 +552,117 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium"
               >
                 {bulkCount} Zugänge generieren
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generated Credentials Modal */}
+      {showGeneratedCredentials && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium text-gray-900">
+                Generierte Zugangsdaten
+              </h3>
+              <button
+                onClick={() => {
+                  setShowGeneratedCredentials(false)
+                  setGeneratedCredentials([])
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Wichtiger Hinweis
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      Diese Zugangsdaten werden nur einmal angezeigt. Bitte exportiere sie sofort und gib sie sicher an deine Mitarbeiter weiter.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border">
+              <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                <h4 className="font-semibold text-gray-800">
+                  {generatedCredentials.length} generierte Zugangsdaten
+                </h4>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={exportGeneratedCredentials}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                  >
+                    CSV Export
+                  </button>
+                  <button
+                    onClick={() => {
+                      const text = generatedCredentials.map(cred => 
+                        `${cred.hashId}: ${cred.password}`
+                      ).join('\n')
+                      navigator.clipboard.writeText(text)
+                      alert('Zugangsdaten in die Zwischenablage kopiert!')
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Kopieren
+                  </button>
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto max-h-96">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hash-ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Passwort</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {generatedCredentials.map((cred, index) => (
+                      <tr key={cred.hashId} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                          {cred.hashId}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                          {cred.password}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowGeneratedCredentials(false)
+                  setGeneratedCredentials([])
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md"
+              >
+                Schließen
               </button>
             </div>
           </div>
