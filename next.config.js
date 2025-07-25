@@ -3,12 +3,10 @@ const nextConfig = {
   experimental: {
     esmExternals: false
   },
-  // CSS-Optimierungen für konsistentes Design zwischen Dev und Production
-  optimizeCss: true,
   // Verhindere CSS-Minifizierung für bessere Debugging-Möglichkeiten
   swcMinify: false,
   // Stelle sicher, dass Tailwind CSS korrekt geladen wird
-  webpack: (config, { isServer, dev }) => {
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -48,19 +46,6 @@ const nextConfig = {
         _stream_transform: false,
         _stream_writable: false,
       }
-    }
-    
-    // CSS-Optimierungen für konsistentes Design
-    if (!dev) {
-      // Stelle sicher, dass Tailwind CSS korrekt verarbeitet wird
-      config.module.rules.push({
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader'
-        ]
-      })
     }
     
     return config
