@@ -1,36 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminCredentials, validateAdmin } from '@/lib/hashList'
-import crypto from 'crypto'
-
-// Sichere Hash-Funktion mit Fallback-Salt
-function hashPassword(password: string): string {
-  const salt = process.env.PASSWORD_SALT || 'OmniReflect2024_FallbackSalt'
-  return crypto.createHash('sha256').update(password + salt).digest('hex')
-}
-
-// Dynamische Admin-Credentials (im Speicher)
-let dynamicAdminCredentials: Array<{username: string, password: string, name?: string}> = []
+import { getAdminCredentials, addAdminCredential, removeAdminCredential } from '@/lib/hashList'
 
 // GET: Admin-Credentials abrufen
 export async function GET() {
   try {
-    // Kombiniere statische und dynamische Admin-Credentials
-    const allAdmins = [
-      {
-        username: adminCredentials.username,
-        password: '***HIDDEN***', // Passwort wird nicht zurückgegeben
-        name: 'Haupt-Administrator',
-        isDefault: true
-      },
-      ...dynamicAdminCredentials.map(admin => ({
-        ...admin,
-        password: '***HIDDEN***',
-        isDefault: false
-      }))
-    ]
+    const admins = getAdminCredentials()
     
     return NextResponse.json({
-      admins: allAdmins,
+      admins: admins.map(admin => ({
+        ...admin,
+        password: '***HIDDEN***' // Passwort wird nicht zurückgegeben
+      })),
       success: true
     })
   } catch (error) {
@@ -54,8 +34,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Prüfe auf Duplikate
-    const existingAdmin = dynamicAdminCredentials.find(admin => admin.username === body.username)
+    // Prüfe auf Konflikt mit Standard-Admin
+    const adminCredentials = getAdminCredentials()
+    const existingAdmin = adminCredentials.find(admin => admin.username === body.username)
     if (existingAdmin) {
       return NextResponse.json(
         { error: 'Admin-Username existiert bereits' },
@@ -63,21 +44,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Prüfe auf Konflikt mit Standard-Admin
-    if (body.username === adminCredentials.username) {
-      return NextResponse.json(
-        { error: 'Username ist bereits für den Haupt-Administrator reserviert' },
-        { status: 400 }
-      )
-    }
-
-    const newAdmin = {
+    addAdminCredential({
       username: body.username,
-      password: hashPassword(body.plainPassword),
+      plainPassword: body.plainPassword,
       name: body.name || body.username
-    }
-
-    dynamicAdminCredentials.push(newAdmin)
+    })
     
     return NextResponse.json({
       success: true,
@@ -107,16 +78,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verhindere Löschung des Haupt-Administrators
-    if (username === adminCredentials.username) {
+    const adminCredentials = getAdminCredentials()
+    const mainAdmin = adminCredentials.find(admin => admin.isDefault)
+    if (username === mainAdmin?.username) {
       return NextResponse.json(
         { error: 'Haupt-Administrator kann nicht gelöscht werden' },
         { status: 400 }
       )
     }
 
-    const initialLength = dynamicAdminCredentials.length
-    dynamicAdminCredentials = dynamicAdminCredentials.filter(admin => admin.username !== username)
-    const removed = initialLength !== dynamicAdminCredentials.length
+    const removed = removeAdminCredential(username)
     
     if (removed) {
       return NextResponse.json({
