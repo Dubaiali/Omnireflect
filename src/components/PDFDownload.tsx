@@ -463,11 +463,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
   const handleDownloadPDF = async () => {
     try {
-      console.log('Starting PDF generation...')
-      console.log('Summary length:', summary?.length)
-      console.log('Stored questions:', storedQuestions?.length)
-      console.log('Progress answers:', Object.keys(progress.answers || {}).length)
-      console.log('Role context:', roleContext)
+      console.log('Starting print version generation...')
       
       // Status auf "completed" setzen und Zusammenfassung speichern, wenn PDF heruntergeladen wird
       try {
@@ -518,205 +514,199 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
         return
       }
       
-      if (!storedQuestions || storedQuestions.length === 0) {
-        alert('Keine Fragen verfügbar. Bitte starte den Prozess neu.')
+      // Erstelle eine Druckversion der Zusammenfassungsseite
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        alert('Popup-Blocker verhindert das Öffnen des Druckfensters. Bitte erlauben Sie Popups für diese Seite.')
         return
       }
       
-      // Versuche zuerst @react-pdf/renderer
-      try {
-        console.log('Loading @react-pdf/renderer...')
-        const { pdf } = await import('@react-pdf/renderer')
-        const PDFDocument = (await import('./PDFDocument')).default
-        
-        console.log('PDF components loaded successfully')
-        console.log('Generating PDF blob...')
-        console.log('Questions count:', storedQuestions?.length)
-        console.log('Questions data:', storedQuestions)
-        console.log('Answers count:', Object.keys(progress.answers || {}).length)
-        console.log('Answers data:', progress.answers)
-        console.log('Follow-up questions count:', Object.keys(progress.followUpQuestions || {}).length)
-        
-        const blob = await pdf(
-          <PDFDocument
-            summary={summary || ''}
-            questions={storedQuestions || []}
-            answers={progress.answers || {}}
-            followUpQuestions={progress.followUpQuestions || {}}
-            roleContext={roleContext}
-            userName={roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
-            department={roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
-          />
-        ).toBlob()
-        
-        console.log('PDF blob generated, size:', blob.size)
-        
-        if (blob.size === 0) {
-          throw new Error('Generated PDF is empty')
-        }
-        
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`
-        
-        // Füge Link zum DOM hinzu und klicke ihn
-        document.body.appendChild(link)
-        link.click()
-        
-        // Cleanup
-        setTimeout(() => {
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-        }, 100)
-        
-        console.log('PDF download initiated successfully')
-        return
-        
-      } catch (pdfError) {
-        console.warn('@react-pdf/renderer failed, trying alternative method:', pdfError)
-        
-        // Versuche alternative PDF-Generierung mit jsPDF
-        try {
-          console.log('Trying jsPDF alternative...')
-          const { jsPDF } = await import('jspdf')
-          
-          const doc = new jsPDF()
-          
-          // Titel
-          doc.setFontSize(20)
-          doc.text('OmniReflect - Zusammenfassung', 20, 20)
-          
-          // Metadaten
-          doc.setFontSize(12)
-          doc.text(`Generiert am: ${new Date().toLocaleDateString('de-DE')}`, 20, 35)
-          doc.text(`Name: ${roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}`, 20, 45)
-          doc.text(`Abteilung: ${roleContext?.workAreas.join(', ') || 'Nicht angegeben'}`, 20, 55)
-          
-          // Zusammenfassung
-          doc.setFontSize(14)
-          doc.text('ZUSAMMENFASSUNG:', 20, 75)
-          
-          doc.setFontSize(10)
-          const summaryLines = doc.splitTextToSize(summary, 170)
-          let yPosition = 85
-          
-          for (let i = 0; i < summaryLines.length; i++) {
-            if (yPosition > 270) {
-              doc.addPage()
-              yPosition = 20
+      // Erstelle den HTML-Inhalt für die Druckversion
+      const { intro, categories, recommendations } = parseSummary(summary)
+      const currentDate = new Date().toLocaleDateString('de-DE')
+      const userName = roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'
+      const department = roleContext?.workAreas.join(', ') || 'Nicht angegeben'
+      
+      // Alle Kategorien expandieren für die Druckversion
+      const allExpandedCategories = new Set(categories.map(cat => cat.title))
+      
+      const printContent = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>OmniReflect - Zusammenfassung</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .no-print { display: none !important; }
+              .page-break { page-break-before: always; }
+              .avoid-break { page-break-inside: avoid; }
             }
-            doc.text(summaryLines[i], 20, yPosition)
-            yPosition += 5
-          }
-          
-          // Fragen und Antworten
-          if (storedQuestions && storedQuestions.length > 0) {
-            yPosition += 10
-            if (yPosition > 270) {
-              doc.addPage()
-              yPosition = 20
-            }
-            
-            doc.setFontSize(14)
-            doc.text('BEANTWORTETE FRAGEN:', 20, yPosition)
-            yPosition += 10
-            
-            doc.setFontSize(10)
-            storedQuestions.forEach((q, index) => {
-              const answer = progress.answers?.[q.id]
-              if (answer) {
-                if (yPosition > 270) {
-                  doc.addPage()
-                  yPosition = 20
-                }
-                
-                doc.setFontSize(11)
-                doc.text(`Frage ${index + 1}: ${q.text}`, 20, yPosition)
-                yPosition += 8
-                
-                doc.setFontSize(10)
-                const answerLines = doc.splitTextToSize(`Antwort: ${answer}`, 170)
-                for (const line of answerLines) {
-                  if (yPosition > 270) {
-                    doc.addPage()
-                    yPosition = 20
-                  }
-                  doc.text(line, 25, yPosition)
-                  yPosition += 5
-                }
-                yPosition += 5
-              }
-            })
-          }
-          
-          // Footer
-          doc.setFontSize(8)
-          doc.text('Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.', 20, 280)
-          
-          // PDF herunterladen
-          doc.save(`OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.pdf`)
-          
-          console.log('PDF generated successfully with jsPDF')
-          return
-          
-        } catch (jsPDFError) {
-          console.warn('jsPDF also failed, using text fallback:', jsPDFError)
-          
-          // Fallback: Erstelle eine einfache Text-Datei
-          const textContent = `OmniReflect - Zusammenfassung
-Generiert am: ${new Date().toLocaleDateString('de-DE')}
-Name: ${roleContext ? `${roleContext.firstName} ${roleContext.lastName}` : 'Nicht angegeben'}
-Abteilung: ${roleContext?.workAreas.join(', ') || 'Nicht angegeben'}
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+          </style>
+        </head>
+        <body class="bg-white text-gray-900">
+          <!-- Header -->
+          <div class="flex justify-between items-center mb-8 pb-4 border-b-2 border-gray-200">
+            <div class="text-2xl font-bold text-indigo-600">OmniReflect</div>
+            <div class="text-right">
+              <div class="text-sm text-gray-600">Zusammenfassung & PDF-Export</div>
+              <div class="text-sm text-gray-600">Generiert am ${currentDate}</div>
+            </div>
+          </div>
 
-ZUSAMMENFASSUNG:
-${summary}
+          <!-- Benutzerinformationen -->
+          <div class="bg-gray-50 p-4 mb-6 rounded-lg border border-gray-200">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">Teilnehmerinformationen</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><span class="font-semibold text-gray-700">Name:</span> <span class="text-gray-600">${userName}</span></div>
+              <div><span class="font-semibold text-gray-700">Abteilung:</span> <span class="text-gray-600">${department}</span></div>
+              <div><span class="font-semibold text-gray-700">Datum:</span> <span class="text-gray-600">${currentDate}</span></div>
+            </div>
+          </div>
 
-BEANTWORTETE FRAGEN:
-${storedQuestions?.map(q => {
-  const answer = progress.answers?.[q.id]
-  return answer ? `\n${q.text}\nAntwort: ${answer}` : null
-}).filter(Boolean).join('\n') || 'Keine Fragen beantwortet'}
+          <!-- Deine Zusammenfassung -->
+          ${intro ? `
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-xl mb-8">
+              <div class="flex items-center mb-3">
+                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span class="text-lg font-semibold text-blue-900">Deine Zusammenfassung</span>
+              </div>
+              <div class="text-blue-900 leading-relaxed whitespace-pre-line">${intro}</div>
+            </div>
+          ` : ''}
 
----
-Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.`
-          
-          const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `OmniReflect_Zusammenfassung_${new Date().toISOString().split('T')[0]}.txt`
-          
-          document.body.appendChild(link)
-          link.click()
-          
-          setTimeout(() => {
-            document.body.removeChild(link)
-            URL.revokeObjectURL(url)
-          }, 100)
-          
-          alert('PDF-Generierung fehlgeschlagen. Eine Text-Datei wurde stattdessen heruntergeladen.')
-          return
-        }
-      }
+          <!-- Systematische Analyse Header -->
+          ${categories.length > 0 ? `
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4 mb-6">
+              <div class="flex items-center justify-center">
+                <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                  <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <span class="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Kategorien Grid -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            ${categories.map(cat => {
+              const color = getCategoryColor(cat.title)
+              const icon = getCategoryIcon(cat.title)
+              return `
+                <div class="border rounded-xl shadow-sm overflow-hidden ${color.bg} ${color.border} avoid-break">
+                  <div class="p-5">
+                    <div class="flex items-center space-x-3 mb-4">
+                      <div class="p-2 rounded-lg ${color.bg.replace('50', '100')}">
+                        <div class="${color.title}">
+                          ${icon}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 class="text-base font-bold ${color.title}">
+                          ${cat.title}
+                        </h3>
+                      </div>
+                    </div>
+                    <div class="whitespace-pre-line leading-relaxed ${color.text} text-sm">
+                      ${cat.content}
+                    </div>
+                  </div>
+                </div>
+              `
+            }).join('')}
+          </div>
+
+          <!-- Empfehlungen -->
+          ${recommendations ? `
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-6 rounded-xl mb-8">
+              <div class="flex items-center mb-3">
+                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span class="text-lg font-semibold text-green-900">Empfehlungen für dein Mitarbeiterjahresgespräch</span>
+              </div>
+              <div class="text-green-900 leading-relaxed whitespace-pre-line">${recommendations}</div>
+            </div>
+          ` : ''}
+
+          <!-- Fragen und Antworten -->
+          ${storedQuestions && storedQuestions.length > 0 ? `
+            <div class="page-break"></div>
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Fragen und Antworten</h2>
+            ${storedQuestions.map((question, index) => {
+              const answer = progress.answers[question.id]
+              const followUps = progress.followUpQuestions[question.id] || []
+              const questionText = question.question || question.text || 'Frage nicht verfügbar'
+              
+              return `
+                <div class="bg-gray-50 p-4 mb-6 rounded-lg border border-gray-200 avoid-break">
+                  <div class="flex justify-between items-center mb-3">
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">${question.category}</span>
+                    <span class="text-gray-500 text-sm">Frage ${index + 1}</span>
+                  </div>
+                  <h3 class="font-bold text-gray-800 mb-3">${questionText}</h3>
+                  ${answer ? `
+                    <div class="mb-3">
+                      <span class="font-semibold text-gray-700 text-sm">Antwort:</span>
+                      <div class="bg-white p-3 rounded border mt-1 text-gray-700">${answer}</div>
+                    </div>
+                  ` : '<div class="text-gray-500 italic">Nicht beantwortet</div>'}
+                  ${followUps.length > 0 ? `
+                    <div class="bg-green-50 p-3 rounded border-l-4 border-green-400 mt-3">
+                      <span class="font-semibold text-green-700 text-sm">Vertiefende Nachfragen:</span>
+                      ${followUps.map((followUp, followUpIndex) => {
+                        const followUpAnswer = progress.answers[`${question.id}_followup_${followUpIndex}`]
+                        return `
+                          <div class="mt-2">
+                            <div class="font-medium text-green-700 text-sm">${followUp}</div>
+                            ${followUpAnswer ? `<div class="text-green-600 italic text-sm mt-1">${followUpAnswer}</div>` : ''}
+                          </div>
+                        `
+                      }).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `
+            }).join('')}
+          ` : ''}
+
+          <!-- Footer -->
+          <div class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+            Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.
+          </div>
+
+          <script>
+            // Automatisch Druckdialog öffnen
+            window.onload = function() {
+              setTimeout(() => {
+                window.print();
+              }, 500);
+            };
+          </script>
+        </body>
+        </html>
+      `
+      
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      
+      console.log('Print version generated successfully')
       
     } catch (error) {
-      console.error('Fehler beim PDF-Download:', error)
-      
-      // Detaillierte Fehlermeldung für verschiedene Szenarien
-      let errorMessage = 'Fehler beim PDF-Download. '
-      
-      if (error instanceof Error) {
-        if (error.message.includes('@react-pdf/renderer')) {
-          errorMessage += 'PDF-Bibliothek konnte nicht geladen werden. Bitte lade die Seite neu und versuche es erneut.'
-        } else if (error.message.includes('blob')) {
-          errorMessage += 'PDF konnte nicht erstellt werden. Bitte stelle sicher, dass alle Daten verfügbar sind.'
-        } else {
-          errorMessage += error.message
-        }
-      }
-      
-      alert(errorMessage)
+      console.error('Fehler beim Generieren der Druckversion:', error)
+      alert('Fehler beim Generieren der Druckversion. Bitte versuchen Sie es erneut.')
     }
   }
 
@@ -749,9 +739,9 @@ Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Ta
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
-              <span>PDF herunterladen</span>
+              <span>Druckversion öffnen</span>
             </button>
             <button
               onClick={() => {
