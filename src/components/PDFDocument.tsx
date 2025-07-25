@@ -39,6 +39,33 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 5
   },
+  userInfo: {
+    backgroundColor: '#f8fafc',
+    padding: 15,
+    marginBottom: 20,
+    borderRadius: 8,
+    border: '1px solid #e2e8f0'
+  },
+  userInfoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 10
+  },
+  userInfoRow: {
+    flexDirection: 'row',
+    marginBottom: 5
+  },
+  userInfoLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#374151',
+    width: 80
+  },
+  userInfoValue: {
+    fontSize: 12,
+    color: '#6b7280'
+  },
   section: {
     marginBottom: 25
   },
@@ -225,6 +252,78 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: 15
   },
+  questionsSection: {
+    marginTop: 30
+  },
+  questionCard: {
+    padding: 15,
+    marginBottom: 15,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    border: '1px solid #e5e7eb'
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  category: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+    backgroundColor: '#dbeafe',
+    padding: '4px 8px',
+    borderRadius: 4
+  },
+  questionNumber: {
+    fontSize: 10,
+    color: '#6b7280'
+  },
+  questionText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 10,
+    lineHeight: 1.4
+  },
+  answerLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 5
+  },
+  answerText: {
+    fontSize: 12,
+    color: '#374151',
+    backgroundColor: '#f3f4f6',
+    padding: 10,
+    borderRadius: 4,
+    lineHeight: 1.5
+  },
+  followUpSection: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 4
+  },
+  followUpLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginBottom: 5
+  },
+  followUpQuestion: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#166534',
+    marginBottom: 5
+  },
+  followUpAnswer: {
+    fontSize: 11,
+    color: '#15803d',
+    fontStyle: 'italic'
+  },
   footer: {
     marginTop: 30,
     paddingTop: 20,
@@ -232,6 +331,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6b7280',
     textAlign: 'center'
+  },
+  pageNumber: {
+    position: 'absolute',
+    bottom: 20,
+    right: 40,
+    fontSize: 10,
+    color: '#6b7280'
   }
 })
 
@@ -430,30 +536,57 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
   questions, 
   answers, 
   followUpQuestions, 
+  roleContext, 
   userName, 
   department 
 }) => {
   const { intro, categories, recommendations } = parseSummary(summary)
+  const currentDate = new Date().toLocaleDateString('de-DE')
+
+  // Gruppiere Fragen für bessere Seitenaufteilung (max. 3 Fragen pro Seite für bessere Lesbarkeit)
+  const questionsPerPage = 3
+  const questionPages = []
+  for (let i = 0; i < questions.length; i += questionsPerPage) {
+    questionPages.push(questions.slice(i, i + questionsPerPage))
+  }
 
   return (
     <Document>
+      {/* Erste Seite: Zusammenfassung */}
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>OmniReflect</Text>
           <View style={styles.headerInfo}>
             <Text style={styles.subtitle}>Zusammenfassung & PDF-Export</Text>
-            <Text style={styles.subtitle}>Generiert am {new Date().toLocaleDateString('de-DE')}</Text>
+            <Text style={styles.subtitle}>Generiert am {currentDate}</Text>
           </View>
         </View>
 
-                 {/* Deine Zusammenfassung */}
-         {intro && (
-           <View style={styles.executiveSummary}>
-             <Text style={styles.executiveSummaryTitle}>Deine Zusammenfassung</Text>
-             <Text style={styles.executiveSummaryContent}>{intro}</Text>
-           </View>
-         )}
+        {/* Benutzerinformationen */}
+        <View style={styles.userInfo}>
+          <Text style={styles.userInfoTitle}>Teilnehmerinformationen</Text>
+          <View style={styles.userInfoRow}>
+            <Text style={styles.userInfoLabel}>Name:</Text>
+            <Text style={styles.userInfoValue}>{userName}</Text>
+          </View>
+          <View style={styles.userInfoRow}>
+            <Text style={styles.userInfoLabel}>Abteilung:</Text>
+            <Text style={styles.userInfoValue}>{department}</Text>
+          </View>
+          <View style={styles.userInfoRow}>
+            <Text style={styles.userInfoLabel}>Datum:</Text>
+            <Text style={styles.userInfoValue}>{currentDate}</Text>
+          </View>
+        </View>
+
+        {/* Deine Zusammenfassung */}
+        {intro && (
+          <View style={styles.executiveSummary}>
+            <Text style={styles.executiveSummaryTitle}>Deine Zusammenfassung</Text>
+            <Text style={styles.executiveSummaryContent}>{intro}</Text>
+          </View>
+        )}
 
         {/* Systematische Analyse Header */}
         {categories.length > 0 && (
@@ -491,7 +624,79 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
         <View style={styles.footer}>
           <Text>Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.</Text>
         </View>
+        
+        <Text style={styles.pageNumber}>1</Text>
       </Page>
+      
+      {/* Weitere Seiten: Fragen und Antworten */}
+      {questions.length > 0 && questionPages.map((pageQuestions, pageIndex) => (
+        <Page key={pageIndex + 1} size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <Text style={styles.logo}>OmniReflect</Text>
+            <View style={styles.headerInfo}>
+              <Text style={styles.subtitle}>{userName}</Text>
+              <Text style={styles.subtitle}>{currentDate}</Text>
+            </View>
+          </View>
+          
+          <View style={styles.questionsSection}>
+            <Text style={styles.sectionTitle}>Fragen und Antworten</Text>
+            
+            {pageQuestions.map((question, questionIndex) => {
+              const answer = answers[question.id]
+              const followUps = followUpQuestions[question.id] || []
+              
+              // Sicherheitsprüfung für question.question (korrekte Feldbezeichnung)
+              const questionText = question.question || question.text || 'Frage nicht verfügbar'
+              
+              return (
+                <View key={question.id} style={styles.questionCard}>
+                  <View style={styles.questionHeader}>
+                    <Text style={styles.category}>{question.category}</Text>
+                    <Text style={styles.questionNumber}>
+                      Frage {pageIndex * questionsPerPage + questionIndex + 1}
+                    </Text>
+                  </View>
+                  
+                  <Text style={styles.questionText}>{questionText}</Text>
+                  
+                  {answer ? (
+                    <View>
+                      <Text style={styles.answerLabel}>Antwort:</Text>
+                      <Text style={styles.answerText}>{typeof answer === 'string' ? answer : 'Antwort nicht verfügbar'}</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.answerText}>Nicht beantwortet</Text>
+                  )}
+                  
+                  {followUps.length > 0 && (
+                    <View style={styles.followUpSection}>
+                      <Text style={styles.followUpLabel}>Vertiefende Nachfragen:</Text>
+                      {followUps.map((followUp, followUpIndex) => {
+                        const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
+                        return (
+                          <View key={followUpIndex}>
+                            <Text style={styles.followUpQuestion}>{followUp}</Text>
+                            {followUpAnswer && (
+                              <Text style={styles.followUpAnswer}>{followUpAnswer}</Text>
+                            )}
+                          </View>
+                        )
+                      })}
+                    </View>
+                  )}
+                </View>
+              )
+            })}
+          </View>
+          
+          <View style={styles.footer}>
+            <Text>Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.</Text>
+          </View>
+          
+          <Text style={styles.pageNumber}>{pageIndex + 2}</Text>
+        </Page>
+      ))}
     </Document>
   )
 }
