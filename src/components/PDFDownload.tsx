@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/state/sessionStore'
 import { generateSummary } from '@/lib/gpt'
@@ -115,10 +115,168 @@ function parseSummary(summary: string) {
   }
 }
 
+// Icon-Mapping für Kategorien
+const getCategoryIcon = (title: string) => {
+  const iconMap: { [key: string]: React.ReactElement } = {
+    'Stolz & persönliche Leistung': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+    ),
+    'Herausforderungen & Umgang mit Druck': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+      </svg>
+    ),
+    'Verantwortung & Selbstorganisation': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    'Zusammenarbeit & Feedback': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    'Entwicklung & Lernen': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    ),
+    'Energie & Belastung': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    'Kultur & Werte': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+      </svg>
+    ),
+    'Entscheidungsspielräume & Freiheit': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    'Wertschätzung & Gesehenwerden': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    ),
+    'Perspektive & Zukunft': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    ),
+    'Verbesserungsvorschläge & Ideen': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
+    'Rollentausch & Führungsperspektive': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    )
+  }
+  return iconMap[title] || (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  )
+}
+
+// Farb-Mapping für Kategorien
+const getCategoryColor = (title: string) => {
+  const colorMap: { [key: string]: { bg: string, border: string, text: string, title: string } } = {
+    'Stolz & persönliche Leistung': {
+      bg: 'bg-green-50',
+      border: 'border-green-200',
+      text: 'text-green-900',
+      title: 'text-green-700'
+    },
+    'Herausforderungen & Umgang mit Druck': {
+      bg: 'bg-orange-50',
+      border: 'border-orange-200',
+      text: 'text-orange-900',
+      title: 'text-orange-700'
+    },
+    'Verantwortung & Selbstorganisation': {
+      bg: 'bg-purple-50',
+      border: 'border-purple-200',
+      text: 'text-purple-900',
+      title: 'text-purple-700'
+    },
+    'Zusammenarbeit & Feedback': {
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+      text: 'text-blue-900',
+      title: 'text-blue-700'
+    },
+    'Entwicklung & Lernen': {
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
+      text: 'text-emerald-900',
+      title: 'text-emerald-700'
+    },
+    'Energie & Belastung': {
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+      text: 'text-amber-900',
+      title: 'text-amber-700'
+    },
+    'Kultur & Werte': {
+      bg: 'bg-violet-50',
+      border: 'border-violet-200',
+      text: 'text-violet-900',
+      title: 'text-violet-700'
+    },
+    'Entscheidungsspielräume & Freiheit': {
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+      text: 'text-indigo-900',
+      title: 'text-indigo-700'
+    },
+    'Wertschätzung & Gesehenwerden': {
+      bg: 'bg-teal-50',
+      border: 'border-teal-200',
+      text: 'text-teal-900',
+      title: 'text-teal-700'
+    },
+    'Perspektive & Zukunft': {
+      bg: 'bg-sky-50',
+      border: 'border-sky-200',
+      text: 'text-sky-900',
+      title: 'text-sky-700'
+    },
+    'Verbesserungsvorschläge & Ideen': {
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+      text: 'text-indigo-900',
+      title: 'text-indigo-700'
+    },
+    'Rollentausch & Führungsperspektive': {
+      bg: 'bg-purple-50',
+      border: 'border-purple-200',
+      text: 'text-purple-900',
+      title: 'text-purple-700'
+    }
+  }
+  return colorMap[title] || {
+    bg: 'bg-gray-50',
+    border: 'border-gray-200',
+    text: 'text-gray-900',
+    title: 'text-gray-700'
+  }
+}
+
 export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [summary, setSummary] = useState<string>('')
   const [showResetWarning, setShowResetWarning] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const { progress, roleContext, questions: storedQuestions } = useSessionStore()
   const router = useRouter()
 
@@ -147,6 +305,25 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     }
   }
 
+  const toggleCategory = (title: string) => {
+    const newExpanded = new Set(expandedCategories)
+    if (newExpanded.has(title)) {
+      newExpanded.delete(title)
+    } else {
+      newExpanded.add(title)
+    }
+    setExpandedCategories(newExpanded)
+  }
+
+  const expandAllCategories = () => {
+    const { categories } = parseSummary(summary)
+    setExpandedCategories(new Set(categories.map(cat => cat.title)))
+  }
+
+  const collapseAllCategories = () => {
+    setExpandedCategories(new Set())
+  }
+
   // NEUE DARSTELLUNG DER ZUSAMMENFASSUNG
   const renderSummary = (summaryText: string) => {
     const { intro, categories, recommendations } = parseSummary(summaryText)
@@ -166,105 +343,98 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       )
     }
     
-    // Farben für verschiedene Kategorien
-    const getCategoryColor = (title: string) => {
-      const colorMap: { [key: string]: string } = {
-        'Stolz & persönliche Leistung': 'green',
-        'Herausforderungen & Umgang mit Druck': 'orange',
-        'Verantwortung & Selbstorganisation': 'purple',
-        'Zusammenarbeit & Feedback': 'blue',
-        'Entwicklung & Lernen': 'emerald',
-        'Energie & Belastung': 'amber',
-        'Kultur & Werte': 'violet',
-        'Entscheidungsspielräume & Freiheit': 'indigo',
-        'Wertschätzung & Gesehenwerden': 'teal',
-        'Perspektive & Zukunft': 'sky',
-        'Verbesserungsvorschläge & Ideen': 'indigo',
-        'Rollentausch & Führungsperspektive': 'purple'
-      }
-      return colorMap[title] || 'gray'
-    }
-    
     return (
       <div className="space-y-8">
-        {/* Einleitung */}
+        {/* Executive Summary */}
         {intro && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-xl shadow-sm">
             <div className="flex items-center mb-3">
-              <svg className="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-lg font-semibold text-blue-900">Einleitung & Überblick</span>
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span className="text-lg font-semibold text-blue-900">Executive Summary</span>
             </div>
             <div className="text-blue-900 leading-relaxed whitespace-pre-line">{intro}</div>
           </div>
         )}
         
-        {/* Systematische Analyse Header */}
+        {/* Kategorien Header mit Controls */}
         {categories.length > 0 && (
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
-            <div className="flex items-center justify-center">
-              <svg className="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={expandAllCategories}
+                  className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                >
+                  Alle öffnen
+                </button>
+                <button
+                  onClick={collapseAllCategories}
+                  className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                >
+                  Alle schließen
+                </button>
+              </div>
             </div>
           </div>
         )}
         
-        {/* Kategorien */}
+        {/* Kategorien Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           {categories.map(cat => {
             const color = getCategoryColor(cat.title)
-            const colorClasses = {
-              indigo: 'border-indigo-200 bg-indigo-50',
-              green: 'border-green-200 bg-green-50',
-              orange: 'border-orange-200 bg-orange-50',
-              purple: 'border-purple-200 bg-purple-50',
-              blue: 'border-blue-200 bg-blue-50',
-              emerald: 'border-emerald-200 bg-emerald-50',
-              amber: 'border-amber-200 bg-amber-50',
-              violet: 'border-violet-200 bg-violet-50',
-              teal: 'border-teal-200 bg-teal-50',
-              sky: 'border-sky-200 bg-sky-50',
-              gray: 'border-gray-200 bg-gray-50'
-            }
-            
-            const textColors = {
-              indigo: 'text-indigo-900',
-              green: 'text-green-900',
-              orange: 'text-orange-900',
-              purple: 'text-purple-900',
-              blue: 'text-blue-900',
-              emerald: 'text-emerald-900',
-              amber: 'text-amber-900',
-              violet: 'text-violet-900',
-              teal: 'text-teal-900',
-              sky: 'text-sky-900',
-              gray: 'text-gray-900'
-            }
-            
-            const titleColors = {
-              indigo: 'text-indigo-700',
-              green: 'text-green-700',
-              orange: 'text-orange-700',
-              purple: 'text-purple-700',
-              blue: 'text-blue-700',
-              emerald: 'text-emerald-700',
-              amber: 'text-amber-700',
-              violet: 'text-violet-700',
-              teal: 'text-teal-700',
-              sky: 'text-sky-700',
-              gray: 'text-gray-700'
-            }
+            const isExpanded = expandedCategories.has(cat.title)
             
             return (
-              <div key={cat.title} className={`border rounded-xl p-5 shadow-sm ${colorClasses[color as keyof typeof colorClasses]}`}>
-                <div className={`text-base font-bold mb-3 ${titleColors[color as keyof typeof titleColors]}`}>
-                  {cat.title}
-                </div>
-                <div className={`whitespace-pre-line leading-relaxed ${textColors[color as keyof typeof textColors]}`}>
-                  {cat.content}
+              <div key={cat.title} className={`border rounded-xl shadow-sm overflow-hidden transition-all duration-300 ${color.bg} ${color.border} hover:shadow-md`}>
+                <button
+                  onClick={() => toggleCategory(cat.title)}
+                  className="w-full p-5 text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${color.bg.replace('50', '100')}`}>
+                        <div className={color.title}>
+                          {getCategoryIcon(cat.title)}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className={`text-base font-bold ${color.title}`}>
+                          {cat.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {isExpanded ? 'Klicken zum Schließen' : 'Klicken zum Öffnen'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+                
+                {/* Expandable Content */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="px-5 pb-5">
+                    <div className={`whitespace-pre-line leading-relaxed ${color.text} text-sm`}>
+                      {cat.content}
+                    </div>
+                  </div>
                 </div>
               </div>
             )
@@ -275,9 +445,11 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
         {recommendations && (
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-6 rounded-xl shadow-sm">
             <div className="flex items-center mb-3">
-              <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <div className="bg-green-100 p-2 rounded-lg mr-3">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
               <span className="text-lg font-semibold text-green-900">Empfehlungen für dein Mitarbeiterjahresgespräch</span>
             </div>
             <div className="text-green-900 leading-relaxed whitespace-pre-line">{recommendations}</div>
