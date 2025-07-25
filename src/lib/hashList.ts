@@ -55,8 +55,46 @@ function savePersistentHashList(entries: HashEntry[]): void {
 
 
 
-// Statische Hash-Liste als Fallback
+// Hash-Liste aus Umgebungsvariablen generieren
+function getEmployeesFromEnv(): HashEntry[] {
+  const employees: HashEntry[] = []
+  let index = 1
+  
+  while (true) {
+    const hashId = process.env[`EMPLOYEE${index}_HASHID`]
+    const password = process.env[`EMPLOYEE${index}_PASSWORD`]
+    const name = process.env[`EMPLOYEE${index}_NAME`]
+    const department = process.env[`EMPLOYEE${index}_DEPARTMENT`]
+    
+    if (!hashId || !password) {
+      break // Keine weiteren Mitarbeiter gefunden
+    }
+    
+    employees.push({
+      hashId,
+      password: hashPassword(password),
+      name: name || 'Unbekannt',
+      department: department || 'Unbekannt',
+      status: 'pending' as const,
+    })
+    
+    index++
+  }
+  
+  return employees
+}
+
+// Statische Hash-Liste als Fallback (nur wenn keine Umgebungsvariablen gesetzt sind)
 function getStaticHashList(): HashEntry[] {
+  const envEmployees = getEmployeesFromEnv()
+  
+  if (envEmployees.length > 0) {
+    console.log(`Lade ${envEmployees.length} Mitarbeiter aus Umgebungsvariablen`)
+    return envEmployees
+  }
+  
+  // Fallback: Standard-Mitarbeiter (nur für Entwicklung)
+  console.log('Keine Umgebungsvariablen gefunden, verwende Standard-Mitarbeiter')
   return [
     {
       hashId: 'emp_md87yj1f_904c447c80694dc5',
@@ -134,7 +172,8 @@ export function removeHashEntry(hashId: string): boolean {
 // Admin-Credentials aus Umgebungsvariablen
 export const adminCredentials = {
   username: process.env.ADMIN_USERNAME || 'admin',
-  password: process.env.ADMIN_PASSWORD || 'OmniAdmin2024!',
+  password: process.env.ADMIN_PASSWORD || '',
+  name: process.env.ADMIN_NAME || 'Administrator'
 }
 
 // Admin-Credentials-Verwaltung
@@ -160,17 +199,24 @@ function loadAdminCredentials(): AdminCredential[] {
     console.error('Fehler beim Laden der Admin-Credentials:', error)
   }
   
-  // Fallback: Standard-Admin erstellen
-  const defaultAdmin: AdminCredential = {
-    username: adminCredentials.username,
-    password: hashPassword(adminCredentials.password),
-    name: 'Haupt-Administrator',
-    isDefault: true
+  // Prüfe ob Admin-Credentials in Umgebungsvariablen definiert sind
+  if (adminCredentials.username && adminCredentials.password) {
+    console.log('Lade Admin-Credentials aus Umgebungsvariablen')
+    const envAdmin: AdminCredential = {
+      username: adminCredentials.username,
+      password: hashPassword(adminCredentials.password),
+      name: adminCredentials.name,
+      isDefault: false
+    }
+    
+    // Speichere Admin aus Umgebungsvariablen
+    saveAdminCredentials([envAdmin])
+    return [envAdmin]
   }
   
-  // Speichere Standard-Admin
-  saveAdminCredentials([defaultAdmin])
-  return [defaultAdmin]
+  // Fallback: Leere Liste wenn keine Credentials definiert sind
+  console.warn('Keine Admin-Credentials in Umgebungsvariablen oder Datei gefunden')
+  return []
 }
 
 // Speichere Admin-Credentials
