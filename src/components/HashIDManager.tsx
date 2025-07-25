@@ -14,10 +14,12 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     hashId: '',
     password: '',
     name: '',
-    department: ''
+    department: '',
+    role: 'employee' as 'employee' | 'admin'
   })
   const [showPassword, setShowPassword] = useState(false)
   const [bulkCount, setBulkCount] = useState(10)
+  const [bulkRole, setBulkRole] = useState<'employee' | 'admin'>('employee')
   const [showBulkGenerator, setShowBulkGenerator] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [generatedCredentials, setGeneratedCredentials] = useState<Array<{hashId: string, password: string}>>([])
@@ -25,10 +27,18 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
   const [showPasswordReset, setShowPasswordReset] = useState(false)
   const [selectedHashId, setSelectedHashId] = useState<string>('')
   const [resetPassword, setResetPassword] = useState<string>('')
+  const [adminCredentials, setAdminCredentials] = useState<Array<{username: string, name?: string, isDefault?: boolean}>>([])
+  const [showAdminManager, setShowAdminManager] = useState(false)
+  const [newAdmin, setNewAdmin] = useState({
+    username: '',
+    password: '',
+    name: ''
+  })
 
   useEffect(() => {
     if (isOpen) {
       loadHashEntries()
+      loadAdminCredentials()
     }
   }, [isOpen])
 
@@ -72,10 +82,11 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     }
   }
 
-  const generateHashId = () => {
+  const generateHashId = (role: 'employee' | 'admin' = 'employee') => {
     const timestamp = Date.now().toString(36)
     const random = Math.random().toString(36).substring(2, 8)
-    return `emp_${timestamp}_${random}`
+    const prefix = role === 'admin' ? 'admin' : 'emp'
+    return `${prefix}_${timestamp}_${random}`
   }
 
   const generatePassword = () => {
@@ -119,13 +130,14 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
         // Lade die aktualisierte Liste
         await loadHashEntries()
         
-        // Reset form
-        setNewEntry({
-          hashId: '',
-          password: '',
-          name: '',
-          department: ''
-        })
+            // Reset form
+    setNewEntry({
+      hashId: '',
+      password: '',
+      name: '',
+      department: '',
+      role: 'employee'
+    })
 
         alert('Hash-ID erfolgreich erstellt!')
       } else {
@@ -193,10 +205,11 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
   const handleAutoGenerate = () => {
     setNewEntry({
-      hashId: generateHashId(),
+      hashId: generateHashId(newEntry.role),
       password: generatePassword(),
       name: '',
-      department: ''
+      department: '',
+      role: newEntry.role
     })
   }
 
@@ -211,7 +224,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
       const newCredentials: Array<{hashId: string, password: string}> = []
       
       for (let i = 0; i < bulkCount; i++) {
-        const hashId = generateHashId()
+        const hashId = generateHashId(bulkRole)
         const password = generatePassword()
         
         const response = await fetch('/api/hash-list', {
@@ -319,6 +332,75 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     }
   }
 
+  // Admin-Verwaltung
+  const loadAdminCredentials = async () => {
+    try {
+      const response = await fetch('/api/admin-credentials')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.admins) {
+          setAdminCredentials(data.admins)
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Admin-Credentials:', error)
+    }
+  }
+
+  const handleAddAdmin = async () => {
+    if (!newAdmin.username || !newAdmin.password) {
+      alert('Username und Passwort sind erforderlich!')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin-credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: newAdmin.username,
+          plainPassword: newAdmin.password,
+          name: newAdmin.name || newAdmin.username
+        }),
+      })
+
+      if (response.ok) {
+        await loadAdminCredentials()
+        setNewAdmin({ username: '', password: '', name: '' })
+        alert('Admin erfolgreich hinzugefügt!')
+      } else {
+        const error = await response.json()
+        alert(`Fehler: ${error.error || 'Unbekannter Fehler'}`)
+      }
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen des Admins:', error)
+      alert('Fehler beim Hinzufügen des Admins')
+    }
+  }
+
+  const handleDeleteAdmin = async (username: string) => {
+    if (confirm(`Möchtest du den Admin "${username}" wirklich löschen?`)) {
+      try {
+        const response = await fetch(`/api/admin-credentials?username=${username}`, {
+          method: 'DELETE',
+        })
+
+        if (response.ok) {
+          await loadAdminCredentials()
+          alert('Admin erfolgreich gelöscht!')
+        } else {
+          const error = await response.json()
+          alert(`Fehler: ${error.error || 'Unbekannter Fehler'}`)
+        }
+      } catch (error) {
+        console.error('Fehler beim Löschen des Admins:', error)
+        alert('Fehler beim Löschen des Admins')
+      }
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -326,7 +408,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
       <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900">
-            Mitarbeiter-Zugänge verwalten
+            Zugangsverwaltung
           </h3>
           <button
             onClick={onClose}
@@ -338,7 +420,34 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setShowAdminManager(false)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                !showAdminManager
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              👥 Mitarbeiter
+            </button>
+            <button
+              onClick={() => setShowAdminManager(true)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                showAdminManager
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🔐 Administratoren
+            </button>
+          </nav>
+        </div>
+
         {/* Neue Hash-ID hinzufügen */}
+        {!showAdminManager && (
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <h4 className="font-semibold text-gray-800 mb-4">Neuen Mitarbeiter-Zugang erstellen</h4>
           
@@ -351,9 +460,27 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 type="text"
                 value={newEntry.hashId}
                 onChange={(e) => setNewEntry(prev => ({ ...prev, hashId: e.target.value }))}
-                placeholder="z.B. emp_mitarbeiter1"
+                placeholder={newEntry.role === 'admin' ? "z.B. admin_mitarbeiter1" : "z.B. emp_mitarbeiter1"}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rolle *
+              </label>
+              <select
+                value={newEntry.role}
+                onChange={(e) => setNewEntry(prev => ({ 
+                  ...prev, 
+                  role: e.target.value as 'employee' | 'admin',
+                  hashId: e.target.value === 'admin' ? newEntry.hashId.replace('emp_', 'admin_') : newEntry.hashId.replace('admin_', 'emp_')
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="employee">👥 Mitarbeiter</option>
+                <option value="admin">🔐 Administrator</option>
+              </select>
             </div>
             
             <div>
@@ -435,8 +562,10 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
             </button>
           </div>
         </div>
+        )}
 
         {/* Hash-Liste anzeigen */}
+        {!showAdminManager && (
         <div className="bg-white rounded-lg border">
           <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
             <h4 className="font-semibold text-gray-800">Aktuelle Mitarbeiter-Zugänge</h4>
@@ -524,6 +653,124 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
             </div>
           )}
         </div>
+        )}
+
+        {/* Admin-Verwaltung */}
+        {showAdminManager && (
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-gray-800 mb-4">Neuen Administrator hinzufügen</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Username *
+              </label>
+              <input
+                type="text"
+                value={newAdmin.username}
+                onChange={(e) => setNewAdmin(prev => ({ ...prev, username: e.target.value }))}
+                placeholder="admin_username"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Passwort *
+              </label>
+              <input
+                type="password"
+                value={newAdmin.password}
+                onChange={(e) => setNewAdmin(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Sicheres Passwort"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name (optional)
+              </label>
+              <input
+                type="text"
+                value={newAdmin.name}
+                onChange={(e) => setNewAdmin(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Admin Name"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={handleAddAdmin}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Administrator hinzufügen
+            </button>
+          </div>
+        </div>
+        )}
+
+        {/* Admin-Liste anzeigen */}
+        {showAdminManager && (
+        <div className="bg-white rounded-lg border">
+          <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h4 className="font-semibold text-gray-800">Aktuelle Administratoren</h4>
+            <div className="flex space-x-2">
+              <button
+                onClick={loadAdminCredentials}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+              >
+                Aktualisieren
+              </button>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Typ</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {adminCredentials.map((admin) => (
+                  <tr key={admin.username} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      {admin.username}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {admin.name || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        admin.isDefault ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {admin.isDefault ? 'Haupt-Admin' : 'Administrator'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm space-x-2">
+                      {!admin.isDefault && (
+                        <button
+                          onClick={() => handleDeleteAdmin(admin.username)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Administrator löschen"
+                        >
+                          Löschen
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        )}
 
         <div className="mt-6 flex justify-end">
           <button
@@ -541,7 +788,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Bulk Mitarbeiter-Zugänge generieren
+                Bulk {bulkRole === 'admin' ? 'Administrator' : 'Mitarbeiter'}-Zugänge generieren
               </h3>
               <button
                 onClick={() => setShowBulkGenerator(false)}
@@ -573,6 +820,23 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Maximal 100 Zugänge auf einmal
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rolle für generierte Zugänge
+                </label>
+                <select
+                  value={bulkRole}
+                  onChange={(e) => setBulkRole(e.target.value as 'employee' | 'admin')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="employee">👥 Mitarbeiter</option>
+                  <option value="admin">🔐 Administrator</option>
+                </select>
+                <p className="text-sm text-gray-500 mt-1">
+                  Alle generierten Zugänge erhalten diese Rolle
                 </p>
               </div>
 
