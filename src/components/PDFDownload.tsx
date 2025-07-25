@@ -287,6 +287,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     )
   }
 
+
+
   const handleDownloadPDF = async () => {
     try {
       console.log('Starting PDF generation...')

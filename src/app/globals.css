@@ -24,3 +24,164 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print Styles für optimale Darstellung beim Ausdrucken */
+@media print {
+  /* Grundlegende Print-Einstellungen */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* PDF-spezifische Einstellungen */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Verstecke nicht-druckbare Elemente */
+  button, 
+  .no-print,
+  [class*="hover:"],
+  [class*="focus:"] {
+    display: none !important;
+  }
+  
+  /* Optimale Seitengröße */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+  
+  /* Hintergrundfarben beibehalten */
+  .bg-gradient-to-r,
+  .bg-blue-50,
+  .bg-indigo-50,
+  .bg-green-50,
+  .bg-orange-50,
+  .bg-purple-50,
+  .bg-emerald-50,
+  .bg-amber-50,
+  .bg-violet-50,
+  .bg-teal-50,
+  .bg-sky-50,
+  .bg-gray-50 {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Schatten entfernen für bessere Lesbarkeit */
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl {
+    box-shadow: none !important;
+  }
+  
+  /* Seitenumbrüche optimieren */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+  
+  /* Header beim Drucken anpassen */
+  header {
+    position: static !important;
+    page-break-after: avoid;
+  }
+  
+  /* Hauptinhalt optimieren */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Karten-Layout für Druck optimieren */
+  .grid {
+    display: block !important;
+  }
+  
+  .md\\:grid-cols-2 > * {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Text-Größen für Druck optimieren */
+  .text-sm {
+    font-size: 11pt !important;
+  }
+  
+  .text-base {
+    font-size: 12pt !important;
+  }
+  
+  .text-lg {
+    font-size: 14pt !important;
+  }
+  
+  .text-xl {
+    font-size: 16pt !important;
+  }
+  
+  .text-2xl {
+    font-size: 18pt !important;
+  }
+  
+  .text-3xl {
+    font-size: 20pt !important;
+  }
+  
+  /* Abstände für Druck optimieren */
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+  
+  .p-8 {
+    padding: 1rem !important;
+  }
+  
+  .mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Gradient-Hintergründe als einfache Farben darstellen */
+  .from-blue-50.to-indigo-50 {
+    background-color: #eff6ff !important;
+  }
+  
+  .from-indigo-50.to-purple-50 {
+    background-color: #eef2ff !important;
+  }
+  
+  .from-green-50.to-emerald-50 {
+    background-color: #f0fdf4 !important;
+  }
+  
+  .from-blue-600.to-purple-600 {
+    background-color: #4f46e5 !important;
+  }
+  
+  .from-green-600.to-emerald-600 {
+    background-color: #059669 !important;
+  }
+  
+  .from-blue-600.to-indigo-600 {
+    background-color: #2563eb !important;
+  }
+}
