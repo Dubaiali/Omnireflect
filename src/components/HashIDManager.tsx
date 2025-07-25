@@ -22,6 +22,9 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [generatedCredentials, setGeneratedCredentials] = useState<Array<{hashId: string, password: string}>>([])
   const [showGeneratedCredentials, setShowGeneratedCredentials] = useState(false)
+  const [showPasswordReset, setShowPasswordReset] = useState(false)
+  const [selectedHashId, setSelectedHashId] = useState<string>('')
+  const [resetPassword, setResetPassword] = useState<string>('')
 
   useEffect(() => {
     if (isOpen) {
@@ -139,6 +142,48 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     if (confirm(`Möchtest du die Hash-ID "${hashId}" wirklich löschen?`)) {
       const updatedEntries = hashEntries.filter(entry => entry.hashId !== hashId)
       await saveHashEntries(updatedEntries)
+    }
+  }
+
+  const handleResetPassword = async (hashId: string) => {
+    setSelectedHashId(hashId)
+    setResetPassword(generatePassword())
+    setShowPasswordReset(true)
+  }
+
+  const confirmPasswordReset = async () => {
+    try {
+      const response = await fetch('/api/hash-list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hashId: selectedHashId,
+          plainPassword: resetPassword,
+          name: hashEntries.find(e => e.hashId === selectedHashId)?.name,
+          department: hashEntries.find(e => e.hashId === selectedHashId)?.department,
+          status: hashEntries.find(e => e.hashId === selectedHashId)?.status || 'pending'
+        }),
+      })
+
+      if (response.ok) {
+        // Lade die aktualisierte Liste
+        await loadHashEntries()
+        
+        // Zeige die neuen Zugangsdaten an
+        setGeneratedCredentials([{ hashId: selectedHashId, password: resetPassword }])
+        setShowGeneratedCredentials(true)
+        setShowPasswordReset(false)
+        
+        alert(`Passwort für ${selectedHashId} wurde erfolgreich zurückgesetzt!`)
+      } else {
+        const error = await response.json()
+        alert(`Fehler: ${error.error || 'Unbekannter Fehler'}`)
+      }
+    } catch (error) {
+      console.error('Fehler beim Zurücksetzen des Passworts:', error)
+      alert('Fehler beim Zurücksetzen des Passworts')
     }
   }
 
@@ -454,8 +499,16 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                       </td>
                       <td className="px-4 py-3 text-sm space-x-2">
                         <button
+                          onClick={() => handleResetPassword(entry.hashId)}
+                          className="text-blue-600 hover:text-blue-900 mr-2"
+                          title="Passwort zurücksetzen"
+                        >
+                          🔄 Passwort
+                        </button>
+                        <button
                           onClick={() => handleDeleteEntry(entry.hashId)}
                           className="text-red-600 hover:text-red-900"
+                          title="Hash-ID löschen"
                         >
                           Löschen
                         </button>
@@ -663,6 +716,119 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md"
               >
                 Schließen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Reset Modal */}
+      {showPasswordReset && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Passwort zurücksetzen
+              </h3>
+              <button
+                onClick={() => setShowPasswordReset(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-blue-800">
+                      Passwort zurücksetzen für: {selectedHashId}
+                    </h3>
+                    <div className="mt-2 text-sm text-blue-700">
+                      <p>
+                        Ein neues Passwort wurde generiert. Nach der Bestätigung wird das alte Passwort überschrieben.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Neues Passwort
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    readOnly
+                  />
+                  <button
+                    onClick={() => setResetPassword(generatePassword())}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                    title="Neues Passwort generieren"
+                  >
+                    🔄
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(resetPassword)
+                      alert('Passwort in die Zwischenablage kopiert!')
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                    title="Passwort kopieren"
+                  >
+                    📋
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Das Passwort wird automatisch generiert und kann angepasst werden.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Wichtiger Hinweis
+                    </h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <p>
+                        Das alte Passwort wird unwiderruflich überschrieben. Stelle sicher, dass du das neue Passwort sicher an den Mitarbeiter weitergegeben hast.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowPasswordReset(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={confirmPasswordReset}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium"
+              >
+                Passwort zurücksetzen
               </button>
             </div>
           </div>
