@@ -348,14 +348,14 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
         {/* Executive Summary */}
         {intro && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-xl shadow-sm">
-            <div className="flex items-center mb-3">
-              <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                          <div className="flex items-center mb-3">
+                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span className="text-lg font-semibold text-blue-900">Deine Zusammenfassung</span>
               </div>
-              <span className="text-lg font-semibold text-blue-900">Executive Summary</span>
-            </div>
             <div className="text-blue-900 leading-relaxed whitespace-pre-line">{intro}</div>
           </div>
         )}

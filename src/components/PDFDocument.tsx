@@ -447,13 +447,13 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
           </View>
         </View>
 
-        {/* Executive Summary */}
-        {intro && (
-          <View style={styles.executiveSummary}>
-            <Text style={styles.executiveSummaryTitle}>Executive Summary</Text>
-            <Text style={styles.executiveSummaryContent}>{intro}</Text>
-          </View>
-        )}
+                 {/* Deine Zusammenfassung */}
+         {intro && (
+           <View style={styles.executiveSummary}>
+             <Text style={styles.executiveSummaryTitle}>Deine Zusammenfassung</Text>
+             <Text style={styles.executiveSummaryContent}>{intro}</Text>
+           </View>
+         )}
 
         {/* Systematische Analyse Header */}
         {categories.length > 0 && (
