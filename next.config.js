@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    esmExternals: false
-  },
-  // Verhindere CSS-Minifizierung für bessere Debugging-Möglichkeiten
-  swcMinify: false,
   // Stelle sicher, dass Tailwind CSS korrekt geladen wird
   webpack: (config, { isServer }) => {
     if (!isServer) {

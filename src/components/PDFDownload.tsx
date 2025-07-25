@@ -690,7 +690,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
           <script>
             // Automatisch Druckdialog öffnen
             window.onload = function() {
-              setTimeout(() => {
+          setTimeout(() => {
                 window.print();
               }, 500);
             };
