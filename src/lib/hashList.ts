@@ -282,6 +282,7 @@ export function validateHash(hashId: string, password: string): HashEntry | null
   const hashList = getHashList()
   
   console.log(`Validierung: HashID=${hashId}, HashList-Länge=${hashList.length}`)
+  console.log(`Eingegebenes Passwort-Hash: ${hashedPassword}`)
   
   const entry = hashList.find(entry => 
     entry.hashId === hashId && entry.password === hashedPassword
@@ -291,6 +292,7 @@ export function validateHash(hashId: string, password: string): HashEntry | null
     console.log(`Validierung erfolgreich für ${hashId}`)
   } else {
     console.log(`Validierung fehlgeschlagen für ${hashId}`)
+    console.log(`Gefundene Einträge mit HashID ${hashId}:`, hashList.filter(e => e.hashId === hashId).map(e => ({ hashId: e.hashId, password: e.password.substring(0, 10) + '...' })))
   }
   
   return entry || null
