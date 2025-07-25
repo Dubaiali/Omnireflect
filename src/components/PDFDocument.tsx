@@ -77,6 +77,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#eef2ff',
     borderColor: '#6366f1'
   },
+  emeraldCard: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#059669'
+  },
+  amberCard: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#d97706'
+  },
+  violetCard: {
+    backgroundColor: '#f5f3ff',
+    borderColor: '#7c3aed'
+  },
+  tealCard: {
+    backgroundColor: '#f0fdfa',
+    borderColor: '#0d9488'
+  },
+  skyCard: {
+    backgroundColor: '#f0f9ff',
+    borderColor: '#0284c7'
+  },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -97,12 +117,28 @@ const styles = StyleSheet.create({
   indigoTitle: {
     color: '#3730a3'
   },
+  emeraldTitle: {
+    color: '#064e3b'
+  },
+  amberTitle: {
+    color: '#78350f'
+  },
+  violetTitle: {
+    color: '#4c1d95'
+  },
+  tealTitle: {
+    color: '#134e4a'
+  },
+  skyTitle: {
+    color: '#0c4a6e'
+  },
   cardContent: {
     fontSize: 12,
-    lineHeight: 1.5
+    lineHeight: 1.5,
+    color: '#374151'
   },
   blueContent: {
-    color: '#1e40af'
+    color: '#1e3a8a'
   },
   greenContent: {
     color: '#065f46'
@@ -116,125 +152,86 @@ const styles = StyleSheet.create({
   indigoContent: {
     color: '#3730a3'
   },
-  numberedItem: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    alignItems: 'flex-start'
+  emeraldContent: {
+    color: '#064e3b'
   },
-  number: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#10b981',
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginRight: 10,
-    marginTop: 2
+  amberContent: {
+    color: '#78350f'
   },
-  bulletItem: {
-    flexDirection: 'row',
-    marginBottom: 6,
-    alignItems: 'flex-start'
+  violetContent: {
+    color: '#4c1d95'
   },
-  bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#8b5cf6',
-    marginRight: 10,
-    marginTop: 6
+  tealContent: {
+    color: '#134e4a'
   },
-  questionsSection: {
-    marginTop: 30
+  skyContent: {
+    color: '#0c4a6e'
   },
-  questionCard: {
+  executiveSummary: {
+    backgroundColor: '#eff6ff',
+    borderLeft: '4px solid #3b82f6',
     padding: 15,
     marginBottom: 20,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    border: '1px solid #e5e7eb'
+    borderRadius: 8
   },
-  questionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  executiveSummaryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e40af',
     marginBottom: 10
   },
-  category: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#3b82f6',
-    backgroundColor: '#dbeafe',
-    padding: '4px 8px',
-    borderRadius: 4
-  },
-  questionNumber: {
-    fontSize: 10,
-    color: '#6b7280'
-  },
-  questionText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 10,
-    lineHeight: 1.4
-  },
-  answerLabel: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 5
-  },
-  answerText: {
+  executiveSummaryContent: {
     fontSize: 12,
-    color: '#374151',
-    backgroundColor: '#f3f4f6',
-    padding: 10,
-    borderRadius: 4,
-    lineHeight: 1.5
+    lineHeight: 1.5,
+    color: '#1e3a8a'
   },
-  followUpSection: {
-    marginTop: 10,
-    padding: 8,
+  recommendations: {
     backgroundColor: '#f0fdf4',
-    borderRadius: 4
+    borderLeft: '4px solid #10b981',
+    padding: 15,
+    marginBottom: 20,
+    borderRadius: 8
   },
-  followUpLabel: {
-    fontSize: 11,
+  recommendationsTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#166534',
-    marginBottom: 5
+    color: '#065f46',
+    marginBottom: 10
   },
-  followUpQuestion: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#166534',
-    marginBottom: 5
+  recommendationsContent: {
+    fontSize: 12,
+    lineHeight: 1.5,
+    color: '#065f46'
   },
-  followUpAnswer: {
-    fontSize: 11,
-    color: '#15803d',
-    fontStyle: 'italic'
+  analysisHeader: {
+    backgroundColor: '#eef2ff',
+    border: '1px solid #6366f1',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 8,
+    textAlign: 'center'
+  },
+  analysisHeaderTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#3730a3'
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between'
+  },
+  gridItem: {
+    width: '48%',
+    marginBottom: 15
   },
   footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    textAlign: 'center',
+    marginTop: 30,
+    paddingTop: 20,
+    borderTop: '1px solid #e5e7eb',
     fontSize: 10,
     color: '#6b7280',
-    borderTop: '1px solid #e5e7eb',
-    paddingTop: 10
-  },
-  pageNumber: {
-    position: 'absolute',
-    bottom: 20,
-    right: 40,
-    fontSize: 10,
-    color: '#6b7280'
+    textAlign: 'center'
   }
 })
 
@@ -256,413 +253,245 @@ interface PDFDocumentProps {
   department: string
 }
 
-const formatSummarySections = (summary: string) => {
-  // Neue Struktur basierend auf dem optimierten Summary-Prompt
-  const sections = summary.split(/\n(?=Einleitung:|Systematische Analyse:|Stolz & persönliche Leistung:|Herausforderungen & Umgang mit Druck:|Verantwortung & Selbstorganisation:|Zusammenarbeit & Feedback:|Entwicklung & Lernen:|Energie & Belastung:|Kultur & Werte:|Entscheidungsspielräume & Freiheit:|Wertschätzung & Gesehenwerden:|Perspektive & Zukunft:|Verbesserungsvorschläge & Ideen:|Rollentausch & Führungsperspektive:|Empfehlungen für dein Mitarbeiterjahresgespräch:)/)
+// Verwende die gleiche parseSummary Funktion wie in PDFDownload.tsx
+const parseSummary = (summary: string) => {
+  if (!summary) return { intro: '', categories: [], recommendations: '' }
+
+  // Einfache Aufteilung nach Zeilenumbrüchen
+  const lines = summary.split('\n').map(line => line.trim()).filter(line => line.length > 0)
   
-  return sections.map((section, index) => {
-    const trimmedSection = section.trim()
-    if (!trimmedSection) return null
-    
-    // Einleitung
-    if (trimmedSection.includes('Einleitung:')) {
-      return {
-        type: 'einleitung',
-        title: 'Einleitung & Überblick',
-        content: trimmedSection.replace(/^Einleitung:/, '').trim(),
-        color: 'blue'
-      }
+  let intro = ''
+  let recommendations = ''
+  const categories: { title: string, content: string }[] = []
+  
+  let currentSection = 'intro'
+  let currentContent = ''
+  let currentTitle = ''
+
+  for (const line of lines) {
+    // Einleitung erkennen
+    if (line.includes('Einleitung:')) {
+      currentSection = 'intro'
+      currentContent = line.replace('Einleitung:', '').trim()
+      continue
     }
     
-    // Systematische Analyse - Überschrift
-    if (trimmedSection.includes('Systematische Analyse:')) {
-      return {
-        type: 'analyse_header',
-        title: 'Systematische Analyse',
-        content: 'Detaillierte Betrachtung aller Reflexionsbereiche',
-        color: 'indigo'
-      }
+    // Systematische Analyse - Überschrift (überspringen)
+    if (line.includes('Systematische Analyse:')) {
+      continue
     }
     
-    // Stolz & persönliche Leistung
-    if (trimmedSection.includes('Stolz & persönliche Leistung:')) {
-      const content = trimmedSection.replace(/^Stolz & persönliche Leistung:/, '').trim()
-      return {
-        type: 'stolz',
-        title: 'Stolz & persönliche Leistung',
-        content: content || '- nicht zu reflektieren -',
-        color: 'green'
+    // Empfehlungen erkennen (verbesserte Erkennung)
+    if (line.includes('EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:') || 
+        line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:') || 
+        line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch') ||
+        line.includes('Empfehlungen für Ihr Mitarbeiterjahresgespräch:') ||
+        line.includes('Empfehlungen für das Mitarbeiterjahresgespräch:')) {
+      if (currentSection === 'category' && currentTitle && currentContent) {
+        categories.push({ title: currentTitle, content: currentContent.trim() })
       }
+      currentSection = 'recommendations'
+      currentContent = line.replace('EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:', '')
+                           .replace('Empfehlungen für dein Mitarbeiterjahresgespräch:', '')
+                           .replace('Empfehlungen für dein Mitarbeiterjahresgespräch', '')
+                           .replace('Empfehlungen für Ihr Mitarbeiterjahresgespräch:', '')
+                           .replace('Empfehlungen für das Mitarbeiterjahresgespräch:', '').trim()
+      continue
     }
     
-    // Herausforderungen
-    if (trimmedSection.includes('Herausforderungen & Umgang mit Druck:')) {
-      const content = trimmedSection.replace(/^Herausforderungen & Umgang mit Druck:/, '').trim()
-      return {
-        type: 'herausforderungen',
-        title: 'Herausforderungen & Umgang mit Druck',
-        content: content || '- nicht zu reflektieren -',
-        color: 'orange'
-      }
-    }
+    // Alle Kategorien erkennen (erweiterte Liste in korrekter Reihenfolge)
+    const categoryTitles = [
+      'Stolz & persönliche Leistung',
+      'Herausforderungen & Umgang mit Druck',
+      'Verantwortung & Selbstorganisation',
+      'Zusammenarbeit & Feedback',
+      'Entwicklung & Lernen',
+      'Energie & Belastung',
+      'Kultur & Werte',
+      'Entscheidungsspielräume & Freiheit',
+      'Wertschätzung & Gesehenwerden',
+      'Perspektive & Zukunft',
+      'Verbesserungsvorschläge & Ideen',
+      'Rollentausch & Führungsperspektive'
+    ]
     
-    // Verantwortung
-    if (trimmedSection.includes('Verantwortung & Selbstorganisation:')) {
-      const content = trimmedSection.replace(/^Verantwortung & Selbstorganisation:/, '').trim()
-      return {
-        type: 'verantwortung',
-        title: 'Verantwortung & Selbstorganisation',
-        content: content || '- nicht zu reflektieren -',
-        color: 'purple'
-      }
-    }
+    // Prüfe, ob die Zeile eine Kategorie enthält (mit oder ohne Doppelpunkt)
+    const matchingCategory = categoryTitles.find(title => 
+      line.includes(title) && (line.endsWith(':') || line.endsWith(title))
+    )
     
-    // Zusammenarbeit
-    if (trimmedSection.includes('Zusammenarbeit & Feedback:')) {
-      const content = trimmedSection.replace(/^Zusammenarbeit & Feedback:/, '').trim()
-      return {
-        type: 'zusammenarbeit',
-        title: 'Zusammenarbeit & Feedback',
-        content: content || '- nicht zu reflektieren -',
-        color: 'blue'
+    if (matchingCategory) {
+      // Vorherige Kategorie speichern
+      if (currentSection === 'category' && currentTitle && currentContent) {
+        categories.push({ title: currentTitle, content: currentContent.trim() })
       }
-    }
-    
-    // Entwicklung
-    if (trimmedSection.includes('Entwicklung & Lernen:')) {
-      const content = trimmedSection.replace(/^Entwicklung & Lernen:/, '').trim()
-      return {
-        type: 'entwicklung',
-        title: 'Entwicklung & Lernen',
-        content: content || '- nicht zu reflektieren -',
-        color: 'green'
-      }
-    }
-    
-    // Energie
-    if (trimmedSection.includes('Energie & Belastung:')) {
-      const content = trimmedSection.replace(/^Energie & Belastung:/, '').trim()
-      return {
-        type: 'energie',
-        title: 'Energie & Belastung',
-        content: content || '- nicht zu reflektieren -',
-        color: 'orange'
-      }
-    }
-    
-    // Kultur & Werte
-    if (trimmedSection.includes('Kultur & Werte:')) {
-      const content = trimmedSection.replace(/^Kultur & Werte:/, '').trim()
-      return {
-        type: 'kultur',
-        title: 'Kultur & Werte',
-        content: content || '- nicht zu reflektieren -',
-        color: 'purple'
-      }
-    }
-    
-    // Entscheidungsspielräume
-    if (trimmedSection.includes('Entscheidungsspielräume & Freiheit:')) {
-      const content = trimmedSection.replace(/^Entscheidungsspielräume & Freiheit:/, '').trim()
-      return {
-        type: 'entscheidungen',
-        title: 'Entscheidungsspielräume & Freiheit',
-        content: content || '- nicht zu reflektieren -',
-        color: 'indigo'
-      }
-    }
-    
-    // Wertschätzung
-    if (trimmedSection.includes('Wertschätzung & Gesehenwerden:')) {
-      const content = trimmedSection.replace(/^Wertschätzung & Gesehenwerden:/, '').trim()
-      return {
-        type: 'wertschaetzung',
-        title: 'Wertschätzung & Gesehenwerden',
-        content: content || '- nicht zu reflektieren -',
-        color: 'green'
-      }
-    }
-    
-    // Perspektive & Zukunft
-    if (trimmedSection.includes('Perspektive & Zukunft:')) {
-      const content = trimmedSection.replace(/^Perspektive & Zukunft:/, '').trim()
-      return {
-        type: 'perspektive',
-        title: 'Perspektive & Zukunft',
-        content: content || '- nicht zu reflektieren -',
-        color: 'blue'
-      }
-    }
-    
-    // Verbesserungsvorschläge & Ideen
-    if (trimmedSection.includes('Verbesserungsvorschläge & Ideen:')) {
-      const content = trimmedSection.replace(/^Verbesserungsvorschläge & Ideen:/, '').trim()
-      return {
-        type: 'verbesserungen',
-        title: 'Verbesserungsvorschläge & Ideen',
-        content: content || '- nicht zu reflektieren -',
-        color: 'indigo'
-      }
-    }
-    
-    // Rollentausch
-    if (trimmedSection.includes('Rollentausch & Führungsperspektive:')) {
-      const content = trimmedSection.replace(/^Rollentausch & Führungsperspektive:/, '').trim()
-      return {
-        type: 'rollentausch',
-        title: 'Rollentausch & Führungsperspektive',
-        content: content || '- nicht zu reflektieren -',
-        color: 'purple'
-      }
-    }
-    
-    // Empfehlungen
-    if (trimmedSection.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:')) {
-      const recommendations = trimmedSection
-        .replace(/^Empfehlungen für dein Mitarbeiterjahresgespräch:/, '')
-        .split(/\n(?=\d+\.|•)/)
-        .filter(item => item.trim())
-        .map(item => item.replace(/^(\d+\.|•)\s*/, '').trim())
-        .filter(Boolean)
       
-      return {
-        type: 'empfehlungen',
-        title: 'Empfehlungen für dein Mitarbeiterjahresgespräch',
-        items: recommendations,
-        color: 'green'
-      }
+      currentSection = 'category'
+      currentTitle = matchingCategory
+      currentContent = ''
+      continue
     }
     
-    return null
-  }).filter(Boolean)
+    // Inhalt zur aktuellen Sektion hinzufügen
+    if (currentSection === 'intro') {
+      intro += (intro ? '\n' : '') + line
+    } else if (currentSection === 'category') {
+      currentContent += (currentContent ? '\n' : '') + line
+    } else if (currentSection === 'recommendations') {
+      recommendations += (recommendations ? '\n' : '') + line
+    }
+  }
+  
+  // Letzte Kategorie speichern
+  if (currentSection === 'category' && currentTitle && currentContent) {
+    categories.push({ title: currentTitle, content: currentContent.trim() })
+  }
+  
+  return { 
+    intro: intro.trim(), 
+    categories, 
+    recommendations: recommendations.trim() 
+  }
 }
 
-  const PDFDocument: React.FC<PDFDocumentProps> = ({ 
-    summary, 
-    questions, 
-    answers, 
-    followUpQuestions, 
-    userName, 
-    department 
-  }) => {
-  const summarySections = formatSummarySections(summary)
-  const currentDate = new Date().toLocaleDateString('de-DE')
-  
-  // Debug-Logging
-  console.log('PDFDocument - Questions:', questions.length)
-  console.log('PDFDocument - Questions data:', questions)
-  console.log('PDFDocument - Answers:', Object.keys(answers).length)
-  console.log('PDFDocument - Answers data:', answers)
-  console.log('PDFDocument - FollowUpQuestions:', Object.keys(followUpQuestions).length)
-  
-  // Gruppiere Fragen für bessere Seitenaufteilung (max. 3 Fragen pro Seite für bessere Lesbarkeit)
-  const questionsPerPage = 3
-  const questionPages = []
-  for (let i = 0; i < questions.length; i += questionsPerPage) {
-    questionPages.push(questions.slice(i, i + questionsPerPage))
+// Farb-Mapping für Kategorien (wie in PDFDownload.tsx)
+const getCategoryColor = (title: string) => {
+  const colorMap: { [key: string]: { card: string, title: string, content: string } } = {
+    'Stolz & persönliche Leistung': {
+      card: 'greenCard',
+      title: 'greenTitle',
+      content: 'greenContent'
+    },
+    'Herausforderungen & Umgang mit Druck': {
+      card: 'orangeCard',
+      title: 'orangeTitle',
+      content: 'orangeContent'
+    },
+    'Verantwortung & Selbstorganisation': {
+      card: 'purpleCard',
+      title: 'purpleTitle',
+      content: 'purpleContent'
+    },
+    'Zusammenarbeit & Feedback': {
+      card: 'blueCard',
+      title: 'blueTitle',
+      content: 'blueContent'
+    },
+    'Entwicklung & Lernen': {
+      card: 'emeraldCard',
+      title: 'emeraldTitle',
+      content: 'emeraldContent'
+    },
+    'Energie & Belastung': {
+      card: 'amberCard',
+      title: 'amberTitle',
+      content: 'amberContent'
+    },
+    'Kultur & Werte': {
+      card: 'violetCard',
+      title: 'violetTitle',
+      content: 'violetContent'
+    },
+    'Entscheidungsspielräume & Freiheit': {
+      card: 'indigoCard',
+      title: 'indigoTitle',
+      content: 'indigoContent'
+    },
+    'Wertschätzung & Gesehenwerden': {
+      card: 'tealCard',
+      title: 'tealTitle',
+      content: 'tealContent'
+    },
+    'Perspektive & Zukunft': {
+      card: 'skyCard',
+      title: 'skyTitle',
+      content: 'skyContent'
+    },
+    'Verbesserungsvorschläge & Ideen': {
+      card: 'indigoCard',
+      title: 'indigoTitle',
+      content: 'indigoContent'
+    },
+    'Rollentausch & Führungsperspektive': {
+      card: 'purpleCard',
+      title: 'purpleTitle',
+      content: 'purpleContent'
+    }
   }
+  return colorMap[title] || {
+    card: 'card',
+    title: 'cardTitle',
+    content: 'cardContent'
+  }
+}
+
+const PDFDocument: React.FC<PDFDocumentProps> = ({ 
+  summary, 
+  questions, 
+  answers, 
+  followUpQuestions, 
+  userName, 
+  department 
+}) => {
+  const { intro, categories, recommendations } = parseSummary(summary)
 
   return (
     <Document>
-      {/* Erste Seite: Zusammenfassung */}
       <Page size="A4" style={styles.page}>
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>OmniReflect</Text>
           <View style={styles.headerInfo}>
-            <Text style={styles.subtitle}>{userName}</Text>
-            <Text style={styles.subtitle}>{department}</Text>
-            <Text style={styles.subtitle}>{currentDate}</Text>
+            <Text style={styles.subtitle}>Zusammenfassung & PDF-Export</Text>
+            <Text style={styles.subtitle}>Generiert am {new Date().toLocaleDateString('de-DE')}</Text>
           </View>
         </View>
-        
-        <Text style={styles.title}>KI-Zusammenfassung</Text>
-        <Text style={styles.subtitle}>Persönliche Entwicklung & Selbstreflexion</Text>
-        
-        {summarySections.map((section, index) => (
-          section && (
-            <View key={index} style={[styles.card, styles[`${section.color}Card` as keyof typeof styles]]}>
-              <Text style={[styles.cardTitle, styles[`${section.color}Title` as keyof typeof styles]]}>
-                {section.title}
-              </Text>
-              
-              {section.type === 'einleitung' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
+
+        {/* Executive Summary */}
+        {intro && (
+          <View style={styles.executiveSummary}>
+            <Text style={styles.executiveSummaryTitle}>Executive Summary</Text>
+            <Text style={styles.executiveSummaryContent}>{intro}</Text>
+          </View>
+        )}
+
+        {/* Systematische Analyse Header */}
+        {categories.length > 0 && (
+          <View style={styles.analysisHeader}>
+            <Text style={styles.analysisHeaderTitle}>Systematische Analyse</Text>
+          </View>
+        )}
+
+        {/* Kategorien Grid */}
+        <View style={styles.gridContainer}>
+          {categories.map((cat, index) => {
+            const color = getCategoryColor(cat.title)
+            return (
+              <View key={index} style={[styles.gridItem, styles[color.card as keyof typeof styles]]}>
+                <Text style={[styles.cardTitle, styles[color.title as keyof typeof styles]]}>
+                  {cat.title}
                 </Text>
-              )}
-              
-              {section.type === 'analyse_header' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
+                <Text style={[styles.cardContent, styles[color.content as keyof typeof styles]]}>
+                  {cat.content}
                 </Text>
-              )}
-              
-              {section.type === 'stolz' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'herausforderungen' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'verantwortung' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'zusammenarbeit' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'entwicklung' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'energie' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'kultur' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'entscheidungen' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'wertschaetzung' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'perspektive' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'verbesserungen' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'rollentausch' && (
-                <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                  {section.content}
-                </Text>
-              )}
-              
-              {section.type === 'empfehlungen' && (
-                <View>
-                  {section.items.map((item, itemIndex) => (
-                    <View key={itemIndex} style={styles.bulletItem}>
-                      <View style={styles.bullet} />
-                      <Text style={[styles.cardContent, styles[`${section.color}Content` as keyof typeof styles]]}>
-                        {item}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          )
-        ))}
-        
+              </View>
+            )
+          })}
+        </View>
+
+        {/* Empfehlungen */}
+        {recommendations && (
+          <View style={styles.recommendations}>
+            <Text style={styles.recommendationsTitle}>Empfehlungen für dein Mitarbeiterjahresgespräch</Text>
+            <Text style={styles.recommendationsContent}>{recommendations}</Text>
+          </View>
+        )}
+
+        {/* Footer */}
         <View style={styles.footer}>
           <Text>Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.</Text>
         </View>
-        
-        <Text style={styles.pageNumber}>1</Text>
       </Page>
-      
-      {/* Weitere Seiten: Fragen und Antworten */}
-      {questions.length > 0 && questionPages.map((pageQuestions, pageIndex) => (
-        <Page key={pageIndex + 1} size="A4" style={styles.page}>
-          <View style={styles.header}>
-            <Text style={styles.logo}>OmniReflect</Text>
-            <View style={styles.headerInfo}>
-              <Text style={styles.subtitle}>{userName}</Text>
-              <Text style={styles.subtitle}>{currentDate}</Text>
-            </View>
-          </View>
-          
-          <View style={styles.questionsSection}>
-            <Text style={styles.sectionTitle}>Fragen und Antworten</Text>
-            
-            {pageQuestions.map((question, questionIndex) => {
-              const answer = answers[question.id]
-              const followUps = followUpQuestions[question.id] || []
-              
-              // Sicherheitsprüfung für question.question (korrekte Feldbezeichnung)
-              const questionText = question.question || question.text || 'Frage nicht verfügbar'
-              console.log(`Rendering question ${question.id}:`, questionText.substring(0, 50) + '...')
-              console.log(`Answer for ${question.id}:`, answer ? (answer.substring ? answer.substring(0, 50) + '...' : 'Invalid answer format') : 'No answer')
-              
-              return (
-                <View key={question.id} style={styles.questionCard}>
-                  <View style={styles.questionHeader}>
-                    <Text style={styles.category}>{question.category}</Text>
-                    <Text style={styles.questionNumber}>
-                      Frage {pageIndex * questionsPerPage + questionIndex + 1}
-                    </Text>
-                  </View>
-                  
-                  <Text style={styles.questionText}>{questionText}</Text>
-                  
-                  {answer ? (
-                    <View>
-                      <Text style={styles.answerLabel}>Antwort:</Text>
-                      <Text style={styles.answerText}>{typeof answer === 'string' ? answer : 'Antwort nicht verfügbar'}</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.answerText}>Nicht beantwortet</Text>
-                  )}
-                  
-                  {followUps.length > 0 && (
-                    <View style={styles.followUpSection}>
-                      <Text style={styles.followUpLabel}>Vertiefende Nachfragen:</Text>
-                      {followUps.map((followUp, followUpIndex) => {
-                        const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
-                        return (
-                          <View key={followUpIndex}>
-                            <Text style={styles.followUpQuestion}>{followUp}</Text>
-                            {followUpAnswer && (
-                              <Text style={styles.followUpAnswer}>{followUpAnswer}</Text>
-                            )}
-                          </View>
-                        )
-                      })}
-                    </View>
-                  )}
-                </View>
-              )
-            })}
-          </View>
-          
-          <View style={styles.footer}>
-            <Text>Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.</Text>
-          </View>
-          
-          <Text style={styles.pageNumber}>{pageIndex + 2}</Text>
-        </Page>
-      ))}
     </Document>
   )
 }
