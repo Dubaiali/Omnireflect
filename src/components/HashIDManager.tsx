@@ -89,6 +89,12 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     return `${prefix}_${timestamp}_${random}`
   }
 
+  const generateAdminUsername = () => {
+    const timestamp = Date.now().toString(36)
+    const random = Math.random().toString(36).substring(2, 6)
+    return `admin_${timestamp}_${random}`
+  }
+
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
     let password = ''
@@ -210,6 +216,14 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
       name: '',
       department: '',
       role: newEntry.role
+    })
+  }
+
+  const handleAutoGenerateAdmin = () => {
+    setNewAdmin({
+      username: generateAdminUsername(),
+      password: generatePassword(),
+      name: ''
     })
   }
 
@@ -702,6 +716,12 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
           </div>
           
           <div className="flex space-x-3">
+            <button
+              onClick={handleAutoGenerateAdmin}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Auto-generieren
+            </button>
             <button
               onClick={handleAddAdmin}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
