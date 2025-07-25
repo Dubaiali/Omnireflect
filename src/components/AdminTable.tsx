@@ -31,28 +31,28 @@ export default function AdminTable() {
   const [showDetails, setShowDetails] = useState(false)
   const [showHashManager, setShowHashManager] = useState(false)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Lade Hash-Liste von der API
-        const hashResponse = await fetch('/api/hash-list')
-        if (hashResponse.ok) {
-          const hashData = await hashResponse.json()
-          if (hashData.success && hashData.hashList) {
-            setData(hashData.hashList.map((entry: HashEntry) => ({
-              ...entry,
-              data: undefined // Für jetzt keine echten Reflexionsdaten
-            })))
-          }
+  const loadData = async () => {
+    try {
+      // Lade Hash-Liste von der API
+      const hashResponse = await fetch('/api/hash-list')
+      if (hashResponse.ok) {
+        const hashData = await hashResponse.json()
+        if (hashData.success && hashData.hashList) {
+          setData(hashData.hashList.map((entry: HashEntry) => ({
+            ...entry,
+            data: undefined // Für jetzt keine echten Reflexionsdaten
+          })))
         }
-      } catch (error) {
-        console.error('Fehler beim Laden der Daten:', error)
-        // Fallback: Verwende getAdminOverview
-        const overview = getAdminOverview()
-        setData(overview)
       }
+    } catch (error) {
+      console.error('Fehler beim Laden der Daten:', error)
+      // Fallback: Verwende getAdminOverview
+      const overview = getAdminOverview()
+      setData(overview)
     }
-    
+  }
+
+  useEffect(() => {
     loadData()
   }, [])
 
@@ -238,7 +238,7 @@ export default function AdminTable() {
             </h2>
             <div className="flex space-x-3">
               <button
-                onClick={() => window.location.reload()}
+                onClick={loadData}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Aktualisieren

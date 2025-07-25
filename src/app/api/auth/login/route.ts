@@ -22,6 +22,18 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Status auf "in_progress" setzen, wenn der Benutzer sich einloggt
+    if (user.status === 'pending') {
+      try {
+        const { updateHashStatus } = await import('@/lib/hashList')
+        updateHashStatus(hashId, 'in_progress')
+        user.status = 'in_progress'
+      } catch (error) {
+        console.error('Fehler beim Aktualisieren des Status:', error)
+        // Fehler beim Status-Update sollte den Login nicht verhindern
+      }
+    }
+    
     // Session-Token generieren
     const sessionData = {
       hashId: user.hashId,

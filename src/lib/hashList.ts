@@ -253,6 +253,21 @@ export function updateHashStatus(hashId: string, status: HashEntry['status']): v
     // Speichere persistent
     savePersistentHashList(dynamicHashList)
     console.log(`Status für ${hashId} auf ${status} aktualisiert`)
+  } else {
+    // Falls der Eintrag nicht in der dynamischen Liste ist, füge ihn hinzu
+    const staticList = getStaticHashList()
+    const staticEntry = staticList.find(entry => entry.hashId === hashId)
+    if (staticEntry) {
+      const newEntry: HashEntry = {
+        ...staticEntry,
+        status: status
+      }
+      dynamicHashList.push(newEntry)
+      savePersistentHashList(dynamicHashList)
+      console.log(`Statischen Eintrag ${hashId} zu dynamischer Liste hinzugefügt und Status auf ${status} gesetzt`)
+    } else {
+      console.warn(`Hash-ID ${hashId} nicht gefunden für Status-Update`)
+    }
   }
 }
 

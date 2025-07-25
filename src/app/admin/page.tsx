@@ -15,6 +15,18 @@ export default function AdminPage() {
   
   const router = useRouter()
 
+  // Prüfe Admin-Authentifizierung beim Laden der Seite
+  useEffect(() => {
+    const adminAuth = localStorage.getItem('adminAuthenticated')
+    if (adminAuth === 'true') {
+      setIsAuthenticated(true)
+      const savedUsername = localStorage.getItem('adminUsername')
+      if (savedUsername) {
+        setUsername(savedUsername)
+      }
+    }
+  }, [])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -31,6 +43,9 @@ export default function AdminPage() {
       const data = await response.json()
       if (response.ok && data.success) {
         setIsAuthenticated(true)
+        // Speichere Admin-Authentifizierung im localStorage
+        localStorage.setItem('adminAuthenticated', 'true')
+        localStorage.setItem('adminUsername', username)
       } else {
         setError(data.error || 'Ungültige Anmeldedaten')
       }
@@ -45,6 +60,9 @@ export default function AdminPage() {
     setIsAuthenticated(false)
     setUsername('')
     setPassword('')
+    // Entferne Admin-Authentifizierung aus localStorage
+    localStorage.removeItem('adminAuthenticated')
+    localStorage.removeItem('adminUsername')
   }
 
   const togglePasswordVisibility = () => {

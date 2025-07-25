@@ -297,6 +297,29 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
       console.log('Progress answers:', Object.keys(progress.answers || {}).length)
       console.log('Role context:', roleContext)
       
+      // Status auf "completed" setzen, wenn PDF heruntergeladen wird
+      try {
+        const { hashId } = useSessionStore.getState()
+        if (hashId) {
+          const response = await fetch('/api/hash-list/update-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ hashId, status: 'completed' }),
+          })
+          
+          if (response.ok) {
+            console.log('Status erfolgreich auf "completed" gesetzt')
+          } else {
+            console.warn('Fehler beim Setzen des Status auf "completed"')
+          }
+        }
+      } catch (error) {
+        console.error('Fehler beim Status-Update:', error)
+        // Fehler beim Status-Update sollte den PDF-Download nicht verhindern
+      }
+      
       // Prüfe ob alle notwendigen Daten vorhanden sind
       if (!summary || summary.trim().length === 0) {
         alert('Keine Zusammenfassung verfügbar. Bitte generiere zuerst eine Zusammenfassung.')
