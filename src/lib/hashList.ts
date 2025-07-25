@@ -120,7 +120,12 @@ export function getHashList(): HashEntry[] {
     dynamicHashList = loadPersistentHashList()
   }
   
-  // Kombiniere statische und dynamische Listen, wobei dynamische Einträge Vorrang haben
+  // Wenn dynamische Einträge vorhanden sind, verwende nur diese
+  if (dynamicHashList.length > 0) {
+    return dynamicHashList
+  }
+  
+  // Fallback: Kombiniere statische und dynamische Listen, wobei dynamische Einträge Vorrang haben
   const staticList = getStaticHashList()
   const dynamicHashIds = new Set(dynamicHashList.map(entry => entry.hashId))
   
