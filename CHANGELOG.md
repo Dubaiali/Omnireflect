@@ -3,164 +3,120 @@
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
-und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
+und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0] - 2025-01-18
+## [4.0.0] - 2024-07-25
 
-### 🎯 **Hauptverbesserung: Authentische Wiedergabe kritischer Äußerungen**
-- **Kritische Äußerungen werden nicht mehr gemildert oder "schön geredet"**
-- **Echte Gefühle und Meinungen werden respektiert und authentisch wiedergegeben**
-- **Beispiel**: "Ich hasse Kunden" bleibt "Ich hasse Kunden" in der Zusammenfassung
+### Hinzugefügt
+- **Komplette Zugangsverwaltung**: Zentrale Verwaltung aller Mitarbeiter-Zugänge
+- **Admin-Dashboard**: Übersicht aller Reflexionen mit Statistik-Karten
+- **Bulk-Generierung**: Massenerstellung von Mitarbeiter-Zugängen (bis zu 100 auf einmal)
+- **Export-Funktionen**: CSV und JSON-Export für externe Verarbeitung
+- **Passwort-Management**: Sichere Passwort-Zurücksetzung mit Auto-Generierung
+- **Admin-Verwaltung**: Mehrere Administrator-Accounts mit verschiedenen Berechtigungen
+- **Passwort-Sichtbarkeit**: Toggle-Funktion für Passwort-Anzeige im Admin-Bereich
+- **Statistik-Dashboard**: Übersicht mit Gesamt-, Abgeschlossen-, In Bearbeitung- und Ausstehend-Zahlen
+- **Verbesserte UI/UX**: Modernes Design mit Tailwind CSS
+- **Auto-Generierung**: Automatische Generierung von Hash-IDs und Passwörtern
+- **Test-Funktionen**: Login-Test für erstellte Zugänge
 
-### 🔒 **Sicherheitsverbesserungen**
-- **PDF.js Vulnerabilität behoben**: `@types/react-pdf` Dependency entfernt
-- **NPM Audit**: 0 Vulnerabilities (vorher 2 High-Severity)
-- **Sicherheits-Score**: 9.5/10 (vorher 9.2/10)
+### Geändert
+- **Admin-Login**: Erweiterte Authentifizierung für mehrere Admin-Accounts
+- **Hash-ID-System**: Verbesserte Generierung mit Präfixen (emp_ für Mitarbeiter, admin_ für Admins)
+- **Datenpersistierung**: Verbesserte Speicherung in JSON-Dateien
+- **API-Struktur**: Erweiterte API-Endpunkte für Admin-Funktionen
+- **Sicherheit**: Verbesserte Passwort-Hashing mit Salt
 
-### 🧹 **Code-Bereinigung**
-- **Nicht benötigte Dateien entfernt**: Test-Dateien, Debug-Dateien, ZIP-Archiv
-- **Gitignore erweitert**: Bessere Abdeckung von temporären und sensiblen Dateien
-- **Dokumentation aktualisiert**: README.md komplett überarbeitet
-
-### 📚 **Dokumentation**
-- **README.md**: Vollständig überarbeitet mit aktueller Version 4.0.0
-- **Struktur bereinigt**: Entfernung veralteter Informationen
-- **Installation vereinfacht**: Klarere Anweisungen für neue Benutzer
-
----
-
-## [3.0.0] - 2025-01-17
-
-### 🎯 **Hauptverbesserung: Du-Form in allen Zusammenfassungen**
-- **Konsistente Du-Form**: Alle Teile der Zusammenfassung verwenden die Du-Form
-- **Persönlichere Ansprache**: Empathischere und direktere Kommunikation
-- **Struktur beibehalten**: PDF-Design und Formatierung bleiben unverändert
-
-### 🔍 **Intelligente Antwortfilterung**
-- **Nur beantwortete Fragen**: Zusammenfassung basiert nur auf tatsächlich beantworteten Fragen
-- **Warnung bei wenigen Antworten**: Benutzer wird informiert, wenn nur wenige Fragen beantwortet wurden
-- **Dynamische Kategorien**: Prompt passt sich an die beantworteten Fragen an
-
-### 🛠️ **Technische Verbesserungen**
-- **Prompt-Optimierung**: Klarere Anweisungen für separate Sektionen
-- **Parsing-Verbesserung**: Robustere Erkennung verschiedener Schreibweisen
-- **Fehlerbehandlung**: Bessere Behandlung von Edge Cases
-
----
-
-## [2.2.3] - 2025-01-16
-
-### 🎯 **Hauptverbesserung: Separate Empfehlungen-Sektion**
-- **Empfehlungen als eigene Sektion**: Nicht mehr Teil von "Rollentausch & Führungsperspektive"
-- **Klare Struktur**: Deutliche Trennung zwischen Analyse und Handlungsimpulsen
-- **Verbesserte Parsing-Logik**: Robuste Erkennung verschiedener Schreibweisen
-
-### 🔧 **Prompt-Optimierung**
-- **Strukturregeln**: Explizite Anweisungen für separate Sektionen
-- **Qualitätskriterien**: Erweiterte Richtlinien für bessere Zusammenfassungen
-- **Kategorien-Mapping**: Dynamische Anpassung basierend auf beantworteten Fragen
-
----
-
-## [2.2.2] - 2025-01-15
-
-### 🐛 **Bugfixes**
-- **Zusammenfassungsgenerierung**: Behebung von Race Conditions
-- **Session-Management**: Verbesserte Synchronisation zwischen Komponenten
-- **Error Handling**: Robustere Fehlerbehandlung bei API-Aufrufen
-
-### 🔧 **Technische Verbesserungen**
-- **State Management**: Optimierte Zustandsverwaltung mit Zustand
-- **API-Responses**: Konsistentere Fehlerbehandlung
-- **Performance**: Reduzierte API-Aufrufe durch besseres Caching
-
----
-
-## [2.2.1] - 2025-01-14
-
-### 🎨 **UI/UX-Verbesserungen**
-- **Farbkodierte Kategorien**: Visuelle Unterscheidung der 12 Reflexionskategorien
-- **Gradient-Designs**: Moderne, ansprechende Benutzeroberfläche
+### Behoben
+- **Session-Management**: Korrekte Session-Behandlung für Admin-Login
+- **Datenvalidierung**: Umfassende Validierung aller Eingaben
+- **Fehlerbehandlung**: Verbesserte Fehlerbehandlung und Benutzer-Feedback
 - **Responsive Design**: Optimierung für verschiedene Bildschirmgrößen
 
-### 🔧 **Technische Verbesserungen**
-- **Komponenten-Struktur**: Bessere Modularisierung
-- **Styling-System**: Konsistente Design-Sprache
-- **Accessibility**: Verbesserte Barrierefreiheit
+### Sicherheit
+- **Admin-Credentials**: Sichere Speicherung von Admin-Zugangsdaten
+- **Passwort-Hashing**: SHA-256 mit Salt für alle Passwörter
+- **Input-Validierung**: Umfassende Validierung und Sanitization
+- **CSRF-Schutz**: Session-basierte Authentifizierung
+
+## [3.0.0] - 2024-07-20
+
+### Hinzugefügt
+- **KI-gestützte Fragengenerierung**: Dynamische Fragen basierend auf Rollenkontext
+- **Rollenkontext-Integration**: Erfassung von Arbeitsbereich, Funktion und Erfahrung
+- **Nachfragen-System**: Intelligente Follow-up-Fragen für vertiefende Reflexion
+- **Automatische Zusammenfassung**: KI-generierte Zusammenfassungen der Reflexionen
+- **Erweiterte Fragen-Kategorien**: 12 verschiedene Kategorien für umfassende Reflexion
+
+### Geändert
+- **Fragen-System**: Von statischen zu dynamischen, kontextuellen Fragen
+- **UI/UX**: Verbesserte Benutzeroberfläche für bessere Benutzererfahrung
+- **Datenstruktur**: Erweiterte Datenmodelle für Rollenkontext und Nachfragen
+
+## [2.0.0] - 2024-07-15
+
+### Hinzugefügt
+- **Session-basierte Authentifizierung**: Sichere Benutzer-Sessions
+- **Hash-ID-System**: Anonyme Benutzeridentifikation
+- **Grundlegende Admin-Funktionen**: Einfache Verwaltung von Zugängen
+- **PDF-Export**: Professioneller Export der Reflexionen
+
+### Geändert
+- **Authentifizierung**: Von einfacher zu session-basierter Authentifizierung
+- **Datenpersistierung**: Verbesserte Datenspeicherung
+
+## [1.0.0] - 2024-07-10
+
+### Hinzugefügt
+- **Basis-Reflexionssystem**: Grundlegende Funktionalität für Mitarbeiterreflexionen
+- **Einfache Fragebögen**: Statische Fragen für Selbstreflexion
+- **PDF-Export**: Grundlegende PDF-Generierung
+- **Responsive Design**: Mobile-freundliche Benutzeroberfläche
 
 ---
 
-## [2.2.0] - 2025-01-13
+## Versionsrichtlinien
 
-### 🧠 **AI-Prompt-Optimierung v2.2**
-- **Interessantere Fragen**: Tiefgründigere Reflexionsfragen
-- **Kontextuelle Anpassung**: Bessere Personalisierung basierend auf Rolle
-- **Verbesserte Nachfragen**: Intelligente Follow-up-Fragen
+- **MAJOR**: Inkompatible API-Änderungen
+- **MINOR**: Neue Funktionalität in rückwärtskompatibler Weise
+- **PATCH**: Rückwärtskompatible Bugfixes
 
-### 🎯 **Neue Features**
-- **12 Reflexionskategorien**: Strukturierte Abdeckung aller wichtigen Bereiche
-- **Dynamische Fragen**: KI-generierte, kontextuelle Fragen
-- **Intelligente Nachfragen**: Basierend auf vorherigen Antworten
+## Bekannte Probleme
 
----
+### Version 4.0.0
+- Keine bekannten kritischen Probleme
+- Empfehlung: Regelmäßige Backups der `data/` Verzeichnisse
 
-## [2.1.0] - 2025-01-12
+### Version 3.0.0
+- ~~KI-Fragen manchmal zu langsam~~ (Behoben in 4.0.0)
+- ~~Rollenkontext nicht immer korrekt gespeichert~~ (Behoben in 4.0.0)
 
-### 🔧 **Bugfixes**
-- **Rollenkontext-Überspringung**: Behebung des Problems beim ersten Laden
-- **Session-Persistierung**: Verbesserte Datenspeicherung
-- **Navigation**: Stabilere Seitenübergänge
+### Version 2.0.0
+- ~~Session-Timeout zu kurz~~ (Behoben in 3.0.0)
+- ~~Hash-ID-Konflikte möglich~~ (Behoben in 4.0.0)
 
-### 🛠️ **Technische Verbesserungen**
-- **State Management**: Optimierte Zustandsverwaltung
-- **Error Handling**: Bessere Fehlerbehandlung
-- **Performance**: Reduzierte Ladezeiten
+## Upgrade-Guide
 
----
+### Von 3.0.0 zu 4.0.0
+1. Backup der bestehenden Daten erstellen
+2. Neue Umgebungsvariablen hinzufügen:
+   ```env
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=OmniAdmin2024!
+   ```
+3. Datenbank-Migration durchführen (automatisch)
+4. Admin-Credentials erstellen
 
-## [2.0.0] - 2025-01-11
+### Von 2.0.0 zu 3.0.0
+1. OpenAI API-Key konfigurieren
+2. Rollenkontext-Daten migrieren
+3. Neue Fragen-Kategorien aktivieren
 
-### 🎯 **Hauptverbesserung: HashID-basiertes Login-System**
-- **Sichere Authentifizierung**: HashID-basiertes Login ohne persönliche Daten
-- **Admin-Dashboard**: HashID-Verwaltung für Administratoren
-- **Anonyme Nutzung**: Maximale Privatsphäre für Benutzer
-
-### 🔒 **Sicherheit**
-- **HashID-System**: Sichere, anonyme Benutzeridentifikation
-- **Admin-Bereich**: Geschützte Verwaltungsoberfläche
-- **Session-Management**: Sichere Session-Verwaltung
-
-### 📊 **Neue Features**
-- **HashID-Manager**: Verwaltung von Benutzer-HashIDs
-- **Admin-Login**: Geschützter Administrationsbereich
-- **CSV-Export**: Export von HashID-Daten
+### Von 1.0.0 zu 2.0.0
+1. Session-Management aktivieren
+2. Hash-ID-System implementieren
+3. Admin-Funktionen einrichten
 
 ---
 
-## [1.0.0] - 2025-01-10
-
-### 🎉 **Erstveröffentlichung**
-- **KI-gestützte Mitarbeiterjahresgespräche**: Grundfunktionalität
-- **Personalisiertes Fragen-System**: Basierend auf Rolle und Kontext
-- **PDF-Export**: Zusammenfassung als PDF
-- **Responsive Design**: Optimiert für alle Geräte
-
-### 🔧 **Grundfunktionen**
-- **Fragengenerierung**: KI-basierte, personalisierte Fragen
-- **Zusammenfassung**: Strukturierte Zusammenfassung der Antworten
-- **PDF-Export**: Professioneller Export der Ergebnisse
-- **Session-Management**: Lokale Datenspeicherung
-
----
-
-## Versionierung
-
-- **Major** (X.0.0): Breaking Changes, neue Hauptfeatures
-- **Minor** (0.X.0): Neue Features, rückwärtskompatibel
-- **Patch** (0.0.X): Bugfixes, kleine Verbesserungen
-
-## Support
-
-Bei Fragen oder Problemen:
-- **GitHub Issues**: https://github.com/Dubaiali/Omnireflect/issues
-- **Dokumentation**: Siehe README.md und TECHNICAL_DOCUMENTATION.md 
+**Hinweis**: Alle Versionen sind vollständig rückwärtskompatibel innerhalb der gleichen Major-Version. 

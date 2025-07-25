@@ -137,6 +137,95 @@ export const adminCredentials = {
   password: process.env.ADMIN_PASSWORD || 'OmniAdmin2024!',
 }
 
+// Admin-Credentials-Verwaltung
+const ADMIN_CREDENTIALS_FILE = path.join(process.cwd(), 'data', 'admin-credentials.json')
+
+interface AdminCredential {
+  username: string
+  password: string
+  name?: string
+  isDefault?: boolean
+}
+
+// Lade Admin-Credentials
+function loadAdminCredentials(): AdminCredential[] {
+  try {
+    ensureDataDirectory()
+    if (fs.existsSync(ADMIN_CREDENTIALS_FILE)) {
+      const data = fs.readFileSync(ADMIN_CREDENTIALS_FILE, 'utf8')
+      const parsed = JSON.parse(data)
+      return Array.isArray(parsed) ? parsed : []
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Admin-Credentials:', error)
+  }
+  
+  // Fallback: Standard-Admin erstellen
+  const defaultAdmin: AdminCredential = {
+    username: adminCredentials.username,
+    password: hashPassword(adminCredentials.password),
+    name: 'Haupt-Administrator',
+    isDefault: true
+  }
+  
+  // Speichere Standard-Admin
+  saveAdminCredentials([defaultAdmin])
+  return [defaultAdmin]
+}
+
+// Speichere Admin-Credentials
+function saveAdminCredentials(admins: AdminCredential[]): void {
+  try {
+    ensureDataDirectory()
+    fs.writeFileSync(ADMIN_CREDENTIALS_FILE, JSON.stringify(admins, null, 2))
+    console.log(`Admin-Credentials gespeichert: ${admins.length} Admins`)
+  } catch (error) {
+    console.error('Fehler beim Speichern der Admin-Credentials:', error)
+  }
+}
+
+// Admin-Credentials abrufen
+export function getAdminCredentials(): AdminCredential[] {
+  return loadAdminCredentials()
+}
+
+// Admin-Credential hinzufügen
+export function addAdminCredential(admin: { username: string; plainPassword: string; name?: string }): void {
+  const admins = loadAdminCredentials()
+  
+  const newAdmin: AdminCredential = {
+    username: admin.username,
+    password: hashPassword(admin.plainPassword),
+    name: admin.name || admin.username
+  }
+  
+  // Prüfe auf Duplikate
+  const existingIndex = admins.findIndex(a => a.username === admin.username)
+  if (existingIndex >= 0) {
+    admins[existingIndex] = newAdmin
+  } else {
+    admins.push(newAdmin)
+  }
+  
+  saveAdminCredentials(admins)
+  console.log(`Admin ${admin.username} hinzugefügt/aktualisiert`)
+}
+
+// Admin-Credential entfernen
+export function removeAdminCredential(username: string): boolean {
+  const admins = loadAdminCredentials()
+  const initialLength = admins.length
+  const filteredAdmins = admins.filter(admin => admin.username !== username)
+  const removed = initialLength !== filteredAdmins.length
+  
+  if (removed) {
+    saveAdminCredentials(filteredAdmins)
+    console.log(`Admin ${username} entfernt`)
+  }
+  
+  return removed
+}
+
 export function validateHash(hashId: string, password: string): HashEntry | null {
   const hashedPassword = hashPassword(password)
   const hashList = getHashList()
@@ -167,9 +256,13 @@ export function updateHashStatus(hashId: string, status: HashEntry['status']): v
   }
 }
 
-// Admin-Validierung (vereinfacht - nur für Haupt-Admin)
+// Admin-Validierung (erweitert - unterstützt mehrere Admins)
 export function validateAdmin(username: string, password: string): boolean {
-  return username === adminCredentials.username && password === adminCredentials.password
+  const admins = getAdminCredentials()
+  const hashedPassword = hashPassword(password)
+  
+  const admin = admins.find(a => a.username === username && a.password === hashedPassword)
+  return !!admin
 }
 
 // Debug-Funktion

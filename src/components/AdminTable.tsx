@@ -32,8 +32,28 @@ export default function AdminTable() {
   const [showHashManager, setShowHashManager] = useState(false)
 
   useEffect(() => {
-    const overview = getAdminOverview()
-    setData(overview)
+    const loadData = async () => {
+      try {
+        // Lade Hash-Liste von der API
+        const hashResponse = await fetch('/api/hash-list')
+        if (hashResponse.ok) {
+          const hashData = await hashResponse.json()
+          if (hashData.success && hashData.hashList) {
+            setData(hashData.hashList.map((entry: HashEntry) => ({
+              ...entry,
+              data: undefined // Für jetzt keine echten Reflexionsdaten
+            })))
+          }
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Daten:', error)
+        // Fallback: Verwende getAdminOverview
+        const overview = getAdminOverview()
+        setData(overview)
+      }
+    }
+    
+    loadData()
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -145,18 +165,91 @@ export default function AdminTable() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {/* Statistik-Karten */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Gesamt</p>
+              <p className="text-2xl font-semibold text-gray-900">{data.length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Abgeschlossen</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {data.filter(entry => entry.status === 'completed').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">In Bearbeitung</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {data.filter(entry => entry.status === 'in_progress').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Ausstehend</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {data.filter(entry => entry.status === 'pending').length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-800">
               Übersicht aller Reflexionen
             </h2>
-            <button
-              onClick={() => setShowHashManager(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Hash-IDs verwalten
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Aktualisieren
+              </button>
+              <button
+                onClick={() => setShowHashManager(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Hash-IDs verwalten
+              </button>
+            </div>
           </div>
         </div>
 
@@ -168,16 +261,13 @@ export default function AdminTable() {
                   Hash-ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Arbeitsbereiche
+                  Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Funktion
+                  Abteilung
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Erstellt am
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Letzter Zugriff
@@ -191,23 +281,20 @@ export default function AdminTable() {
               {data.map((entry) => (
                 <tr key={entry.hashId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {entry.hashId}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    <div className="max-w-xs truncate">
-                      {entry.data?.roleContext?.workAreas.join(', ') || entry.department || '-'}
+                    <div className="font-mono text-xs">
+                      {entry.hashId}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {entry.data?.roleContext?.functions.join(', ') || '-'}
+                    {entry.name || '-'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {entry.department || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
                       {getStatusText(entry.status)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(entry.data?.lastUpdated)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(entry.lastAccess)}
