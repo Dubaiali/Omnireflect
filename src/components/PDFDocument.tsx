@@ -242,7 +242,7 @@ interface PDFDocumentProps {
   summary: string
   questions: Array<{
     id: string
-    text: string
+    question: string
     category: string
   }>
   answers: Record<string, string>
@@ -448,8 +448,15 @@ const formatSummarySections = (summary: string) => {
   const summarySections = formatSummarySections(summary)
   const currentDate = new Date().toLocaleDateString('de-DE')
   
-  // Gruppiere Fragen für bessere Seitenaufteilung (max. 4 Fragen pro Seite)
-  const questionsPerPage = 4
+  // Debug-Logging
+  console.log('PDFDocument - Questions:', questions.length)
+  console.log('PDFDocument - Questions data:', questions)
+  console.log('PDFDocument - Answers:', Object.keys(answers).length)
+  console.log('PDFDocument - Answers data:', answers)
+  console.log('PDFDocument - FollowUpQuestions:', Object.keys(followUpQuestions).length)
+  
+  // Gruppiere Fragen für bessere Seitenaufteilung (max. 3 Fragen pro Seite für bessere Lesbarkeit)
+  const questionsPerPage = 3
   const questionPages = []
   for (let i = 0; i < questions.length; i += questionsPerPage) {
     questionPages.push(questions.slice(i, i + questionsPerPage))
@@ -586,7 +593,7 @@ const formatSummarySections = (summary: string) => {
       </Page>
       
       {/* Weitere Seiten: Fragen und Antworten */}
-      {questionPages.map((pageQuestions, pageIndex) => (
+      {questions.length > 0 && questionPages.map((pageQuestions, pageIndex) => (
         <Page key={pageIndex + 1} size="A4" style={styles.page}>
           <View style={styles.header}>
             <Text style={styles.logo}>OmniReflect</Text>
@@ -603,6 +610,11 @@ const formatSummarySections = (summary: string) => {
               const answer = answers[question.id]
               const followUps = followUpQuestions[question.id] || []
               
+              // Sicherheitsprüfung für question.question (korrekte Feldbezeichnung)
+              const questionText = question.question || question.text || 'Frage nicht verfügbar'
+              console.log(`Rendering question ${question.id}:`, questionText.substring(0, 50) + '...')
+              console.log(`Answer for ${question.id}:`, answer ? (answer.substring ? answer.substring(0, 50) + '...' : 'Invalid answer format') : 'No answer')
+              
               return (
                 <View key={question.id} style={styles.questionCard}>
                   <View style={styles.questionHeader}>
@@ -612,12 +624,12 @@ const formatSummarySections = (summary: string) => {
                     </Text>
                   </View>
                   
-                  <Text style={styles.questionText}>{question.text}</Text>
+                  <Text style={styles.questionText}>{questionText}</Text>
                   
                   {answer ? (
                     <View>
                       <Text style={styles.answerLabel}>Antwort:</Text>
-                      <Text style={styles.answerText}>{answer}</Text>
+                      <Text style={styles.answerText}>{typeof answer === 'string' ? answer : 'Antwort nicht verfügbar'}</Text>
                     </View>
                   ) : (
                     <Text style={styles.answerText}>Nicht beantwortet</Text>

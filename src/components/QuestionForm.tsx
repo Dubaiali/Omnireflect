@@ -669,19 +669,6 @@ export default function QuestionForm() {
         )}
         
         {currentQuestionIndex === 0 && <div></div>} {/* Spacer für erste Frage */}
-        
-        {/* Weiter-Button nur anzeigen, wenn es nicht die letzte Frage ist */}
-        {currentQuestionIndex < questions.length - 1 && (
-          <button
-            onClick={() => navigateToQuestion(currentQuestionIndex + 1)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200"
-          >
-            <span>Weiter</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Aktuelle Frage */}
@@ -773,7 +760,7 @@ export default function QuestionForm() {
                       [index]: e.target.value
                     })}
                     className={`w-full h-16 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      hasAnswer ? 'border-green-400 bg-green-50' : 'border-green-300'
+                      hasAnswer ? 'border-green-400 bg-white' : 'border-green-300 bg-white'
                     }`}
                     placeholder="Deine Antwort..."
                   />

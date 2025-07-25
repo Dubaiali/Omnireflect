@@ -316,6 +316,11 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
         
         console.log('PDF components loaded successfully')
         console.log('Generating PDF blob...')
+        console.log('Questions count:', storedQuestions?.length)
+        console.log('Questions data:', storedQuestions)
+        console.log('Answers count:', Object.keys(progress.answers || {}).length)
+        console.log('Answers data:', progress.answers)
+        console.log('Follow-up questions count:', Object.keys(progress.followUpQuestions || {}).length)
         
         const blob = await pdf(
           <PDFDocument
