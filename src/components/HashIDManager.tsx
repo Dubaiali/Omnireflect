@@ -176,7 +176,11 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
         setShowGeneratedCredentials(true)
         setShowPasswordReset(false)
         
-        alert(`Passwort für ${selectedHashId} wurde erfolgreich zurückgesetzt!`)
+        // Reset der Formular-Felder
+        setSelectedHashId('')
+        setResetPassword('')
+        
+        alert(`Passwort für ${selectedHashId} wurde erfolgreich gespeichert!`)
       } else {
         const error = await response.json()
         alert(`Fehler: ${error.error || 'Unbekannter Fehler'}`)
@@ -690,7 +694,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {generatedCredentials.map((cred, index) => (
-                      <tr key={cred.hashId} className="hover:bg-gray-50">
+                      <tr key={`${cred.hashId}-${index}`} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
                           {index + 1}
                         </td>
@@ -828,7 +832,7 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
                 onClick={confirmPasswordReset}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium"
               >
-                Passwort zurücksetzen
+                Passwort speichern
               </button>
             </div>
           </div>

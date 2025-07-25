@@ -75,7 +75,15 @@ export function getHashList(): HashEntry[] {
   if (dynamicHashList.length === 0) {
     dynamicHashList = loadPersistentHashList()
   }
-  return [...getStaticHashList(), ...dynamicHashList]
+  
+  // Kombiniere statische und dynamische Listen, wobei dynamische Einträge Vorrang haben
+  const staticList = getStaticHashList()
+  const dynamicHashIds = new Set(dynamicHashList.map(entry => entry.hashId))
+  
+  // Füge nur statische Einträge hinzu, die nicht in der dynamischen Liste existieren
+  const uniqueStaticEntries = staticList.filter(entry => !dynamicHashIds.has(entry.hashId))
+  
+  return [...uniqueStaticEntries, ...dynamicHashList]
 }
 
 // Neue Hash-ID hinzufügen
