@@ -5,6 +5,7 @@ import path from 'path'
 interface SummaryData {
   hashId: string
   summary: string
+  htmlContent?: string
   roleContext?: {
     firstName: string
     lastName: string
@@ -14,6 +15,8 @@ interface SummaryData {
     customerContact: string
     dailyTasks: string
   }
+  answers?: Record<string, string>
+  followUpQuestions?: Record<string, string[]>
   completedAt: string
 }
 
@@ -55,7 +58,7 @@ function saveSummaries(summaries: Record<string, SummaryData>): void {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { hashId, summary, roleContext } = body
+    const { hashId, summary, htmlContent, roleContext, answers, followUpQuestions } = body
     
     if (!hashId || !summary) {
       return NextResponse.json(
@@ -71,7 +74,10 @@ export async function POST(request: NextRequest) {
     summaries[hashId] = {
       hashId,
       summary,
+      htmlContent,
       roleContext,
+      answers,
+      followUpQuestions,
       completedAt: new Date().toISOString()
     }
     

@@ -287,6 +287,23 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     }
   }, [initialSummary, summary])
 
+  // HTML-Export nach dem Rendering der Zusammenfassung
+  useEffect(() => {
+    if (summary) {
+      // Kurze Verzögerung um sicherzustellen, dass das DOM gerendert ist
+      const timer = setTimeout(() => {
+        const htmlContent = exportSummaryHTML()
+        if (htmlContent) {
+          console.log('HTML-Inhalt exportiert:', htmlContent.length, 'Zeichen')
+          // Automatisch speichern wenn HTML verfügbar ist
+          handleSaveSummary(summary)
+        }
+      }, 100)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [summary])
+
   const handleGenerateSummary = async () => {
     setIsGenerating(true)
     try {
@@ -297,11 +314,61 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
         storedQuestions || undefined
       )
       setSummary(generatedSummary)
+      
+      // Automatisch speichern nach der Generierung
+      await handleSaveSummary(generatedSummary)
     } catch (error) {
       console.error('Fehler bei der Zusammenfassungsgenerierung:', error)
       setSummary('Es gab einen Fehler bei der Generierung der Zusammenfassung.')
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  // Funktion zum Exportieren des HTML-Inhalts
+  const exportSummaryHTML = () => {
+    const summaryRoot = document.getElementById('summary-root')
+    if (summaryRoot) {
+      return summaryRoot.outerHTML
+    }
+    return null
+  }
+
+  // Neue Funktion für das Speichern der Zusammenfassung
+  const handleSaveSummary = async (summaryToSave: string) => {
+    try {
+      const { hashId } = useSessionStore.getState()
+      if (hashId && summaryToSave) {
+        console.log('Automatisches Speichern der Zusammenfassung...')
+        
+        // HTML-Inhalt exportieren
+        const htmlContent = exportSummaryHTML()
+        
+        // Zusammenfassung auf Server speichern
+        const summaryResponse = await fetch('/api/hash-list/save-summary', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            hashId, 
+            summary: summaryToSave,
+            htmlContent: htmlContent,
+            roleContext,
+            answers: progress.answers,
+            followUpQuestions: progress.followUpQuestions
+          }),
+        })
+        
+        if (summaryResponse.ok) {
+          console.log('Zusammenfassung erfolgreich auf Server gespeichert')
+        } else {
+          console.warn('Fehler beim Speichern der Zusammenfassung auf Server')
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern der Zusammenfassung:', error)
+      // Fehler beim Speichern sollte die Anzeige nicht verhindern
     }
   }
 
@@ -465,48 +532,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     try {
       console.log('Starting print version generation...')
       
-      // Status auf "completed" setzen und Zusammenfassung speichern, wenn PDF heruntergeladen wird
-      try {
-        const { hashId } = useSessionStore.getState()
-        if (hashId) {
-          // Status auf "completed" setzen
-          const statusResponse = await fetch('/api/hash-list/update-status', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ hashId, status: 'completed' }),
-          })
-          
-          if (statusResponse.ok) {
-            console.log('Status erfolgreich auf "completed" gesetzt')
-          } else {
-            console.warn('Fehler beim Setzen des Status auf "completed"')
-          }
-          
-          // Zusammenfassung auf Server speichern
-          const summaryResponse = await fetch('/api/hash-list/save-summary', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              hashId, 
-              summary,
-              roleContext 
-            }),
-          })
-          
-          if (summaryResponse.ok) {
-            console.log('Zusammenfassung erfolgreich auf Server gespeichert')
-          } else {
-            console.warn('Fehler beim Speichern der Zusammenfassung auf Server')
-          }
-        }
-      } catch (error) {
-        console.error('Fehler beim Status-Update oder Zusammenfassung-Speicherung:', error)
-        // Fehler beim Status-Update sollte den PDF-Download nicht verhindern
-      }
+      // Speicherung erfolgt bereits automatisch beim Generieren der Zusammenfassung
+      // Hier nur noch PDF-Download durchführen
       
       // Prüfe ob alle notwendigen Daten vorhanden sind
       if (!summary || summary.trim().length === 0) {
@@ -739,9 +766,9 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              <span>Druckversion öffnen</span>
+              <span>Meine Zusammenfassung speichern</span>
             </button>
             <button
               onClick={() => {
@@ -756,7 +783,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              <span>Zurück zu Fragen</span>
+              <span>Zurück zu den Fragen</span>
             </button>
           </div>
 
@@ -778,7 +805,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <span className="text-sm text-blue-800">Lade das PDF herunter und speichere es sicher</span>
+                  <span className="text-sm text-blue-800">Lade deine Zusammenfassung als PDF herunter</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="bg-green-100 p-1 rounded-full mt-0.5">
@@ -902,7 +929,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
           )}
 
           {summary && (
-            <div className="space-y-8">
+            <div id="summary-root" className="space-y-8">
               {renderSummary(summary)}
             </div>
           )}

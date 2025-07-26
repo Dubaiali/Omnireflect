@@ -346,7 +346,7 @@ export default function QuestionForm() {
     }
   }
 
-  const handleFollowUpSubmit = () => {
+  const handleFollowUpSubmit = async () => {
     if (!currentQuestion) return
     
     // Speichere Follow-up-Antworten
@@ -364,9 +364,43 @@ export default function QuestionForm() {
       // Follow-ups werden automatisch durch useEffect geladen
       nextStep()
     } else {
-      // Alle Fragen beantwortet - zur Zusammenfassung
-      router.push('/summary')
+      // Alle Fragen beantwortet - zur Zusammenfassung mit automatischer Speicherung
+      await handleSaveAndNavigateToSummary()
     }
+  }
+
+  // Neue Funktion für automatische Speicherung beim Navigieren zur Zusammenfassung
+  const handleSaveAndNavigateToSummary = async () => {
+    try {
+      const { hashId } = useSessionStore.getState()
+      if (hashId) {
+        console.log('Automatische Speicherung beim Navigieren zur Zusammenfassung...')
+        
+        // Status auf "completed" setzen
+        const statusResponse = await fetch('/api/hash-list/update-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ hashId, status: 'completed' }),
+        })
+        
+        if (statusResponse.ok) {
+          console.log('Status erfolgreich auf "completed" gesetzt')
+        } else {
+          console.warn('Fehler beim Setzen des Status auf "completed"')
+        }
+        
+        // Zusammenfassung wird später auf der Summary-Seite generiert und gespeichert
+        // Hier setzen wir nur den Status
+      }
+    } catch (error) {
+      console.error('Fehler bei der automatischen Speicherung:', error)
+      // Fehler sollte die Navigation nicht verhindern
+    }
+    
+    // Navigiere zur Zusammenfassung
+    router.push('/summary')
   }
 
   const handleSkipToSummary = () => {
@@ -595,7 +629,7 @@ export default function QuestionForm() {
               
               {/* Zusammenfassung Button */}
               <button
-                onClick={() => allQuestionsAnswered && router.push('/summary')}
+                onClick={() => allQuestionsAnswered && handleSaveAndNavigateToSummary()}
                 disabled={!allQuestionsAnswered}
                 className={`
                   w-8 h-8 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-center
@@ -605,7 +639,7 @@ export default function QuestionForm() {
                   }
                 `}
                 title={allQuestionsAnswered 
-                  ? "Zur Zusammenfassung (alle Fragen beantwortet)" 
+                  ? "Zur Zusammenfassung (alle Fragen beantwortet) - wird automatisch gespeichert" 
                   : `Zur Zusammenfassung (${answeredQuestionsCount}/${totalQuestionsCount} Fragen beantwortet) - erst verfügbar wenn alle Fragen beantwortet sind`
                 }
               >
