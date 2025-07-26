@@ -289,6 +289,7 @@ export default function AdminTable() {
   const [selectedEntry, setSelectedEntry] = useState<AdminTableData | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [showHashManager, setShowHashManager] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
   const loadData = async () => {
     try {
@@ -390,6 +391,29 @@ export default function AdminTable() {
     }
     setSelectedSummary(entry)
     setShowSummary(true)
+    // Reset expanded categories when opening a new summary
+    setExpandedCategories(new Set())
+  }
+
+  const toggleCategory = (title: string) => {
+    const newExpanded = new Set(expandedCategories)
+    if (newExpanded.has(title)) {
+      newExpanded.delete(title)
+    } else {
+      newExpanded.add(title)
+    }
+    setExpandedCategories(newExpanded)
+  }
+
+  const expandAllCategories = () => {
+    if (selectedSummary?.data?.summary) {
+      const { categories } = parseSummary(selectedSummary.data.summary)
+      setExpandedCategories(new Set(categories.map(cat => cat.title)))
+    }
+  }
+
+  const collapseAllCategories = () => {
+    setExpandedCategories(new Set())
   }
 
   return (
@@ -702,75 +726,186 @@ export default function AdminTable() {
                 </div>
               )}
               
-              {/* Exakte HTML-Ansicht der Zusammenfassung */}
-              {selectedSummary.data?.htmlContent ? (
-                <div className="space-y-8">
-                  {/* Gespeichertes HTML anzeigen */}
-                  <div 
-                    className="summary-html-content"
-                    dangerouslySetInnerHTML={{ __html: selectedSummary.data.htmlContent }}
-                  />
+              {/* Strukturierte Darstellung der Zusammenfassung mit Ausklapp-Funktionalität */}
+              <div className="space-y-8">
+                {(() => {
+                  const { intro, categories, recommendations } = parseSummary(selectedSummary.data?.summary || '')
                   
-                  {/* Fragen und Antworten */}
-                  {selectedSummary.data.answers && Object.keys(selectedSummary.data.answers).length > 0 && (
-                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-6 shadow-sm">
-                      <div className="flex items-center mb-6">
-                        <div className="bg-gray-100 p-2 rounded-lg mr-3">
-                          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
+                  return (
+                    <>
+                      {/* Executive Summary */}
+                      {intro && (
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-xl shadow-sm">
+                          <div className="flex items-center mb-3">
+                            <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <span className="text-lg font-semibold text-blue-900">Deine Zusammenfassung</span>
+                          </div>
+                          <div className="text-blue-900 leading-relaxed whitespace-pre-line">{intro}</div>
                         </div>
-                        <span className="text-lg font-semibold text-gray-900">Fragen und Antworten</span>
-                      </div>
+                      )}
                       
-                      <div className="space-y-6">
-                        {Object.entries(selectedSummary.data.answers).map(([questionId, answer], index) => {
-                          const followUps = selectedSummary.data.followUpQuestions?.[questionId] || []
+                      {/* Systematische Analyse Header */}
+                      {categories.length > 0 && (
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                              </div>
+                              <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={expandAllCategories}
+                                className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                              >
+                                Alle öffnen
+                              </button>
+                              <button
+                                onClick={collapseAllCategories}
+                                className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                              >
+                                Alle schließen
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Kategorien Grid */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {categories.map(cat => {
+                          const color = getCategoryColor(cat.title)
+                          const isExpanded = expandedCategories.has(cat.title)
                           
                           return (
-                            <div key={questionId} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                              <div className="flex justify-between items-center mb-3">
-                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                  Frage {index + 1}
-                                </span>
-                                <span className="text-gray-500 text-sm">
-                                  ID: {questionId}
-                                </span>
-                              </div>
-                              
-                              <div className="mb-3">
-                                <span className="font-semibold text-gray-700 text-sm">Antwort:</span>
-                                <div className="bg-gray-50 p-3 rounded border mt-1 text-gray-700 whitespace-pre-line">
-                                  {answer}
-                                </div>
-                              </div>
-                              
-                              {followUps.length > 0 && (
-                                <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
-                                  <span className="font-semibold text-green-700 text-sm">Vertiefende Nachfragen:</span>
-                                  {followUps.map((followUp, followUpIndex) => {
-                                    const followUpAnswer = selectedSummary.data.answers?.[`${questionId}_followup_${followUpIndex}`]
-                                    return (
-                                      <div key={followUpIndex} className="mt-2">
-                                        <div className="font-medium text-green-700 text-sm">{followUp}</div>
-                                        {followUpAnswer && (
-                                          <div className="text-green-600 italic text-sm mt-1 bg-white p-2 rounded border">
-                                            {followUpAnswer}
-                                          </div>
-                                        )}
+                            <div key={cat.title} className={`border rounded-xl shadow-sm overflow-hidden transition-all duration-300 ${color.bg} ${color.border} hover:shadow-md`}>
+                              <button
+                                onClick={() => toggleCategory(cat.title)}
+                                className="w-full p-5 text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`p-2 rounded-lg ${color.bg.replace('50', '100')}`}>
+                                      <div className={color.title}>
+                                        {getCategoryIcon(cat.title)}
                                       </div>
-                                    )
-                                  })}
+                                    </div>
+                                    <div>
+                                      <h3 className={`text-base font-bold ${color.title}`}>
+                                        {cat.title}
+                                      </h3>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {isExpanded ? 'Klicken zum Schließen' : 'Klicken zum Öffnen'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </div>
                                 </div>
-                              )}
+                              </button>
+                              
+                              {/* Expandable Content */}
+                              <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                                isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                              }`}>
+                                <div className="px-5 pb-5">
+                                  <div className={`whitespace-pre-line leading-relaxed ${color.text} text-sm`}>
+                                    {cat.content}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           )
                         })}
                       </div>
+                      
+                      {/* Empfehlungen */}
+                      {recommendations && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-6 rounded-xl shadow-sm">
+                          <div className="flex items-center mb-3">
+                            <div className="bg-green-100 p-2 rounded-lg mr-3">
+                              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <span className="text-lg font-semibold text-green-900">Empfehlungen für dein Mitarbeiterjahresgespräch</span>
+                          </div>
+                          <div className="text-green-900 leading-relaxed whitespace-pre-line">{recommendations}</div>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+                
+                {/* Fragen und Antworten */}
+                {selectedSummary.data.answers && Object.keys(selectedSummary.data.answers).length > 0 && (
+                  <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center mb-6">
+                      <div className="bg-gray-100 p-2 rounded-lg mr-3">
+                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <span className="text-lg font-semibold text-gray-900">Fragen und Antworten</span>
                     </div>
-                  )}
-                </div>
-              ) : (
+                    
+                    <div className="space-y-6">
+                      {Object.entries(selectedSummary.data.answers).map(([questionId, answer], index) => {
+                        const followUps = selectedSummary.data.followUpQuestions?.[questionId] || []
+                        
+                        return (
+                          <div key={questionId} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                Frage {index + 1}
+                              </span>
+                              <span className="text-gray-500 text-sm">
+                                ID: {questionId}
+                              </span>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <span className="font-semibold text-gray-700 text-sm">Antwort:</span>
+                              <div className="bg-gray-50 p-3 rounded border mt-1 text-gray-700 whitespace-pre-line">
+                                {answer}
+                              </div>
+                            </div>
+                            
+                            {followUps.length > 0 && (
+                              <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+                                <span className="font-semibold text-green-700 text-sm">Vertiefende Nachfragen:</span>
+                                {followUps.map((followUp, followUpIndex) => {
+                                  const followUpAnswer = selectedSummary.data.answers?.[`${questionId}_followup_${followUpIndex}`]
+                                  return (
+                                    <div key={followUpIndex} className="mt-2">
+                                      <div className="font-medium text-green-700 text-sm">{followUp}</div>
+                                      {followUpAnswer && (
+                                        <div className="text-green-600 italic text-sm mt-1 bg-white p-2 rounded border">
+                                          {followUpAnswer}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
                 /* Fallback: Alte Darstellung wenn kein HTML gespeichert ist */
                 <div className="space-y-8">
                   {(() => {
@@ -850,13 +985,29 @@ export default function AdminTable() {
                         {/* Systematische Analyse Header */}
                         {categories.length > 0 && (
                           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
-                            <div className="flex items-center justify-center">
-                              <div className="bg-indigo-100 p-2 rounded-lg mr-3">
-                                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                  </svg>
+                                </div>
+                                <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
                               </div>
-                              <span className="text-lg font-semibold text-indigo-900">Systematische Analyse</span>
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={expandAllCategories}
+                                  className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                                >
+                                  Alle öffnen
+                                </button>
+                                <button
+                                  onClick={collapseAllCategories}
+                                  className="px-3 py-1 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+                                >
+                                  Alle schließen
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -865,24 +1016,46 @@ export default function AdminTable() {
                         <div className="grid md:grid-cols-2 gap-6">
                           {categories.map(cat => {
                             const color = getCategoryColor(cat.title)
+                            const isExpanded = expandedCategories.has(cat.title)
                             
                             return (
-                              <div key={cat.title} className={`border rounded-xl shadow-sm overflow-hidden ${color.bg} ${color.border} hover:shadow-md`}>
-                                <div className="p-5">
-                                  <div className="flex items-center space-x-3 mb-3">
-                                    <div className={`p-2 rounded-lg ${color.bg.replace('50', '100')}`}>
-                                      <div className={color.title}>
-                                        {getCategoryIcon(cat.title)}
+                              <div key={cat.title} className={`border rounded-xl shadow-sm overflow-hidden transition-all duration-300 ${color.bg} ${color.border} hover:shadow-md`}>
+                                <button
+                                  onClick={() => toggleCategory(cat.title)}
+                                  className="w-full p-5 text-left focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`p-2 rounded-lg ${color.bg.replace('50', '100')}`}>
+                                        <div className={color.title}>
+                                          {getCategoryIcon(cat.title)}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h3 className={`text-base font-bold ${color.title}`}>
+                                          {cat.title}
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {isExpanded ? 'Klicken zum Schließen' : 'Klicken zum Öffnen'}
+                                        </p>
                                       </div>
                                     </div>
-                                    <div>
-                                      <h3 className={`text-base font-bold ${color.title}`}>
-                                        {cat.title}
-                                      </h3>
+                                    <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                      </svg>
                                     </div>
                                   </div>
-                                  <div className={`whitespace-pre-line leading-relaxed ${color.text} text-sm`}>
-                                    {cat.content}
+                                </button>
+                                
+                                {/* Expandable Content */}
+                                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                                  isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                }`}>
+                                  <div className="px-5 pb-5">
+                                    <div className={`whitespace-pre-line leading-relaxed ${color.text} text-sm`}>
+                                      {cat.content}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -908,7 +1081,6 @@ export default function AdminTable() {
                     )
                   })()}
                 </div>
-              )}
               
               {/* Footer */}
               <div className="mt-6 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
