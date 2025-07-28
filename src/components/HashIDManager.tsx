@@ -64,25 +64,6 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
     }
   }
 
-  const saveHashEntries = async (entries: HashEntry[]) => {
-    try {
-      // Speichere lokal als Backup
-      localStorage.setItem('hash-list', JSON.stringify(entries))
-      setHashEntries(entries)
-      
-      // Aktualisiere die Server-seitige Hash-Liste
-      await fetch('/api/hash-list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(entries),
-      })
-    } catch (error) {
-      console.error('Fehler beim Speichern:', error)
-    }
-  }
-
   const generateHashId = (role: 'employee' | 'admin' = 'employee') => {
     const timestamp = Date.now().toString(36)
     const random = Math.random().toString(36).substring(2, 8)
@@ -159,8 +140,24 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
 
   const handleDeleteEntry = async (hashId: string) => {
     if (confirm(`Möchtest du die Hash-ID "${hashId}" wirklich löschen?`)) {
-      const updatedEntries = hashEntries.filter(entry => entry.hashId !== hashId)
-      await saveHashEntries(updatedEntries)
+      try {
+        // Verwende die DELETE-API
+        const response = await fetch(`/api/hash-list?hashId=${encodeURIComponent(hashId)}`, {
+          method: 'DELETE',
+        })
+
+        if (response.ok) {
+          // Lade die aktualisierte Liste
+          await loadHashEntries()
+          alert(`Hash-ID "${hashId}" erfolgreich gelöscht!`)
+        } else {
+          const error = await response.json()
+          alert(`Fehler beim Löschen: ${error.error || 'Unbekannter Fehler'}`)
+        }
+      } catch (error) {
+        console.error('Fehler beim Löschen der Hash-ID:', error)
+        alert('Fehler beim Löschen der Hash-ID')
+      }
     }
   }
 
