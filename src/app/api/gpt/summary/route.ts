@@ -244,12 +244,12 @@ export async function POST(request: NextRequest) {
         return answeredQuestions.map(q => {
           const category = categoryMap[q.category] || q.category
           const isLeadership = q.category === 'leadership'
-          return `${category}:\n[Detaillierte Analyse mit 3-4 Sätzen, die die Antworten und Follow-ups vertiefend interpretieren${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch' : ''}]`
+          return `${category}:\n[Detaillierte Analyse mit 3-4 Sätzen, die die Antworten und Follow-ups vertiefend interpretieren${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch - DIESE GEHÖREN IN EINE SEPARATE SEKTION' : ''}]`
         }).join('\n\n')
       })()}
       
       EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:
-      [4-6 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) und Begründung - SEPARATE SEKTION - NICHT Teil von Rollentausch & Führungsperspektive]
+      [4-6 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) und Begründung - SEPARATE SEKTION - MUSS NACH ALLEN KATEGORIEN KOMMEN - NICHT Teil von Rollentausch & Führungsperspektive]
     `
 
     const completion = await openai.chat.completions.create({
@@ -273,6 +273,8 @@ WICHTIGE STRUKTUR-REGLEN:
 - "Rollentausch & Führungsperspektive" = Was würdest du als Vorgesetzter anders machen?
 - "Empfehlungen für das Mitarbeiterjahresgespräch" = Konkrete Handlungsimpulse für das Gespräch
 - Diese beiden Sektionen müssen getrennt sein!
+- Die Empfehlungen MÜSSEN NACH allen Kategorien kommen, NICHT innerhalb der "Rollentausch & Führungsperspektive"
+- Die "Rollentausch & Führungsperspektive" darf KEINE Empfehlungen enthalten
 
 SPRACHLICHE REGELN:
 - ABSOLUT ALLE Teile der Zusammenfassung in Du-Form verfassen
