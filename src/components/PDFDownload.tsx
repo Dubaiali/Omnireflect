@@ -789,7 +789,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
 
           <!-- Footer -->
           <div class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-            Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.
+            Diese Zusammenfassung wurde automatisch generiert.
           </div>
 
           <script>
@@ -895,22 +895,7 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="bg-green-100 p-1 rounded-full mt-0.5">
-                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-blue-800">Teile das PDF mit deiner Führungskraft vor dem Gespräch</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="bg-orange-100 p-1 rounded-full mt-0.5">
-                    <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-blue-800">Deine Daten werden automatisch nach 30 Tagen gelöscht</span>
-                </div>
+
               </div>
             </div>
           </div>

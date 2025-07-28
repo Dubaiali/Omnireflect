@@ -622,7 +622,7 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>Diese Zusammenfassung wurde automatisch generiert. Deine Daten werden nach 30 Tagen gelöscht.</Text>
+          <Text>Diese Zusammenfassung wurde automatisch generiert.</Text>
         </View>
         
         <Text style={styles.pageNumber}>1</Text>
