@@ -90,7 +90,29 @@ function getStaticHashList(): HashEntry[] {
   
   if (envEmployees.length > 0) {
     console.log(`Lade ${envEmployees.length} Mitarbeiter aus Umgebungsvariablen`)
-    return envEmployees
+    
+    // Lade Blacklist der gelöschten Hash-IDs
+    const BLACKLIST_FILE = path.join(process.cwd(), 'data', 'deleted-hash-ids.json')
+    let deletedHashIds: string[] = []
+    
+    try {
+      if (fs.existsSync(BLACKLIST_FILE)) {
+        const data = fs.readFileSync(BLACKLIST_FILE, 'utf8')
+        deletedHashIds = JSON.parse(data)
+        console.log(`Blacklist geladen: ${deletedHashIds.length} gelöschte Hash-IDs`)
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Blacklist:', error)
+    }
+    
+    // Filtere gelöschte Hash-IDs aus
+    const filteredEmployees = envEmployees.filter(employee => !deletedHashIds.includes(employee.hashId))
+    
+    if (filteredEmployees.length !== envEmployees.length) {
+      console.log(`${envEmployees.length - filteredEmployees.length} Mitarbeiter aus Blacklist gefiltert`)
+    }
+    
+    return filteredEmployees
   }
   
   // Fallback: Standard-Mitarbeiter (nur für Entwicklung)
@@ -125,14 +147,9 @@ export function getHashList(): HashEntry[] {
     return dynamicHashList
   }
   
-  // Fallback: Kombiniere statische und dynamische Listen, wobei dynamische Einträge Vorrang haben
+  // Fallback: Lade statische Liste (mit Blacklist-Filter)
   const staticList = getStaticHashList()
-  const dynamicHashIds = new Set(dynamicHashList.map(entry => entry.hashId))
-  
-  // Füge nur statische Einträge hinzu, die nicht in der dynamischen Liste existieren
-  const uniqueStaticEntries = staticList.filter(entry => !dynamicHashIds.has(entry.hashId))
-  
-  return [...uniqueStaticEntries, ...dynamicHashList]
+  return staticList
 }
 
 // Neue Hash-ID hinzufügen
@@ -169,6 +186,33 @@ export function removeHashEntry(hashId: string): boolean {
     // Speichere persistent
     savePersistentHashList(dynamicHashList)
     console.log(`Hash-ID ${hashId} entfernt`)
+  }
+  
+  // Zusätzlich: Markiere Hash-ID als gelöscht, falls sie aus Umgebungsvariablen kam
+  // Lade die Blacklist der gelöschten Hash-IDs
+  const BLACKLIST_FILE = path.join(process.cwd(), 'data', 'deleted-hash-ids.json')
+  let deletedHashIds: string[] = []
+  
+  try {
+    if (fs.existsSync(BLACKLIST_FILE)) {
+      const data = fs.readFileSync(BLACKLIST_FILE, 'utf8')
+      deletedHashIds = JSON.parse(data)
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Blacklist:', error)
+  }
+  
+  // Füge Hash-ID zur Blacklist hinzu, falls sie noch nicht existiert
+  if (!deletedHashIds.includes(hashId)) {
+    deletedHashIds.push(hashId)
+    
+    try {
+      ensureDataDirectory()
+      fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(deletedHashIds, null, 2))
+      console.log(`Hash-ID ${hashId} zur Blacklist hinzugefügt`)
+    } catch (error) {
+      console.error('Fehler beim Speichern der Blacklist:', error)
+    }
   }
   
   return removed
