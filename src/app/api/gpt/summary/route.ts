@@ -187,11 +187,12 @@ export async function POST(request: NextRequest) {
       - sprachlich dem Erfahrungs- und Alterskontext angepasst
       - kulturelle Werte berücksichtigen (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
       - empathisch und unterstützend wirken
-      - Follow-up-Antworten für tiefere Einblicke nutzen
+      - Follow-up-Antworten für tiefere Einblicke nutzen und in die Analyse einbeziehen
       - konkrete Handlungsimpulse identifizieren
       - Fokus auf persönliche Entwicklung und Wachstum
       - KRITISCHE ÄUSSERUNGEN AUTHENTISCH WIEDERGEBEN: Wenn der Mitarbeiter negative oder kritische Aussagen macht, diese nicht "schönreden" oder mildern
       - ECHTE REFLEXION: Die tatsächlichen Gefühle und Meinungen des Mitarbeiters respektieren und wiedergeben
+      - DETAILLIERTE ANALYSE: Jede Kategorie sollte 3-4 Sätze enthalten, die die Antworten und Follow-ups vertiefend interpretieren
       
       FOKUS-BEREICHE für die Analyse:
       - Persönliche Wachstumserfahrungen und Lernerkenntnisse
@@ -204,13 +205,14 @@ export async function POST(request: NextRequest) {
       - ECHTE GEFÜHLE UND MEINUNGEN: Auch negative oder kritische Äußerungen authentisch wiedergeben
       
       EINLEITUNG:
-      - Umfassend und detailliert (5-7 Sätze)
+      - Umfassend und detailliert (6-8 Sätze)
       - Wichtigste Erkenntnisse aus allen Antworten zusammenfassen
       - Stärken, Herausforderungen und Entwicklungsbereiche erwähnen
       - Verbindung zwischen verschiedenen Aspekten der Reflexion zeigen
       - Kernaussagen für das Mitarbeiterjahresgespräch deutlich machen
       - Persönliche Situation und beruflichen Kontext berücksichtigen
       - Persönliche Entwicklung und Wachstum betonen
+      - Tiefere Einblicke aus Follow-up-Antworten einbeziehen
       
       SPRACHLICHE ANPASSUNG:
       - Für junge/neue Mitarbeiter: klar, freundlich, einladend
@@ -242,12 +244,12 @@ export async function POST(request: NextRequest) {
         return answeredQuestions.map(q => {
           const category = categoryMap[q.category] || q.category
           const isLeadership = q.category === 'leadership'
-          return `${category}:\n[Analyse ohne Aufzählungszeichen, nur normaler Text${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch' : ''}]`
+          return `${category}:\n[Detaillierte Analyse mit 3-4 Sätzen, die die Antworten und Follow-ups vertiefend interpretieren${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch' : ''}]`
         }).join('\n\n')
       })()}
       
       EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:
-      [3-5 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) - SEPARATE SEKTION - NICHT Teil von Rollentausch & Führungsperspektive]
+      [4-6 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) und Begründung - SEPARATE SEKTION - NICHT Teil von Rollentausch & Führungsperspektive]
     `
 
     const completion = await openai.chat.completions.create({
@@ -292,7 +294,7 @@ Berücksichtige dabei:
           content: prompt
         }
       ],
-      max_tokens: 1200,
+      max_tokens: 2500,
       temperature: 0.7,
     })
 
