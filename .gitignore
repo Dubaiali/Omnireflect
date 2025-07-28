@@ -73,7 +73,6 @@ test_*.md
 
 # deployment artifacts
 *.zip
-deploy-*.sh
 monitor-*.sh
 rollback.sh
 
