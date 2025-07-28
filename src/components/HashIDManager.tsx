@@ -147,8 +147,8 @@ export default function HashIDManager({ isOpen, onClose }: HashIDManagerProps) {
         })
 
         if (response.ok) {
-          // Lade die aktualisierte Liste
-          await loadHashEntries()
+          // Aktualisiere den lokalen State direkt
+          setHashEntries(prevEntries => prevEntries.filter(entry => entry.hashId !== hashId))
           alert(`Hash-ID "${hashId}" erfolgreich gelöscht!`)
         } else {
           const error = await response.json()
