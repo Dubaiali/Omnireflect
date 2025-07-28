@@ -75,10 +75,13 @@ function parseSummary(summary: string) {
     ]
     
     // Prüfe, ob die Zeile eine Kategorie enthält (mit oder ohne Doppelpunkt, mit oder ohne **)
-    const matchingCategory = categoryTitles.find(title => 
-      (line.includes(title) && (line.endsWith(':') || line.endsWith(title))) ||
-      (line.includes(`**${title}**`) && (line.endsWith('**') || line.endsWith('**:')))
-    )
+    const matchingCategory = categoryTitles.find(title => {
+      // Entferne ** und : für den Vergleich
+      const cleanLine = line.replace(/\*\*/g, '').replace(/:/g, '').trim()
+      const cleanTitle = title.trim()
+      
+      return cleanLine === cleanTitle || line.includes(`**${title}**`)
+    })
     
     if (matchingCategory) {
       // Vorherige Kategorie speichern
@@ -87,7 +90,7 @@ function parseSummary(summary: string) {
       }
       
       currentSection = 'category'
-      currentTitle = matchingCategory.replace('**', '').replace(':', '')
+      currentTitle = matchingCategory.replace(/\*\*/g, '').replace(/:/g, '').trim()
       currentContent = ''
       continue
     }
