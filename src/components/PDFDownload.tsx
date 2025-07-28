@@ -42,7 +42,8 @@ function parseSummary(summary: string) {
         line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch:') || 
         line.includes('Empfehlungen für dein Mitarbeiterjahresgespräch') ||
         line.includes('Empfehlungen für Ihr Mitarbeiterjahresgespräch:') ||
-        line.includes('Empfehlungen für das Mitarbeiterjahresgespräch:')) {
+        line.includes('Empfehlungen für das Mitarbeiterjahresgespräch:') ||
+        line.includes('**Empfehlungen für dein Mitarbeiterjahresgespräch:**')) {
       if (currentSection === 'category' && currentTitle && currentContent) {
         categories.push({ title: currentTitle, content: currentContent.trim() })
       }
@@ -51,7 +52,9 @@ function parseSummary(summary: string) {
                            .replace('Empfehlungen für dein Mitarbeiterjahresgespräch:', '')
                            .replace('Empfehlungen für dein Mitarbeiterjahresgespräch', '')
                            .replace('Empfehlungen für Ihr Mitarbeiterjahresgespräch:', '')
-                           .replace('Empfehlungen für das Mitarbeiterjahresgespräch:', '').trim()
+                           .replace('Empfehlungen für das Mitarbeiterjahresgespräch:', '')
+                           .replace('**Empfehlungen für dein Mitarbeiterjahresgespräch:**', '')
+                           .replace('**', '').trim()
       continue
     }
     
@@ -71,9 +74,10 @@ function parseSummary(summary: string) {
       'Rollentausch & Führungsperspektive'
     ]
     
-    // Prüfe, ob die Zeile eine Kategorie enthält (mit oder ohne Doppelpunkt)
+    // Prüfe, ob die Zeile eine Kategorie enthält (mit oder ohne Doppelpunkt, mit oder ohne **)
     const matchingCategory = categoryTitles.find(title => 
-      line.includes(title) && (line.endsWith(':') || line.endsWith(title))
+      (line.includes(title) && (line.endsWith(':') || line.endsWith(title))) ||
+      (line.includes(`**${title}**`) && (line.endsWith('**') || line.endsWith('**:')))
     )
     
     if (matchingCategory) {
@@ -83,7 +87,7 @@ function parseSummary(summary: string) {
       }
       
       currentSection = 'category'
-      currentTitle = matchingCategory
+      currentTitle = matchingCategory.replace('**', '').replace(':', '')
       currentContent = ''
       continue
     }
@@ -103,10 +107,49 @@ function parseSummary(summary: string) {
     categories.push({ title: currentTitle, content: currentContent.trim() })
   }
   
+  console.log('=== SUMMARY PARSING DEBUG ===')
   console.log('Raw parsing result:', { intro: intro.length, categories: categories.length, recommendations: recommendations.length })
   console.log('Found categories:', categories.map(c => c.title))
-  console.log('Intro content:', intro)
-  console.log('First few lines of summary:', lines.slice(0, 10))
+  console.log('Intro content:', intro.substring(0, 200) + '...')
+  console.log('First 15 lines of summary:', lines.slice(0, 15))
+  console.log('All lines that might be categories:')
+  lines.forEach((line, index) => {
+    if (line.includes('Stolz') || line.includes('Herausforderungen') || line.includes('Verantwortung') || 
+        line.includes('Zusammenarbeit') || line.includes('Entwicklung') || line.includes('Energie') ||
+        line.includes('Kultur') || line.includes('Entscheidung') || line.includes('Wertschätzung') ||
+        line.includes('Perspektive') || line.includes('Verbesserung') || line.includes('Rollentausch')) {
+      console.log(`Line ${index}: "${line}"`)
+    }
+  })
+  console.log('=== CATEGORY MATCHING DEBUG ===')
+  lines.forEach((line, index) => {
+    const categoryTitles = [
+      'Stolz & persönliche Leistung',
+      'Herausforderungen & Umgang mit Druck',
+      'Verantwortung & Selbstorganisation',
+      'Zusammenarbeit & Feedback',
+      'Entwicklung & Lernen',
+      'Energie & Belastung',
+      'Kultur & Werte',
+      'Entscheidungsspielräume & Freiheit',
+      'Wertschätzung & Gesehenwerden',
+      'Perspektive & Zukunft',
+      'Verbesserungsvorschläge & Ideen',
+      'Rollentausch & Führungsperspektive'
+    ]
+    
+    categoryTitles.forEach(title => {
+      const normalMatch = line.includes(title) && (line.endsWith(':') || line.endsWith(title))
+      const boldMatch = line.includes(`**${title}**`) && (line.endsWith('**') || line.endsWith('**:'))
+      
+      if (normalMatch || boldMatch) {
+        console.log(`✅ MATCH FOUND - Line ${index}: "${line}" matches "${title}"`)
+        console.log(`   Normal match: ${normalMatch}, Bold match: ${boldMatch}`)
+      }
+    })
+  })
+  console.log('=== END CATEGORY MATCHING DEBUG ===')
+  console.log('=== END DEBUG ===')
   
   return { 
     intro: intro.trim(), 
@@ -396,11 +439,43 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
     const { intro, categories, recommendations } = parseSummary(summaryText)
     
     // Debug-Ausgabe
+    console.log('=== RENDER SUMMARY DEBUG ===')
+    console.log('Summary length:', summaryText.length)
     console.log('Parsed summary:', { intro: intro.length, categories: categories.length, recommendations: recommendations.length })
     console.log('Categories found:', categories.map(c => c.title))
+    console.log('Expected categories:', [
+      'Stolz & persönliche Leistung',
+      'Herausforderungen & Umgang mit Druck',
+      'Verantwortung & Selbstorganisation',
+      'Zusammenarbeit & Feedback',
+      'Entwicklung & Lernen',
+      'Energie & Belastung',
+      'Kultur & Werte',
+      'Entscheidungsspielräume & Freiheit',
+      'Wertschätzung & Gesehenwerden',
+      'Perspektive & Zukunft',
+      'Verbesserungsvorschläge & Ideen',
+      'Rollentausch & Führungsperspektive'
+    ])
+    console.log('Missing categories:', [
+      'Stolz & persönliche Leistung',
+      'Herausforderungen & Umgang mit Druck',
+      'Verantwortung & Selbstorganisation',
+      'Zusammenarbeit & Feedback',
+      'Entwicklung & Lernen',
+      'Energie & Belastung',
+      'Kultur & Werte',
+      'Entscheidungsspielräume & Freiheit',
+      'Wertschätzung & Gesehenwerden',
+      'Perspektive & Zukunft',
+      'Verbesserungsvorschläge & Ideen',
+      'Rollentausch & Führungsperspektive'
+    ].filter(expected => !categories.find(found => found.title === expected)))
+    console.log('=== END RENDER DEBUG ===')
     
     // Fallback: Wenn keine Kategorien gefunden wurden, zeige den Text einfach an
     if (categories.length === 0) {
+      console.log('⚠️ NO CATEGORIES FOUND - SHOWING FALLBACK')
       return (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
           <div className="text-gray-800 whitespace-pre-line leading-relaxed">
