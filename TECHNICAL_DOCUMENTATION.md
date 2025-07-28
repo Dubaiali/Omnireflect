@@ -299,6 +299,29 @@ const newHashId = {
 }
 ```
 
+### Blacklist-System (v5.1.0+)
+Das Blacklist-System verhindert, dass gelöschte Mitarbeiter nach Neustart wieder auftauchen:
+
+```typescript
+// Blacklist-Datei: data/deleted-hash-ids.json
+[
+  "emp_md87yj1f_904c447c80694dc5",
+  "emp_mdkajq49_ftjb5x"
+]
+
+// Automatische Blacklist-Verwaltung
+const removeHashEntry = async (hashId: string) => {
+  // 1. Aus aktiver Liste entfernen
+  // 2. Zur Blacklist hinzufügen
+  // 3. Verhindert Wiederauftauchen aus Umgebungsvariablen
+}
+```
+
+### Verbesserte HashID-Löschung (v5.1.0+)
+- **DELETE-API**: Korrekte Verwendung der DELETE-Endpoint
+- **Sofortige UI-Updates**: Direkte State-Manipulation
+- **Persistierung**: Blacklist-System für dauerhafte Löschung
+
 ### Admin-Konfiguration
 ```env
 ADMIN_USERNAME=admin
@@ -313,13 +336,24 @@ ADMIN_PASSWORD=OmniAdmin2024!
    - Prüfe `.env.local` Konfiguration
    - Stelle sicher, dass `ADMIN_PASSWORD=OmniAdmin2024!` gesetzt ist
    - Starte den Server neu nach Änderungen
+   - **v5.1.0+**: Lösche `data/admin-credentials.json` um Umgebungsvariablen zu erzwingen
 
 2. **HashID-Login funktioniert nicht**
    - Prüfe Hash-Liste: `curl http://localhost:3000/api/hash-list`
    - Stelle sicher, dass HashID und Passwort korrekt sind
    - Prüfe PASSWORD_SALT in `.env.local`
 
-3. **Zusammenfassung wird nicht generiert**
+3. **Gelöschte Mitarbeiter tauchen wieder auf**
+   - **v5.1.0+**: Prüfe Blacklist-Datei: `cat data/deleted-hash-ids.json`
+   - Stelle sicher, dass Blacklist-System aktiv ist
+   - Restarte Anwendung nach Blacklist-Änderungen
+
+4. **HashID-Löschung funktioniert nicht in Admin-UI**
+   - **v5.1.0+**: Prüfe Browser-Konsole auf API-Fehler
+   - Stelle sicher, dass DELETE-API korrekt funktioniert
+   - Teste API direkt: `curl -X DELETE /api/hash-list?hashId=HASH_ID`
+
+5. **Zusammenfassung wird nicht generiert**
    - Prüfe OpenAI API-Key
    - Prüfe API-Logs: `./monitor.sh --logs`
    - Stelle sicher, dass alle Fragen beantwortet wurden

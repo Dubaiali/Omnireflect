@@ -5,6 +5,34 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2024-07-28
+
+### Behoben
+- **HashID-Löschung**: Korrektur der Löschfunktion in der Admin-Oberfläche
+  - Verwendung der korrekten DELETE-API anstatt der fehlerhaften saveHashEntries-Funktion
+  - Sofortige UI-Updates durch direkte State-Manipulation
+  - Entfernung der nicht mehr verwendeten saveHashEntries-Funktion
+- **Blacklist-System**: Verbesserte Persistierung gelöschter Mitarbeiter
+  - Automatische Blacklist-Erstellung für gelöschte Hash-IDs
+  - Verhinderung des Wiederauftauchens gelöschter Mitarbeiter nach Neustart
+  - Neue Datei: `data/deleted-hash-ids.json` für Blacklist-Verwaltung
+- **Admin-Login**: Korrektur der Admin-Credential-Verwaltung
+  - Priorisierung von Umgebungsvariablen über gespeicherte JSON-Dateien
+  - Automatische Regenerierung der admin-credentials.json bei Änderungen
+
+### Hinzugefügt
+- **DATA_PERSISTENCE.md**: Neue Dokumentation für Datenpersistierung
+  - Erklärung des Blacklist-Systems
+  - Backup- und Wiederherstellungsprozesse
+  - Git-Sicherheitsmaßnahmen
+
+### Geändert
+- **Summary-Generierung**: Verbesserte AI-Zusammenfassungen
+  - Erhöhung der Token-Limits von 1200 auf 2500
+  - Detailliertere Kategorie-Analysen (3-4 Sätze pro Kategorie)
+  - Klarere Trennung zwischen "Rollentausch & Führungsperspektive" und "Empfehlungen"
+  - Entfernung spezifischer Texte aus "Nächste Schritte" und PDF-Footer
+
 ## [4.0.0] - 2024-07-25
 
 ### Hinzugefügt
