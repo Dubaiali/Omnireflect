@@ -17,6 +17,7 @@ interface SummaryData {
   }
   answers?: Record<string, string>
   followUpQuestions?: Record<string, string[]>
+  questions?: any[] // Neue Feld für die ursprünglichen Fragen
   completedAt: string
 }
 
@@ -58,7 +59,7 @@ function saveSummaries(summaries: Record<string, SummaryData>): void {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { hashId, summary, htmlContent, roleContext, answers, followUpQuestions } = body
+    const { hashId, summary, htmlContent, roleContext, answers, followUpQuestions, questions } = body
     
     if (!hashId || !summary) {
       return NextResponse.json(
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
       roleContext,
       answers,
       followUpQuestions,
+      questions, // Speichere auch die ursprünglichen Fragen
       completedAt: new Date().toISOString()
     }
     

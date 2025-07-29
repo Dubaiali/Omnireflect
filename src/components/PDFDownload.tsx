@@ -402,7 +402,8 @@ export default function PDFDownload({ initialSummary }: PDFDownloadProps) {
             htmlContent: htmlContent,
             roleContext,
             answers: progress.answers,
-            followUpQuestions: progress.followUpQuestions
+            followUpQuestions: progress.followUpQuestions,
+            questions: storedQuestions // Sende auch die ursprünglichen Fragen mit
           }),
         })
         

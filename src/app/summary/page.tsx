@@ -71,7 +71,7 @@ export default function SummaryPage() {
 
   const handleLogout = () => {
     logout()
-    router.push('/')
+    router.push('/login')
   }
 
   // Zeige Ladebildschirm während der Generierung
