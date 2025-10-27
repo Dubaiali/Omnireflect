@@ -25,7 +25,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Konfiguration
-SERVER="root@188.68.48.168"
+SERVER="root@194.55.13.15"
 APP_DIR="/var/www/omnireflect"
 APP_NAME="reflect-app"
 NODE_ENV="production"
@@ -55,14 +55,14 @@ info() {
 check_prerequisites() {
     log "🔍 Prüfe Voraussetzungen..."
     
-    # SSH-Verbindung testen
-    if ! ssh -o ConnectTimeout=10 $SERVER "echo 'SSH connection successful'" > /dev/null 2>&1; then
+    # SSH mit Key testen
+    if ! ssh -i ~/.ssh/netcup_key -o ConnectTimeout=10 $SERVER "echo 'SSH connection successful'" > /dev/null 2>&1; then
         error "SSH connection to server failed"
     fi
     
     # Prüfe ob wichtige Daten vorhanden sind
     log "📊 Prüfe vorhandene Daten..."
-    DATA_COUNT=$(ssh $SERVER "find $APP_DIR/data -name '*.json' 2>/dev/null | wc -l" 2>/dev/null || echo "0")
+    DATA_COUNT=$(ssh -i ~/.ssh/netcup_key $SERVER "find $APP_DIR/data -name '*.json' 2>/dev/null | wc -l" 2>/dev/null || echo "0")
     if [ "$DATA_COUNT" -gt 0 ]; then
         log "✅ Gefunden: $DATA_COUNT Daten-Dateien werden gesichert"
     else
@@ -70,9 +70,9 @@ check_prerequisites() {
     fi
     
     # PM2 installieren falls nicht vorhanden
-    if ! ssh $SERVER "command -v pm2 >/dev/null 2>&1"; then
+    if ! ssh -i ~/.ssh/netcup_key $SERVER "command -v pm2 >/dev/null 2>&1"; then
         log "📦 Installiere PM2..."
-        ssh $SERVER "npm install -g pm2"
+        ssh -i ~/.ssh/netcup_key $SERVER "npm install -g pm2"
     fi
     
     log "✅ Voraussetzungen erfüllt"
@@ -83,7 +83,7 @@ check_restart_needed() {
     log "🔍 Prüfe ob Neustart notwendig ist..."
     
     # Prüfe ob Anwendung läuft
-    if ! ssh $SERVER "pm2 list | grep -q '$APP_NAME'"; then
+    if ! ssh -i ~/.ssh/netcup_key $SERVER "pm2 list | grep -q '$APP_NAME'"; then
         log "⚠️  Anwendung läuft nicht - Neustart erforderlich"
         return 0
     fi
@@ -91,7 +91,7 @@ check_restart_needed() {
     # Prüfe ob Umgebungsvariablen geändert wurden
     if [ -f ".env.production" ]; then
         LOCAL_ENV_HASH=$(md5sum .env.production | cut -d' ' -f1)
-        REMOTE_ENV_HASH=$(ssh $SERVER "md5sum $APP_DIR/.env.production 2>/dev/null | cut -d' ' -f1" 2>/dev/null || echo "")
+        REMOTE_ENV_HASH=$(ssh -i ~/.ssh/netcup_key $SERVER "md5sum $APP_DIR/.env.production 2>/dev/null | cut -d' ' -f1" 2>/dev/null || echo "")
         
         if [ "$LOCAL_ENV_HASH" != "$REMOTE_ENV_HASH" ]; then
             log "⚠️  Umgebungsvariablen geändert - Neustart erforderlich"
@@ -104,7 +104,7 @@ check_restart_needed() {
     for file in "${CRITICAL_FILES[@]}"; do
         if [ -f "$file" ]; then
             LOCAL_HASH=$(md5sum "$file" | cut -d' ' -f1)
-            REMOTE_HASH=$(ssh $SERVER "md5sum $APP_DIR/$file 2>/dev/null | cut -d' ' -f1" 2>/dev/null || echo "")
+            REMOTE_HASH=$(ssh -i ~/.ssh/netcup_key $SERVER "md5sum $APP_DIR/$file 2>/dev/null | cut -d' ' -f1" 2>/dev/null || echo "")
             
             if [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
                 log "⚠️  Kritische Datei geändert ($file) - Neustart erforderlich"
@@ -122,16 +122,16 @@ stop_application() {
     log "🛑 Stoppe Anwendung..."
     
     # PM2-Prozess stoppen falls vorhanden
-    if ssh $SERVER "pm2 list | grep -q '$APP_NAME'"; then
-        ssh $SERVER "pm2 stop $APP_NAME"
-        ssh $SERVER "pm2 delete $APP_NAME"
+    if ssh -i ~/.ssh/netcup_key $SERVER "pm2 list | grep -q '$APP_NAME'"; then
+        ssh -i ~/.ssh/netcup_key $SERVER "pm2 stop $APP_NAME"
+        ssh -i ~/.ssh/netcup_key $SERVER "pm2 delete $APP_NAME"
         log "✅ PM2-Prozess gestoppt"
     fi
     
     # Fallback: alle Prozesse auf Port 3002 beenden
-    ssh $SERVER "pkill -f 'next-server' || true"
-    ssh $SERVER "pkill -f 'next start' || true"
-    ssh $SERVER "pkill -f 'npm start' || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "pkill -f 'next-server' || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "pkill -f 'next start' || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "pkill -f 'npm start' || true"
     
     log "✅ Anwendung gestoppt"
 }
@@ -142,32 +142,32 @@ deploy_code() {
     
     # WICHTIG: Sichere Daten-Dateien vor dem Löschen
     log "💾 Sichere wichtige Daten..."
-    ssh $SERVER "mkdir -p /tmp/omnireflect-backup"
-    ssh $SERVER "cp -r $APP_DIR/data /tmp/omnireflect-backup/ 2>/dev/null || true"
-    ssh $SERVER "cp $APP_DIR/.env.local /tmp/omnireflect-backup/ 2>/dev/null || true"
-    ssh $SERVER "cp $APP_DIR/.env.production /tmp/omnireflect-backup/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "mkdir -p /tmp/omnireflect-backup"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp -r $APP_DIR/data /tmp/omnireflect-backup/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp $APP_DIR/.env.local /tmp/omnireflect-backup/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp $APP_DIR/.env.production /tmp/omnireflect-backup/ 2>/dev/null || true"
     
     # Lösche alte Version (aber NICHT die gesicherten Daten)
-    ssh $SERVER "rm -rf $APP_DIR/* $APP_DIR/.[^.]* 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "rm -rf $APP_DIR/* $APP_DIR/.[^.]* 2>/dev/null || true"
     
     log "📤 Erstelle Anwendungsverzeichnis..."
-    ssh $SERVER "mkdir -p $APP_DIR"
+    ssh -i ~/.ssh/netcup_key $SERVER "mkdir -p $APP_DIR"
     
     log "📥 Clone Repository..."
-    ssh $SERVER "cd $APP_DIR && git clone $REPO_URL ."
+    ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && git clone $REPO_URL ."
     
     log "🔧 Installiere Dependencies..."
-    ssh $SERVER "cd $APP_DIR && npm install"
+    ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && npm install"
     
     # WICHTIG: Stelle gesicherte Daten wieder her
     log "🔄 Stelle gesicherte Daten wieder her..."
-    ssh $SERVER "mkdir -p $APP_DIR/data"
-    ssh $SERVER "cp -r /tmp/omnireflect-backup/data/* $APP_DIR/data/ 2>/dev/null || true"
-    ssh $SERVER "cp /tmp/omnireflect-backup/.env.local $APP_DIR/ 2>/dev/null || true"
-    ssh $SERVER "cp /tmp/omnireflect-backup/.env.production $APP_DIR/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "mkdir -p $APP_DIR/data"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp -r /tmp/omnireflect-backup/data/* $APP_DIR/data/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp /tmp/omnireflect-backup/.env.local $APP_DIR/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp /tmp/omnireflect-backup/.env.production $APP_DIR/ 2>/dev/null || true"
     
     # Bereinige Backup-Verzeichnis
-    ssh $SERVER "rm -rf /tmp/omnireflect-backup"
+    ssh -i ~/.ssh/netcup_key $SERVER "rm -rf /tmp/omnireflect-backup"
     
     log "✅ Code erfolgreich deployed mit Daten-Sicherung"
 }
@@ -177,10 +177,10 @@ setup_environment() {
     log "⚙️ Konfiguriere Umgebungsvariablen..."
     
     # .env.production kopieren
-    scp .env.production $SERVER:$APP_DIR/.env.production
+    scp -i ~/.ssh/netcup_key .env.production $SERVER:$APP_DIR/.env.production
     
     # .env.local erstellen
-    ssh $SERVER "cd $APP_DIR && cp .env.production .env.local"
+    ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && cp .env.production .env.local"
     
     log "✅ Umgebungsvariablen konfiguriert"
 }
@@ -194,7 +194,7 @@ setup_admin_credentials() {
         log "✅ Admin-Credentials in .env.production gefunden"
         
         # Lösche alte admin-credentials.json um Umgebungsvariablen zu erzwingen
-        ssh $SERVER "rm -f $APP_DIR/data/admin-credentials.json"
+        ssh -i ~/.ssh/netcup_key $SERVER "rm -f $APP_DIR/data/admin-credentials.json"
         log "🗑️ Alte admin-credentials.json gelöscht - Umgebungsvariablen werden verwendet"
     else
         warn "⚠️ Keine Admin-Credentials in .env.production gefunden"
@@ -221,7 +221,7 @@ setup_admin_credentials() {
 create_build() {
     log "🏗️ Erstelle Production Build..."
     
-    ssh $SERVER "cd $APP_DIR && npm run build -- --no-lint"
+    ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && npm run build -- --no-lint"
     
     log "✅ Production Build erstellt"
 }
@@ -231,7 +231,7 @@ setup_pm2() {
     log "🚀 Konfiguriere PM2..."
     
     # PM2 ecosystem file erstellen
-    ssh $SERVER "cat > $APP_DIR/ecosystem.config.js << 'EOF'
+    ssh -i ~/.ssh/netcup_key $SERVER "cat > $APP_DIR/ecosystem.config.js << 'EOF'
 module.exports = {
   apps: [{
     name: '$APP_NAME',
@@ -255,15 +255,15 @@ module.exports = {
 EOF"
     
     # Logs-Verzeichnis erstellen
-    ssh $SERVER "mkdir -p $APP_DIR/logs"
+    ssh -i ~/.ssh/netcup_key $SERVER "mkdir -p $APP_DIR/logs"
     
     # Prüfe ob Anwendung bereits läuft
-    if ssh $SERVER "pm2 list | grep -q '$APP_NAME'"; then
+    if ssh -i ~/.ssh/netcup_key $SERVER "pm2 list | grep -q '$APP_NAME'"; then
         log "🔄 Anwendung läuft bereits - Update mit --update-env..."
-        ssh $SERVER "cd $APP_DIR && pm2 restart $APP_NAME --update-env"
+        ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && pm2 restart $APP_NAME --update-env"
     else
         log "🚀 Starte neue Anwendung..."
-        ssh $SERVER "cd $APP_DIR && pm2 start ecosystem.config.js"
+        ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && pm2 start ecosystem.config.js"
     fi
     
     # Warten bis Anwendung gestartet ist
@@ -271,11 +271,11 @@ EOF"
     sleep 5
     
     # PM2-Konfiguration speichern
-    ssh $SERVER "pm2 save"
+    ssh -i ~/.ssh/netcup_key $SERVER "pm2 save"
     
     # PM2 startup script erstellen (nur wenn nicht vorhanden)
-    if ! ssh $SERVER "pm2 startup | grep -q 'already inited'"; then
-        ssh $SERVER "pm2 startup"
+    if ! ssh -i ~/.ssh/netcup_key $SERVER "pm2 startup | grep -q 'already inited'"; then
+        ssh -i ~/.ssh/netcup_key $SERVER "pm2 startup"
     fi
     
     log "✅ PM2 konfiguriert und gestartet"
@@ -286,18 +286,18 @@ setup_nginx() {
     log "🌐 Konfiguriere Nginx..."
     
     # Nginx-Konfiguration kopieren
-    scp nginx-reflect.conf $SERVER:/etc/nginx/sites-available/$DOMAIN.conf
+    scp -i ~/.ssh/netcup_key nginx-reflect.conf $SERVER:/etc/nginx/sites-available/$DOMAIN.conf
     
     # Konfiguration aktivieren
-    ssh $SERVER "ln -sf /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/"
+    ssh -i ~/.ssh/netcup_key $SERVER "ln -sf /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/"
     
     # Nginx-Konfiguration testen
-    if ! ssh $SERVER "nginx -t"; then
+    if ! ssh -i ~/.ssh/netcup_key $SERVER "nginx -t"; then
         error "Nginx configuration test failed"
     fi
     
     # Nginx neu laden
-    ssh $SERVER "systemctl reload nginx"
+    ssh -i ~/.ssh/netcup_key $SERVER "systemctl reload nginx"
     
     log "✅ Nginx konfiguriert"
 }
@@ -307,15 +307,15 @@ setup_ssl() {
     log "🔒 Erstelle SSL-Zertifikat..."
     
     # Prüfen ob Zertifikat bereits existiert
-    if ssh $SERVER "certbot certificates | grep -q '$DOMAIN'"; then
+    if ssh -i ~/.ssh/netcup_key $SERVER "certbot certificates | grep -q '$DOMAIN'"; then
         log "ℹ️  SSL-Zertifikat existiert bereits"
     else
-        ssh $SERVER "certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email admin@omni-scient.com"
+        ssh -i ~/.ssh/netcup_key $SERVER "certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email admin@omni-scient.com"
         log "✅ SSL-Zertifikat erstellt"
     fi
     
     # Nginx neu laden
-    ssh $SERVER "systemctl reload nginx"
+    ssh -i ~/.ssh/netcup_key $SERVER "systemctl reload nginx"
 }
 
 # Tests durchführen
@@ -323,14 +323,14 @@ run_tests() {
     log "🧪 Führe Tests durch..."
     
     # PM2-Status prüfen
-    if ssh $SERVER "pm2 list | grep -q '$APP_NAME.*online'"; then
+    if ssh -i ~/.ssh/netcup_key $SERVER "pm2 list | grep -q '$APP_NAME.*online'"; then
         log "✅ PM2-Prozess läuft"
     else
         error "PM2-Prozess läuft nicht"
     fi
     
     # Port-Status prüfen
-    if ssh $SERVER "netstat -tlnp | grep -q :$PORT"; then
+    if ssh -i ~/.ssh/netcup_key $SERVER "netstat -tlnp | grep -q :$PORT"; then
         log "✅ Port $PORT ist aktiv"
     else
         error "Port $PORT ist nicht aktiv"
@@ -365,17 +365,17 @@ create_backup() {
     log "💾 Erstelle Backup der wichtigen Daten..."
     
     BACKUP_DIR="/var/backups/omnireflect/$(date +%Y%m%d_%H%M%S)"
-    ssh $SERVER "mkdir -p $BACKUP_DIR"
+    ssh -i ~/.ssh/netcup_key $SERVER "mkdir -p $BACKUP_DIR"
     
     # Backup der Daten-Dateien
-    ssh $SERVER "cp -r $APP_DIR/data $BACKUP_DIR/ 2>/dev/null || true"
-    ssh $SERVER "cp $APP_DIR/.env.local $BACKUP_DIR/ 2>/dev/null || true"
-    ssh $SERVER "cp $APP_DIR/.env.production $BACKUP_DIR/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp -r $APP_DIR/data $BACKUP_DIR/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp $APP_DIR/.env.local $BACKUP_DIR/ 2>/dev/null || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "cp $APP_DIR/.env.production $BACKUP_DIR/ 2>/dev/null || true"
     
     # Backup-Info erstellen
-    ssh $SERVER "echo 'Backup erstellt: $(date)' > $BACKUP_DIR/backup-info.txt"
-    ssh $SERVER "echo 'Daten-Dateien:' >> $BACKUP_DIR/backup-info.txt"
-    ssh $SERVER "find $APP_DIR/data -name '*.json' 2>/dev/null >> $BACKUP_DIR/backup-info.txt || true"
+    ssh -i ~/.ssh/netcup_key $SERVER "echo 'Backup erstellt: $(date)' > $BACKUP_DIR/backup-info.txt"
+    ssh -i ~/.ssh/netcup_key $SERVER "echo 'Daten-Dateien:' >> $BACKUP_DIR/backup-info.txt"
+    ssh -i ~/.ssh/netcup_key $SERVER "find $APP_DIR/data -name '*.json' 2>/dev/null >> $BACKUP_DIR/backup-info.txt || true"
     
     log "✅ Backup erstellt: $BACKUP_DIR"
 }
@@ -417,11 +417,11 @@ main() {
     create_build
     
     # Nur PM2-Setup wenn Neustart erforderlich oder Anwendung nicht läuft
-    if [ "$RESTART_NEEDED" = true ] || ! ssh $SERVER "pm2 list | grep -q '$APP_NAME'"; then
+    if [ "$RESTART_NEEDED" = true ] || ! ssh -i ~/.ssh/netcup_key $SERVER "pm2 list | grep -q '$APP_NAME'"; then
         setup_pm2
     else
         log "🔄 Update PM2 mit neuen Umgebungsvariablen..."
-        ssh $SERVER "cd $APP_DIR && pm2 reload $APP_NAME --update-env"
+        ssh -i ~/.ssh/netcup_key $SERVER "cd $APP_DIR && pm2 reload $APP_NAME --update-env"
     fi
     
     setup_nginx
@@ -432,11 +432,11 @@ main() {
     echo "🎉 Production Deployment erfolgreich abgeschlossen!"
     echo "=================================================="
     echo "🌐 Anwendung: https://$DOMAIN"
-    echo "📋 PM2 Status: ssh $SERVER 'pm2 status'"
-    echo "📋 PM2 Logs: ssh $SERVER 'pm2 logs $APP_NAME'"
-    echo "📋 App Logs: ssh $SERVER 'tail -f $APP_DIR/logs/combined.log'"
-    echo "🔄 Neustart: ssh $SERVER 'pm2 restart $APP_NAME'"
-    echo "🛑 Stoppen: ssh $SERVER 'pm2 stop $APP_NAME'"
+    echo "📋 PM2 Status: ssh -i ~/.ssh/netcup_key $SERVER 'pm2 status'"
+    echo "📋 PM2 Logs: ssh -i ~/.ssh/netcup_key $SERVER 'pm2 logs $APP_NAME'"
+    echo "📋 App Logs: ssh -i ~/.ssh/netcup_key $SERVER 'tail -f $APP_DIR/logs/combined.log'"
+    echo "🔄 Neustart: ssh -i ~/.ssh/netcup_key $SERVER 'pm2 restart $APP_NAME'"
+    echo "🛑 Stoppen: ssh -i ~/.ssh/netcup_key $SERVER 'pm2 stop $APP_NAME'"
     echo "=================================================="
     echo -e "${NC}"
 }

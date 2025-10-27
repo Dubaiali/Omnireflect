@@ -3,16 +3,16 @@
 ## 🌐 Produktionsumgebung
 
 **Domain:** https://reflect.omni-scient.com  
-**Server:** 188.68.48.168  
+**Server:** 194.55.13.15  
 **Port:** 3002  
 **Technologie:** Next.js 15.3.5, Nginx, Let's Encrypt SSL, PM2
 
 ## 📋 Voraussetzungen
 
-- SSH-Zugang zum Server (root@188.68.48.168)
+- SSH-Zugang zum Server (root@194.55.13.15)
 - Git-Repository mit aktueller Version
 - OpenAI API-Key in .env.production
-- Domain reflect.omni-scient.com (DNS A-Record auf 188.68.48.168)
+- Domain reflect.omni-scient.com (DNS A-Record auf 194.55.13.15)
 
 ## 🚀 Automatisches Deployment
 
@@ -38,19 +38,19 @@ Das Skript führt automatisch alle notwendigen Schritte durch:
 ### Schritt 1: Server vorbereiten
 ```bash
 # Anwendung stoppen
-ssh root@188.68.48.168 "pm2 stop reflect-app && pm2 delete reflect-app"
+ssh root@194.55.13.15 "pm2 stop reflect-app && pm2 delete reflect-app"
 
 # Verzeichnis erstellen
-ssh root@188.68.48.168 "mkdir -p /var/www/omnireflect"
+ssh root@194.55.13.15 "mkdir -p /var/www/omnireflect"
 ```
 
 ### Schritt 2: Code deployen
 ```bash
 # Repository klonen
-ssh root@188.68.48.168 "cd /var/www/omnireflect && git clone https://github.com/Dubaiali/Omnireflect.git ."
+ssh root@194.55.13.15 "cd /var/www/omnireflect && git clone https://github.com/Dubaiali/Omnireflect.git ."
 
 # Dependencies installieren
-ssh root@188.68.48.168 "cd /var/www/omnireflect && npm install"
+ssh root@194.55.13.15 "cd /var/www/omnireflect && npm install"
 ```
 
 ### Schritt 3: Umgebungsvariablen konfigurieren

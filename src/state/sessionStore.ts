@@ -218,7 +218,35 @@ export const useSessionStore = create<SessionState>()(
             lastUpdated: new Date().toISOString(),
             roleContext: state.roleContext || undefined
           }
+          
+          // Speichere lokal
           LocalStorage.saveData(data)
+          
+          // Speichere auch in die Datenbank, wenn eine Zusammenfassung vorhanden ist
+          if (state.progress.summary) {
+            fetch('/api/hash-list/save-summary', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                hashId: state.hashId,
+                summary: state.progress.summary,
+                roleContext: state.roleContext,
+                answers: state.progress.answers,
+                followUpQuestions: state.progress.followUpQuestions,
+                questions: state.questions
+              })
+            }).then(response => {
+              if (response.ok) {
+                console.log('DEBUG: Zusammenfassung erfolgreich in Datenbank gespeichert')
+              } else {
+                console.log('DEBUG: Fehler beim Speichern in Datenbank')
+              }
+            }).catch(error => {
+              console.log('DEBUG: Fehler beim Speichern in Datenbank:', error)
+            })
+          }
         }
       },
 

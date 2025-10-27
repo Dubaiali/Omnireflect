@@ -61,15 +61,40 @@ export async function POST(request: NextRequest) {
         const followUps = followUpQuestions[question.id] || []
         
         if (answer) {
-          answersText += `Frage ${index + 1} (${question.category}): ${question.question}\nAntwort: ${answer}\n\n`
-          
-          // Sammle Follow-up-Antworten
+          // Sammle Follow-up-Antworten und integriere sie direkt in die Hauptantwort
+          let fullAnswer = answer
           followUps.forEach((followUpQuestion: string, followUpIndex: number) => {
             const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
             if (followUpAnswer) {
+              fullAnswer += `\n\nVertiefende Nachfrage: ${followUpQuestion}\nVertiefende Antwort: ${followUpAnswer}`
               followUpText += `Vertiefung zu Frage ${index + 1}: ${followUpQuestion}\nAntwort: ${followUpAnswer}\n\n`
             }
           })
+          
+          // Füge die Follow-up-Antworten direkt in die Hauptantwort ein, damit sie in der Analyse berücksichtigt werden
+          if (followUps.length > 0) {
+            fullAnswer += `\n\nZUSÄTZLICHE EINBLICKE AUS VERTIEFENDEN NACHFRAGEN:`
+            followUps.forEach((followUpQuestion: string, followUpIndex: number) => {
+              const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
+              if (followUpAnswer) {
+                fullAnswer += `\n- ${followUpAnswer}`
+              }
+            })
+          }
+          
+          // Füge auch die Follow-up-Antworten direkt in die Hauptantwort ein, damit sie in der Analyse berücksichtigt werden
+          if (followUps.length > 0) {
+            fullAnswer += `\n\nVERTIEFENDE EINBLICKE:`
+            followUps.forEach((followUpQuestion: string, followUpIndex: number) => {
+              const followUpAnswer = answers[`${question.id}_followup_${followUpIndex}`]
+              if (followUpAnswer) {
+                fullAnswer += `\n${followUpAnswer}`
+              }
+            })
+          }
+          
+          // Füge die vollständige Antwort (inklusive Follow-ups) hinzu
+          answersText += `Frage ${index + 1} (${question.category}): ${question.question}\nAntwort: ${fullAnswer}\n\n`
         }
       })
     } else {
@@ -133,13 +158,15 @@ export async function POST(request: NextRequest) {
       - "Rollentausch & Führungsperspektive" = Was würdest du als Vorgesetzter anders machen?
       - "Empfehlungen für das Mitarbeiterjahresgespräch" = SEPARATE SEKTION mit konkreten Handlungsimpulsen
       - Diese beiden Sektionen müssen getrennt sein!
+      - KRITISCH: Die Empfehlungen dürfen NICHT in die "Rollentausch & Führungsperspektive" Kategorie gehören!
+      - KRITISCH: Die Empfehlungen müssen NACH allen Kategorien als EIGENE SEKTION kommen!
       
       Als einfühlsamer Coach für persönliche Entwicklung und berufliche Reflexion, erstelle eine empathische und strukturierte Zusammenfassung der Selbstreflexion basierend auf den gegebenen Antworten.
       
-      HAUPTANTWORTEN:
+      HAUPTANTWORTEN (inklusive vertiefende Nachfragen):
       ${answersText}
       
-      ${followUpText ? `VERTIEFENDE NACHFRAGEN:\n${followUpText}` : ''}${roleContextInfo}
+      ${roleContextInfo}
       
       PERSONALISIERTER KONTEXT:
       - Erfahrungslevel: ${experienceLevel}
@@ -188,11 +215,12 @@ export async function POST(request: NextRequest) {
       - kulturelle Werte berücksichtigen (Freiheit, Vertrauen, Verantwortung, Wertschätzung)
       - empathisch und unterstützend wirken
       - Follow-up-Antworten für tiefere Einblicke nutzen und in die Analyse einbeziehen
+      - Vertiefende Nachfragen und deren Antworten vollständig in die Kategorie-Analyse integrieren
       - konkrete Handlungsimpulse identifizieren
       - Fokus auf persönliche Entwicklung und Wachstum
       - KRITISCHE ÄUSSERUNGEN AUTHENTISCH WIEDERGEBEN: Wenn der Mitarbeiter negative oder kritische Aussagen macht, diese nicht "schönreden" oder mildern
       - ECHTE REFLEXION: Die tatsächlichen Gefühle und Meinungen des Mitarbeiters respektieren und wiedergeben
-      - DETAILLIERTE ANALYSE: Jede Kategorie sollte 3-4 Sätze enthalten, die die Antworten und Follow-ups vertiefend interpretieren
+      - DETAILLIERTE ANALYSE: Jede Kategorie sollte 4-6 Sätze enthalten, die die Hauptantworten UND die vertiefenden Nachfragen vollständig interpretieren
       
       FOKUS-BEREICHE für die Analyse:
       - Persönliche Wachstumserfahrungen und Lernerkenntnisse
@@ -244,12 +272,12 @@ export async function POST(request: NextRequest) {
         return answeredQuestions.map(q => {
           const category = categoryMap[q.category] || q.category
           const isLeadership = q.category === 'leadership'
-          return `${category}:\n[Detaillierte Analyse mit 3-4 Sätzen, die die Antworten und Follow-ups vertiefend interpretieren${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch - DIESE GEHÖREN IN EINE SEPARATE SEKTION' : ''}]`
+          return `${category}:\n[Detaillierte Analyse mit 4-6 Sätzen, die die Hauptantworten UND alle vertiefenden Nachfragen vollständig interpretieren. Berücksichtige dabei alle zusätzlichen Einblicke aus den Follow-up-Antworten für eine umfassende Analyse${isLeadership ? ' - FOKUS: Was würdest du als Vorgesetzter anders machen? NICHT die Empfehlungen für das Gespräch - DIESE GEHÖREN IN EINE SEPARATE SEKTION - DIESE KATEGORIE DARF NUR DIE ANTWORT AUF "WAS WÜRDEST DU ALS VORGESETZTER ANDERS MACHEN?" ENTHALTEN!' : ''}]`
         }).join('\n\n')
       })()}
       
       EMPFEHLUNGEN FÜR DEIN MITARBEITERJAHRESGESPRÄCH:
-      [4-6 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) und Begründung - SEPARATE SEKTION - MUSS NACH ALLEN KATEGORIEN KOMMEN - NICHT Teil von Rollentausch & Führungsperspektive]
+      [4-6 konkrete, umsetzbare Handlungsimpulse mit Zeitrahmen (6 Monate) und Begründung - SEPARATE SEKTION - MUSS NACH ALLEN KATEGORIEN KOMMEN - NICHT Teil von Rollentausch & Führungsperspektive - DIESE SEKTION MUSS KOMPLETT GETRENNT VON ALLEN KATEGORIEN SEIN]
     `
 
     const completion = await openai.chat.completions.create({
@@ -275,6 +303,9 @@ WICHTIGE STRUKTUR-REGLEN:
 - Diese beiden Sektionen müssen getrennt sein!
 - Die Empfehlungen MÜSSEN NACH allen Kategorien kommen, NICHT innerhalb der "Rollentausch & Führungsperspektive"
 - Die "Rollentausch & Führungsperspektive" darf KEINE Empfehlungen enthalten
+- KRITISCH: Die Empfehlungen dürfen NICHT in die "Rollentausch & Führungsperspektive" Kategorie gehören!
+- KRITISCH: Die Empfehlungen müssen NACH allen Kategorien als EIGENE SEKTION kommen!
+- KRITISCH: Die "Rollentausch & Führungsperspektive" Kategorie darf nur die Antwort auf "Was würdest du als Vorgesetzter anders machen?" enthalten!
 
 SPRACHLICHE REGELN:
 - ABSOLUT ALLE Teile der Zusammenfassung in Du-Form verfassen
@@ -283,13 +314,15 @@ SPRACHLICHE REGELN:
 Berücksichtige dabei:
 - Arbeitsbereich, Rolle/Funktion, Erfahrung und Kundenkontakt der Person
 - Follow-up-Antworten für tiefere Einblicke und Perspektivenentwicklung
+- Vertiefende Nachfragen vollständig in die Kategorie-Analyse integrieren
 - Sprachliche Anpassung an den Erfahrungs- und Alterskontext
 - Kulturelle Werte wie Freiheit, Vertrauen, Verantwortung und Wertschätzung
 - Empathie und Unterstützung ohne Suggestion oder Floskeln
 - Konkrete, umsetzbare Handlungsempfehlungen
 - Fokus auf persönliche Entwicklung und Wachstum
 - Strukturierte Analyse mit Priorisierung (kritisch → positiv → zukunftsorientiert)
-- AUTHENTISCHE WIEDERGABE: Wenn der Mitarbeiter kritische oder negative Aussagen macht, diese nicht mildern oder umdeuten`
+- AUTHENTISCHE WIEDERGABE: Wenn der Mitarbeiter kritische oder negative Aussagen macht, diese nicht mildern oder umdeuten
+- DETAILLIERTE ANALYSE: Jede Kategorie sollte 4-6 Sätze enthalten, die alle verfügbaren Informationen (Hauptantworten + Follow-ups) vollständig interpretieren`
         },
         {
           role: 'user',
@@ -302,6 +335,10 @@ Berücksichtige dabei:
 
     const summary = completion.choices[0]?.message?.content || 'Zusammenfassung konnte nicht generiert werden.'
     console.log('DEBUG: Summary generiert, Länge:', summary.length)
+
+    // Hinweis: Die Zusammenfassung wird nicht automatisch gespeichert
+    // Sie muss explizit über /api/hash-list/save-summary gespeichert werden
+    console.log('DEBUG: Zusammenfassung generiert, aber nicht automatisch gespeichert')
 
     return NextResponse.json({ summary })
   } catch (error) {
