@@ -3,6 +3,11 @@ import { validateHash, getHashList, debugHashList } from '@/lib/hashList'
 import crypto from 'crypto'
 
 export async function GET(request: NextRequest) {
+  // KRITISCH: Debug-Endpoint in Produktion deaktivieren
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   try {
     // Umgebungsvariablen prüfen
     const envVars = {
