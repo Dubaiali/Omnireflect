@@ -74,53 +74,38 @@ export default function QuestionForm() {
     setIsGenerating(false)
   }, [])
 
-  // Verbesserte useEffect-Logik mit mehr Debug-Ausgaben
+  // Race-Condition-Schutz mit Ref
+  const hasInitialized = useRef(false)
+  
+  // Initialisierung nur einmal beim Mount
   useEffect(() => {
-    console.log('DEBUG: ZENTRALE useEffect triggered', { 
-      roleContext: !!roleContext, 
+    console.log('DEBUG: Initialization useEffect', { 
       questionsLength: questions.length, 
-      isGeneratingQuestions, 
       storedQuestionsLength: storedQuestions?.length,
-      questionParam: searchParams.get('question'),
-      isGenerating,
-      timestamp: new Date().toISOString()
+      hasInitialized: hasInitialized.current
     })
     
-    // Wenn bereits Fragen im lokalen State sind, nichts tun
-    if (questions.length > 0) {
-      console.log('DEBUG: Fragen bereits im lokalen State, überspringe');
+    // Wenn bereits Fragen im lokalen State oder initialisiert, nichts tun
+    if (hasInitialized.current || questions.length > 0) {
       return;
     }
     
-    // Wenn Fragen im Store, aber nicht im lokalen State, dann übernehmen
-    if (storedQuestions && storedQuestions.length > 0 && questions.length === 0) {
-      console.log('DEBUG: Übernehme Fragen aus Store in lokalen State');
+    // Fragen aus Store übernehmen wenn vorhanden
+    if (storedQuestions && storedQuestions.length > 0) {
+      console.log('DEBUG: Übernehme Fragen aus Store');
       setQuestions(storedQuestions);
+      hasInitialized.current = true;
       return;
     }
 
-    // Nur generieren, wenn wirklich keine Fragen da sind und nicht bereits generiert wird
-    if (
-      roleContext &&
-      questions.length === 0 &&
-      (!storedQuestions || storedQuestions.length === 0) &&
-      !isGeneratingQuestions &&
-      !isGenerating
-    ) {
-      console.log('DEBUG: Starte Generierung, da keine Fragen vorhanden sind');
+    // Nur generieren wenn weder lokale noch Store-Fragen vorhanden
+    if (roleContext && !isGeneratingQuestions && !isGenerating) {
+      console.log('DEBUG: Starte Generierung');
+      hasInitialized.current = true;
       loadPersonalizedQuestions();
-    } else if (isGeneratingQuestions || isGenerating) {
-      console.log('DEBUG: Generierung läuft bereits, warte...');
-      } else {
-      console.log('DEBUG: Generierung übersprungen:', {
-        hasRoleContext: !!roleContext,
-        questionsLength: questions.length,
-        storedQuestionsLength: storedQuestions?.length,
-        isGeneratingQuestions,
-        isGenerating
-      });
     }
-  }, [roleContext, isGeneratingQuestions]); // roleContext und isGeneratingQuestions als Abhängigkeiten
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Nur einmal beim Mount - Dependencies absichtlich leer um Race Conditions zu vermeiden
 
   // Store-Synchronisation entfernt - verursacht Race Conditions
 
