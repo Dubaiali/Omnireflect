@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     console.log('DEBUG: Sende Follow-up-Prompt an GPT')
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
