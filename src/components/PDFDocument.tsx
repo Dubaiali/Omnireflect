@@ -9,19 +9,22 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 40,
-    fontFamily: 'Helvetica'
+    padding: 35,
+    fontFamily: 'Helvetica',
+    fontSize: 9
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottom: '2px solid #e5e7eb'
+    marginBottom: 25,
+    paddingBottom: 15,
+    borderBottomWidth: 2,
+    borderBottomColor: '#e5e7eb',
+    borderBottomStyle: 'solid'
   },
   logo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#6366f1'
   },
@@ -35,54 +38,55 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#6b7280',
-    marginBottom: 5
+    marginBottom: 3
   },
   userInfo: {
     backgroundColor: '#f8fafc',
-    padding: 15,
-    marginBottom: 20,
-    borderRadius: 8,
-    border: '1px solid #e2e8f0'
+    padding: 20,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'solid'
   },
   userInfoTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 10
+    marginBottom: 8
   },
   userInfoRow: {
     flexDirection: 'row',
     marginBottom: 5
   },
   userInfoLabel: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#374151',
-    width: 80
+    width: 70
   },
   userInfoValue: {
-    fontSize: 12,
+    fontSize: 9,
     color: '#6b7280'
   },
   section: {
     marginBottom: 25
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 6
+    marginBottom: 10,
+    padding: 8,
+    backgroundColor: '#f3f4f6'
   },
   card: {
     padding: 15,
     marginBottom: 15,
-    borderRadius: 8,
-    border: '1px solid #e5e7eb'
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderStyle: 'solid'
   },
   blueCard: {
     backgroundColor: '#eff6ff',
@@ -125,9 +129,9 @@ const styles = StyleSheet.create({
     borderColor: '#0284c7'
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 10
+    marginBottom: 5
   },
   blueTitle: {
     color: '#1e40af'
@@ -160,9 +164,10 @@ const styles = StyleSheet.create({
     color: '#0c4a6e'
   },
   cardContent: {
-    fontSize: 12,
+    fontSize: 8,
     lineHeight: 1.5,
-    color: '#374151'
+    color: '#374151',
+    marginTop: 4
   },
   blueContent: {
     color: '#1e3a8a'
@@ -196,50 +201,54 @@ const styles = StyleSheet.create({
   },
   executiveSummary: {
     backgroundColor: '#eff6ff',
-    borderLeft: '4px solid #3b82f6',
-    padding: 15,
-    marginBottom: 20,
-    borderRadius: 8
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
+    borderLeftStyle: 'solid',
+    padding: 12,
+    marginBottom: 15
   },
   executiveSummaryTitle: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#1e40af',
-    marginBottom: 10
+    marginBottom: 8
   },
   executiveSummaryContent: {
-    fontSize: 12,
+    fontSize: 8,
     lineHeight: 1.5,
     color: '#1e3a8a'
   },
   recommendations: {
     backgroundColor: '#f0fdf4',
-    borderLeft: '4px solid #10b981',
-    padding: 15,
-    marginBottom: 20,
-    borderRadius: 8
+    borderLeftWidth: 4,
+    borderLeftColor: '#10b981',
+    borderLeftStyle: 'solid',
+    padding: 12,
+    marginBottom: 15,
+    marginTop: 10
   },
   recommendationsTitle: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#065f46',
-    marginBottom: 10
+    marginBottom: 8
   },
   recommendationsContent: {
-    fontSize: 12,
+    fontSize: 8,
     lineHeight: 1.5,
     color: '#065f46'
   },
   analysisHeader: {
     backgroundColor: '#eef2ff',
-    border: '1px solid #6366f1',
+    borderWidth: 1,
+    borderColor: '#6366f1',
+    borderStyle: 'solid',
     padding: 10,
     marginBottom: 15,
-    borderRadius: 8,
     textAlign: 'center'
   },
   analysisHeaderTitle: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#3730a3'
   },
@@ -249,8 +258,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   gridItem: {
-    width: '48%',
-    marginBottom: 15
+    width: '49%',
+    marginBottom: 10,
+    padding: 8,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    minHeight: 100
   },
   questionsSection: {
     marginTop: 30
@@ -259,8 +272,9 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 15,
     backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    border: '1px solid #e5e7eb'
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderStyle: 'solid'
   },
   questionHeader: {
     flexDirection: 'row',
@@ -273,71 +287,76 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3b82f6',
     backgroundColor: '#dbeafe',
-    padding: '4px 8px',
-    borderRadius: 4
+    padding: 4
   },
   questionNumber: {
     fontSize: 10,
     color: '#6b7280'
   },
   questionText: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 10,
-    lineHeight: 1.4
+    marginBottom: 6,
+    lineHeight: 1.3
   },
   answerLabel: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#374151',
-    marginBottom: 5
+    marginBottom: 3
   },
   answerText: {
-    fontSize: 12,
+    fontSize: 9,
     color: '#374151',
     backgroundColor: '#f3f4f6',
-    padding: 10,
-    borderRadius: 4,
-    lineHeight: 1.5
+    padding: 6,
+    lineHeight: 1.4
   },
   followUpSection: {
     marginTop: 10,
     padding: 8,
-    backgroundColor: '#f0fdf4',
-    borderRadius: 4
+    backgroundColor: '#f0fdf4'
   },
   followUpLabel: {
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: 'bold',
     color: '#166534',
-    marginBottom: 5
+    marginBottom: 3
   },
   followUpQuestion: {
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: '500',
     color: '#166534',
-    marginBottom: 5
+    marginBottom: 3
   },
   followUpAnswer: {
-    fontSize: 11,
+    fontSize: 8,
     color: '#15803d',
     fontStyle: 'italic'
   },
   footer: {
-    marginTop: 30,
-    paddingTop: 20,
-    borderTop: '1px solid #e5e7eb',
-    fontSize: 10,
+    marginTop: 25,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    borderTopStyle: 'solid',
+    fontSize: 9,
     color: '#6b7280',
     textAlign: 'center'
   },
   pageNumber: {
     position: 'absolute',
-    bottom: 20,
-    right: 40,
-    fontSize: 10,
-    color: '#6b7280'
+    bottom: 30,
+    right: 45,
+    fontSize: 9,
+    color: '#6b7280',
+    fontWeight: 'bold'
+  },
+  categoryBorderLeft: {
+    borderLeftWidth: 4,
+    borderLeftStyle: 'solid',
+    paddingLeft: 5
   }
 })
 
@@ -460,74 +479,87 @@ const parseSummary = (summary: string) => {
   }
 }
 
-// Farb-Mapping für Kategorien (wie in PDFDownload.tsx)
+// Farb-Mapping für Kategorien mit Balken
 const getCategoryColor = (title: string) => {
-  const colorMap: { [key: string]: { card: string, title: string, content: string } } = {
+  const colorMap: { [key: string]: { card: string, title: string, content: string, borderColor: string } } = {
     'Stolz & persönliche Leistung': {
       card: 'greenCard',
       title: 'greenTitle',
-      content: 'greenContent'
+      content: 'greenContent',
+      borderColor: '#10b981'
     },
     'Herausforderungen & Umgang mit Druck': {
       card: 'orangeCard',
       title: 'orangeTitle',
-      content: 'orangeContent'
+      content: 'orangeContent',
+      borderColor: '#f59e0b'
     },
     'Verantwortung & Selbstorganisation': {
       card: 'purpleCard',
       title: 'purpleTitle',
-      content: 'purpleContent'
+      content: 'purpleContent',
+      borderColor: '#8b5cf6'
     },
     'Zusammenarbeit & Feedback': {
       card: 'blueCard',
       title: 'blueTitle',
-      content: 'blueContent'
+      content: 'blueContent',
+      borderColor: '#3b82f6'
     },
     'Entwicklung & Lernen': {
       card: 'emeraldCard',
       title: 'emeraldTitle',
-      content: 'emeraldContent'
+      content: 'emeraldContent',
+      borderColor: '#059669'
     },
     'Energie & Belastung': {
       card: 'amberCard',
       title: 'amberTitle',
-      content: 'amberContent'
+      content: 'amberContent',
+      borderColor: '#d97706'
     },
     'Kultur & Werte': {
       card: 'violetCard',
       title: 'violetTitle',
-      content: 'violetContent'
+      content: 'violetContent',
+      borderColor: '#7c3aed'
     },
     'Entscheidungsspielräume & Freiheit': {
       card: 'indigoCard',
       title: 'indigoTitle',
-      content: 'indigoContent'
+      content: 'indigoContent',
+      borderColor: '#6366f1'
     },
     'Wertschätzung & Gesehenwerden': {
       card: 'tealCard',
       title: 'tealTitle',
-      content: 'tealContent'
+      content: 'tealContent',
+      borderColor: '#0d9488'
     },
     'Perspektive & Zukunft': {
       card: 'skyCard',
       title: 'skyTitle',
-      content: 'skyContent'
+      content: 'skyContent',
+      borderColor: '#0284c7'
     },
     'Verbesserungsvorschläge & Ideen': {
       card: 'indigoCard',
       title: 'indigoTitle',
-      content: 'indigoContent'
+      content: 'indigoContent',
+      borderColor: '#6366f1'
     },
     'Rollentausch & Führungsperspektive': {
       card: 'purpleCard',
       title: 'purpleTitle',
-      content: 'purpleContent'
+      content: 'purpleContent',
+      borderColor: '#8b5cf6'
     }
   }
   return colorMap[title] || {
     card: 'card',
     title: 'cardTitle',
-    content: 'cardContent'
+    content: 'cardContent',
+    borderColor: '#e5e7eb'
   }
 }
 
@@ -600,7 +632,14 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({
           {categories.map((cat, index) => {
             const color = getCategoryColor(cat.title)
             return (
-              <View key={index} style={[styles.gridItem, styles[color.card as keyof typeof styles]]}>
+              <View 
+                key={index} 
+                style={[
+                  styles.gridItem, 
+                  styles[color.card as keyof typeof styles],
+                  { borderLeftWidth: 5, borderLeftColor: color.borderColor, borderLeftStyle: 'solid' as const }
+                ]}
+              >
                 <Text style={[styles.cardTitle, styles[color.title as keyof typeof styles]]}>
                   {cat.title}
                 </Text>
