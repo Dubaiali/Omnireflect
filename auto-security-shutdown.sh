@@ -6,9 +6,10 @@
 set -e
 
 LOG_FILE="/var/log/omnireflect-security.log"
-SHUTDOWN_THRESHOLD=10  # Anzahl kritischer Alerts vor Shutdown
-SHUTDOWN_DELAY=300    # 5 Minuten Verzögerung (kann abgebrochen werden)
+SHUTDOWN_THRESHOLD=50  # NUR bei extremen Notfällen (z.B. aktiver Miner + Backdoor + viele Attacken)
+SHUTDOWN_DELAY=600     # 10 Minuten Verzögerung (kann abgebrochen werden)
 ALERT_EMAIL="ali.arseven@fielmann.com"
+ENABLE_AUTO_SHUTDOWN="${AUTO_SHUTDOWN_ENABLED:-0}"  # Standard: DEAKTIVIERT (nur manuell aktivierbar)
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -25,22 +26,60 @@ alert() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] ALERT: $1" >> "$LOG_FILE"
 }
 
-# Prüfe auf kritische Alerts in den letzten 10 Minuten
-RECENT_CRITICAL_ALERTS=$(grep "ALERT:" "$LOG_FILE" 2>/dev/null | tail -20 | grep -c "ALERT:" || echo "0")
+# WICHTIG: Auto-Shutdown ist standardmäßig DEAKTIVIERT
+# Nur aktivieren wenn wirklich nötig: export AUTO_SHUTDOWN_ENABLED=1
+if [ "$ENABLE_AUTO_SHUTDOWN" != "1" ]; then
+    log "Auto-Shutdown ist deaktiviert (nur manuell aktivierbar). Für Aktivierung: export AUTO_SHUTDOWN_ENABLED=1"
+    exit 0
+fi
 
-# Prüfe auf aktive Miner/Backdoors
-ACTIVE_THREATS=0
+# Prüfe auf KRITISCHE Bedrohungen - NUR bei AKTIVEN, ECHTEN Bedrohungen
+# Shutdown NUR wenn:
+# 1. Aktiver Miner-Prozess LÄUFT
+# 2. UND Backdoor-Prozess LÄUFT
+# 3. UND Server unter massivem Angriff steht
+# Sonst: KEIN Shutdown (Seite muss erreichbar bleiben)
+
+ACTIVE_MINER=0
+ACTIVE_BACKDOOR=0
+MASSIVE_ATTACK=0
+
+# Prüfe auf AKTIVEN Miner (nicht nur Log-Einträge!)
 if ps aux | grep -E 'xmrig|miner|c3pool' | grep -v grep > /dev/null; then
-    ACTIVE_THREATS=$((ACTIVE_THREATS + 1))
+    ACTIVE_MINER=1
+    alert "KRITISCH: Aktiver Miner-Prozess läuft!"
 fi
+
+# Prüfe auf AKTIVE Backdoor (nicht nur Log-Einträge!)
 if ps aux | grep -E '/root/.systemd-utils/ntpclient' | grep -v grep > /dev/null; then
-    ACTIVE_THREATS=$((ACTIVE_THREATS + 1))
+    ACTIVE_BACKDOOR=1
+    alert "KRITISCH: Backdoor-Prozess läuft!"
 fi
 
-TOTAL_THREATS=$((RECENT_CRITICAL_ALERTS + ACTIVE_THREATS))
+# Prüfe auf massiven Angriff (z.B. >100 SSH-Versuche in kurzer Zeit)
+if [ -f "/var/log/auth.log" ]; then
+    RECENT_FAILED_SSH=$(grep "Failed password" /var/log/auth.log 2>/dev/null | tail -100 | wc -l || echo "0")
+    if [ "$RECENT_FAILED_SSH" -gt 100 ]; then
+        MASSIVE_ATTACK=1
+        alert "KRITISCH: Massiver SSH-Angriff erkannt ($RECENT_FAILED_SSH Fehlversuche)!"
+    fi
+fi
 
+# Shutdown NUR wenn ALLE drei Bedingungen erfüllt sind (extrem selten)
+TOTAL_THREATS=$((ACTIVE_MINER * 20 + ACTIVE_BACKDOOR * 20 + MASSIVE_ATTACK * 10))
+
+# Bereits oben berechnet
+
+# Shutdown NUR bei extremen Notfällen (Miner + Backdoor + massiver Angriff)
 if [ "$TOTAL_THREATS" -ge "$SHUTDOWN_THRESHOLD" ]; then
-    alert "KRITISCH: $TOTAL_THREATS Bedrohungen erkannt - Shutdown in $SHUTDOWN_DELAY Sekunden!"
+    alert "EXTREMER NOTFALL: $TOTAL_THREATS Bedrohungen erkannt (Miner: $ACTIVE_MINER, Backdoor: $ACTIVE_BACKDOOR, Angriff: $MASSIVE_ATTACK) - Shutdown in $SHUTDOWN_DELAY Sekunden!"
+    
+    # Prüfe ob Shutdown bereits läuft (verhindere mehrfache Shutdowns)
+    if [ -f "/tmp/shutdown-in-progress" ]; then
+        log "Shutdown bereits in Progress - überspringe"
+        exit 0
+    fi
+    touch /tmp/shutdown-in-progress
     
     # Alert senden
     if [ -f "/usr/local/bin/send-security-alert.sh" ]; then
@@ -59,7 +98,7 @@ if [ "$TOTAL_THREATS" -ge "$SHUTDOWN_THRESHOLD" ]; then
         sleep 1
         if [ -f "/tmp/cancel-shutdown" ]; then
             alert "Shutdown ABGEBROCHEN durch /tmp/cancel-shutdown"
-            rm -f /tmp/cancel-shutdown
+            rm -f /tmp/cancel-shutdown /tmp/shutdown-in-progress
             exit 0
         fi
     done
@@ -80,15 +119,27 @@ if [ "$TOTAL_THREATS" -ge "$SHUTDOWN_THRESHOLD" ]; then
     
     alert "Shutdown wird jetzt durchgeführt..."
     
-    # Shutdown
-    shutdown -h +1 "Security-Shutdown: Kritische Bedrohung erkannt"
+    # Shutdown (mit /sbin/shutdown falls verfügbar)
+    if command -v shutdown >/dev/null 2>&1; then
+        shutdown -h +1 "Security-Shutdown: Kritische Bedrohung erkannt"
+    elif command -v /sbin/shutdown >/dev/null 2>&1; then
+        /sbin/shutdown -h +1 "Security-Shutdown: Kritische Bedrohung erkannt"
+    else
+        alert "Shutdown-Befehl nicht gefunden - verwende init 0"
+        init 0
+    fi
     
+    rm -f /tmp/shutdown-in-progress
     exit 0
 fi
 
-# Normale Reaktionen (aus auto-security-response.sh)
-if [ "$RECENT_CRITICAL_ALERTS" -ge 2 ]; then
-    # Automatische Maßnahmen ohne Shutdown
+# Cleanup: Entferne shutdown-in-progress wenn keine Bedrohung mehr
+rm -f /tmp/shutdown-in-progress
+
+# Normale Reaktionen (aus auto-security-response.sh) - OHNE Shutdown
+# Stoppe verdächtige Prozesse, aber Server bleibt online
+if [ "$ACTIVE_MINER" = "1" ] || [ "$ACTIVE_BACKDOOR" = "1" ]; then
+    log "Stoppe verdächtige Prozesse (Server bleibt online)..."
     pkill -9 xmrig 2>/dev/null || true
     pkill -9 -f "/root/.systemd-utils/ntpclient" 2>/dev/null || true
     pkill -9 -f "c3pool" 2>/dev/null || true
@@ -98,7 +149,9 @@ if [ "$RECENT_CRITICAL_ALERTS" -ge 2 ]; then
     done
     
     if [ -f "/usr/local/bin/send-security-alert.sh" ]; then
-        /usr/local/bin/send-security-alert.sh "Security Alert" "Automatische Maßnahmen wurden ergriffen. $RECENT_CRITICAL_ALERTS kritische Alerts erkannt." &
+        /usr/local/bin/send-security-alert.sh "Security Alert" "Verdächtige Prozesse gestoppt. Server bleibt online. Bitte manuell prüfen!" &
     fi
 fi
+
+log "Monitoring abgeschlossen. Server bleibt online (Auto-Shutdown nur bei extremen Notfällen)."
 
