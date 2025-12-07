@@ -39,6 +39,7 @@ fi
 
 # 1. Rate Limiting für alle Services
 info "1. Erweitertes Rate Limiting einrichten..."
+mkdir -p /etc/security/limits.conf.d 2>/dev/null || true
 cat > /etc/security/limits.conf.d/omnireflect.conf << 'EOF'
 # Omnireflect Rate Limiting
 * soft nofile 4096
