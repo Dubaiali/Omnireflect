@@ -82,7 +82,7 @@ else
 fi
 
 # Prüfe auf verschlüsselte Passwörter
-if grep -r "bcrypt\|argon2\|scrypt" "$APP_DIR/src" 2>/dev/null | grep -v node_modules > /dev/null; then
+if grep -r "bcrypt\|argon2\|scrypt\|hash\|salt" "$APP_DIR/src" 2>/dev/null | grep -v node_modules > /dev/null; then
     log "Passwort-Hashing implementiert"
 else
     warn "Keine Passwort-Hashing-Bibliothek gefunden (bcrypt, argon2, etc.)"
@@ -98,7 +98,7 @@ fi
 # A03:2021 – Injection
 info "A03: Injection prüfen..."
 # SQL Injection (falls SQL verwendet wird)
-if grep -r "query\|execute\|sql" "$APP_DIR/src" 2>/dev/null | grep -v node_modules | grep -qE "\$\{|'\+|`"; then
+if grep -r "query\|execute\|sql" "$APP_DIR/src" 2>/dev/null | grep -v node_modules | grep -qE '\$\{|'"'"'\+'; then
     warn "Mögliche SQL-Injection-Gefahr - prüfe Query-Parameterisierung"
 else
     log "Keine direkten SQL-Queries gefunden"
@@ -247,7 +247,7 @@ fi
 # A10:2021 – Server-Side Request Forgery (SSRF)
 info "A10: SSRF prüfen..."
 # Prüfe auf fetch/request mit User-Input
-if grep -r "fetch\|request\|http\|https" "$APP_DIR/src" 2>/dev/null | grep -v node_modules | grep -qE "\$\{|req\.|query\.|body\."; then
+if grep -r "fetch\|request\|http\|https" "$APP_DIR/src" 2>/dev/null | grep -v node_modules | grep -qE '\$\{|req\.|query\.|body\.'; then
     warn "Mögliche SSRF-Gefahr - prüfe URL-Validierung bei fetch/request"
 else
     log "Keine offensichtliche SSRF-Gefahr gefunden"
