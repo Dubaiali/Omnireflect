@@ -67,7 +67,7 @@ cat > /usr/local/bin/isolate-network.sh << 'EOF'
 LOG_FILE="/var/log/omnireflect-security.log"
 RECENT_ALERTS=$(grep "ALERT:" "$LOG_FILE" 2>/dev/null | tail -10 | grep -c "ALERT:" || echo "0")
 
-if [ "$RECENT_ALERTS" -ge 3 ]; then
+if [ "$RECENT_ALERTS" -ge 6 ]; then
     echo "[$(date)] NETWORK ISOLATION: $RECENT_ALERTS alerts, isolating network" >> "$LOG_FILE"
     
     # Erlaube nur lokalen Zugriff
