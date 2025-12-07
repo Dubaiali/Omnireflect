@@ -6,7 +6,7 @@
 set -e
 
 LOG_FILE="/var/log/omnireflect-security.log"
-SHUTDOWN_THRESHOLD=5  # Anzahl kritischer Alerts vor Shutdown
+SHUTDOWN_THRESHOLD=10  # Anzahl kritischer Alerts vor Shutdown
 SHUTDOWN_DELAY=300    # 5 Minuten Verzögerung (kann abgebrochen werden)
 ALERT_EMAIL="ali.arseven@fielmann.com"
 
