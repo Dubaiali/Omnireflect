@@ -110,11 +110,34 @@ if ! command -v postfix &> /dev/null; then
     log "Postfix installiert"
 fi
 
-# Alert-Skript erstellen
+# Alert-Skript erstellen MIT DEDUPLIZIERUNG
 cat > /usr/local/bin/send-security-alert.sh << EOF
 #!/bin/bash
-# Security Alert E-Mail-Versand
+# Security Alert E-Mail-Versand MIT DEDUPLIZIERUNG
 
+# Alert-Historie für Deduplizierung (letzte Verteidigungslinie)
+ALERT_HISTORY_FILE="/tmp/omnireflect-send-alert-history.txt"
+touch "\$ALERT_HISTORY_FILE"
+
+# Prüfe ob dieser Alert bereits in den letzten 60 Minuten gesendet wurde
+ALERT_HASH=\$(echo "\$1:\$2" | md5sum | cut -d' ' -f1)
+CUTOFF_TIME=\$((\$(date +%s) - 3600))  # 60 Minuten
+
+if grep -q "^\$ALERT_HASH:" "\$ALERT_HISTORY_FILE" 2>/dev/null; then
+    LAST_SENT=\$(grep "^\$ALERT_HASH:" "\$ALERT_HISTORY_FILE" | cut -d: -f2)
+    if [ "\$LAST_SENT" -ge "\$CUTOFF_TIME" ]; then
+        # Alert wurde bereits in den letzten 60 Minuten gesendet - überspringen
+        exit 0
+    fi
+fi
+
+# Alert als gesendet markieren
+echo "\$ALERT_HASH:\$(date +%s)" >> "\$ALERT_HISTORY_FILE"
+# Alte Einträge löschen (älter als 24h)
+awk -v cutoff=\$((\$(date +%s) - 86400)) -F: '\$2 > cutoff' "\$ALERT_HISTORY_FILE" > "\$ALERT_HISTORY_FILE.tmp" 2>/dev/null
+mv "\$ALERT_HISTORY_FILE.tmp" "\$ALERT_HISTORY_FILE" 2>/dev/null || true
+
+# E-Mail senden
 SUBJECT="🔒 Omnireflect Security Alert: \$1"
 BODY="
 Omnireflect Security Alert
@@ -140,56 +163,93 @@ EOF
 chmod +x /usr/local/bin/send-security-alert.sh
 log "Alert-Skript erstellt"
 
-# 3. Erweitertes Monitoring-Skript mit E-Mail-Alerts
-info "Erweitere Monitoring-Skript mit E-Mail-Alerts..."
-cat >> /var/www/omnireflect/monitor-security.sh << 'EOFALERT'
-
-# E-Mail-Alert-Funktion
-send_alert() {
-    if [ -f "/usr/local/bin/send-security-alert.sh" ]; then
-        /usr/local/bin/send-security-alert.sh "$1" "$2" &
-    fi
-}
-
-# Bei kritischen Alerts E-Mail senden
-if [ "$ALERTS" -gt 0 ]; then
-    ALERT_SUMMARY="Es wurden $ALERTS Sicherheitsprobleme gefunden:\n"
-    ALERT_SUMMARY+="$(tail -20 $LOG_FILE)"
-    send_alert "Security Issues Detected" "$ALERT_SUMMARY"
-fi
-
-EOFALERT
-
-log "Monitoring-Skript erweitert"
+# 3. Monitoring-Skript hat bereits eigene Deduplizierung
+# KEINE zusätzliche E-Mail-Funktion hinzufügen - würde E-Mail-Flut verursachen
+info "Monitoring-Skript verwendet bereits Deduplizierung - keine Erweiterung nötig"
+log "Monitoring-Skript ist bereits korrekt konfiguriert"
 
 # 4. Automatische Reaktionen auf kritische Alerts
 info "Richte automatische Reaktionen ein..."
 cat > /usr/local/bin/auto-security-response.sh << 'EOF'
 #!/bin/bash
 # Automatische Reaktionen auf kritische Security-Alerts
+# MIT DEDUPLIZIERUNG - verhindert E-Mail-Flut
 
 LOG_FILE="/var/log/omnireflect-security.log"
 ALERT_THRESHOLD=3
 
-# Prüfe auf kritische Alerts
-CRITICAL_ALERTS=$(grep -c "ALERT:" "$LOG_FILE" 2>/dev/null | tail -1 || echo "0")
+# Alert-Historie für Deduplizierung
+ALERT_HISTORY_FILE="/tmp/omnireflect-response-alert-history.txt"
+touch "$ALERT_HISTORY_FILE"
 
-if [ "$CRITICAL_ALERTS" -ge "$ALERT_THRESHOLD" ]; then
-    # Automatische Maßnahmen:
-    # 1. Alle verdächtigen Prozesse stoppen
-    pkill -9 xmrig 2>/dev/null || true
-    pkill -9 -f "/root/.systemd-utils/ntpclient" 2>/dev/null || true
+# Prüfe ob dieser Alert bereits in den letzten 60 Minuten gesendet wurde
+is_new_alert() {
+    local alert_msg="$1"
+    local alert_hash=$(echo "$alert_msg" | md5sum | cut -d' ' -f1)
+    local cutoff_time=$(($(date +%s) - 3600))  # 60 Minuten
     
-    # 2. Verdächtige Dateien isolieren
-    find /var/www/omnireflect -name 'xmrig*' -o -name 'miner*' 2>/dev/null | while read file; do
-        mv "$file" "$file.quarantine.$(date +%s)" 2>/dev/null || true
-    done
+    # Prüfe Historie
+    if grep -q "^$alert_hash:" "$ALERT_HISTORY_FILE" 2>/dev/null; then
+        local last_sent=$(grep "^$alert_hash:" "$ALERT_HISTORY_FILE" | cut -d: -f2)
+        if [ "$last_sent" -ge "$cutoff_time" ]; then
+            return 1  # Nicht neu
+        fi
+    fi
     
-    # 3. Alert senden
-    /usr/local/bin/send-security-alert.sh "Critical Security Threat" "Automatische Maßnahmen wurden ergriffen. Bitte Server sofort prüfen!"
+    # Alert als gesendet markieren
+    echo "$alert_hash:$(date +%s)" >> "$ALERT_HISTORY_FILE"
+    # Alte Einträge löschen (älter als 24h)
+    awk -v cutoff=$(($(date +%s) - 86400)) -F: '$2 > cutoff' "$ALERT_HISTORY_FILE" > "$ALERT_HISTORY_FILE.tmp" 2>/dev/null
+    mv "$ALERT_HISTORY_FILE.tmp" "$ALERT_HISTORY_FILE" 2>/dev/null || true
     
-    # 4. Log erstellen
-    echo "[$(date)] AUTOMATIC RESPONSE: Critical alerts detected, actions taken" >> "$LOG_FILE"
+    return 0  # Neu
+}
+
+# Prüfe auf kritische Alerts (nur AKTIVE, nicht alte Log-Einträge)
+ACTIVE_CRITICAL_ALERTS=0
+
+# Prüfe auf AKTIVE Miner-Prozesse
+if ps aux | grep -E 'xmrig|miner|c3pool' | grep -v grep > /dev/null; then
+    ACTIVE_CRITICAL_ALERTS=$((ACTIVE_CRITICAL_ALERTS + 1))
+fi
+
+# Prüfe auf AKTIVE Backdoor-Prozesse
+if ps aux | grep -E '/root/.systemd-utils/ntpclient' | grep -v grep > /dev/null; then
+    ACTIVE_CRITICAL_ALERTS=$((ACTIVE_CRITICAL_ALERTS + 1))
+fi
+
+# Prüfe auf AKTUELLE kritische Alerts in den letzten 5 Minuten (nicht alle alten)
+if [ -f "$LOG_FILE" ]; then
+    RECENT_CRITICAL=$(grep "ALERT:" "$LOG_FILE" 2>/dev/null | grep -E "Miner|Backdoor|PM2.*läuft nicht|Nginx.*läuft nicht" | tail -5 | wc -l || echo "0")
+    if [ "$RECENT_CRITICAL" -gt 0 ]; then
+        ACTIVE_CRITICAL_ALERTS=$((ACTIVE_CRITICAL_ALERTS + RECENT_CRITICAL))
+    fi
+fi
+
+# NUR bei AKTIVEN kritischen Bedrohungen handeln
+if [ "$ACTIVE_CRITICAL_ALERTS" -ge "$ALERT_THRESHOLD" ]; then
+    ALERT_MSG="Critical Security Threat: $ACTIVE_CRITICAL_ALERTS aktive Bedrohungen erkannt. Automatische Maßnahmen wurden ergriffen."
+    
+    # Nur senden wenn NEU (Deduplizierung)
+    if is_new_alert "$ALERT_MSG"; then
+        # Automatische Maßnahmen:
+        # 1. Alle verdächtigen Prozesse stoppen
+        pkill -9 xmrig 2>/dev/null || true
+        pkill -9 -f "/root/.systemd-utils/ntpclient" 2>/dev/null || true
+        
+        # 2. Verdächtige Dateien isolieren
+        find /var/www/omnireflect -name 'xmrig*' -o -name 'miner*' 2>/dev/null | while read file; do
+            mv "$file" "$file.quarantine.$(date +%s)" 2>/dev/null || true
+        done
+        
+        # 3. Alert senden (NUR wenn neu)
+        if [ -f "/usr/local/bin/send-security-alert.sh" ]; then
+            /usr/local/bin/send-security-alert.sh "Critical Security Threat" "$ALERT_MSG" &
+        fi
+        
+        # 4. Log erstellen
+        echo "[$(date)] AUTOMATIC RESPONSE: $ACTIVE_CRITICAL_ALERTS active threats detected, actions taken" >> "$LOG_FILE"
+    fi
 fi
 
 EOF
